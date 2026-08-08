@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLB 5H Sáng — Nội quy & Hướng dẫn</title>
+<style>
+:root{
+  --red:#c62828;--red2:#ef5350;--red3:#fff0f0;--dark:#332626;--muted:#766666;
+  --cream:#fffaf8;--card:#fff;--line:#f0dddd;--shadow:0 12px 35px rgba(120,35,35,.09);
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+background:linear-gradient(180deg,#fffdfc,#fff7f5);color:var(--dark);line-height:1.75}
+button,a{font:inherit}a{text-decoration:none;color:inherit}
+.header{position:sticky;top:0;z-index:50;background:rgba(255,253,252,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav{max-width:1120px;margin:auto;height:72px;padding:0 20px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;border:0;background:none;cursor:pointer;font-weight:900;color:var(--dark);text-align:left}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--red),#8e1d1d);display:grid;place-items:center;color:#fff;font-size:16px;box-shadow:0 8px 20px #c6282833}
+.brand small{display:block;color:#9b7d7d;font-weight:600;font-size:11px}
+.navlinks{display:flex;gap:6px}.navlinks button,.menuBtn{border:0;background:transparent;padding:9px 13px;border-radius:12px;cursor:pointer;color:#674f4f;font-weight:800}
+.navlinks button:hover,.menuBtn:hover{background:var(--red3);color:var(--red)}.menuBtn{display:none;font-size:23px}
+main{min-height:70vh}.view{display:none}.view.active{display:block}
+.container{max-width:1120px;margin:auto;padding:0 20px}
+.hero{padding:72px 0 42px;text-align:center}.badge{display:inline-flex;padding:6px 12px;border-radius:999px;background:#fee2e2;color:#a21d1d;font-weight:850;font-size:12px}
+.hero h1{font-size:clamp(38px,6vw,68px);line-height:1.05;margin:18px auto 15px;max-width:850px;letter-spacing:-2px}
+.hero h1 span{color:var(--red)}.hero p{max-width:760px;margin:auto;color:var(--muted);font-size:18px}
+.actions{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.btn{border:0;border-radius:15px;padding:12px 19px;font-weight:850;cursor:pointer}
+.btn.primary{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;box-shadow:0 10px 25px #b91c1c2b}
+.btn.secondary{background:#fff;border:1px solid var(--line);color:#6d5555}
+.ticker{margin:22px 0 48px;background:#4b2525;color:white;overflow:hidden;white-space:nowrap;transform:rotate(-1deg);box-shadow:var(--shadow)}
+.ticker span{display:inline-block;padding:11px 25px;font-weight:850}
+.section{padding:30px 0 62px}.sectionTitle{text-align:center;margin-bottom:28px}
+.sectionTitle h2{font-size:clamp(28px,4vw,42px);margin:0 0 7px;line-height:1.2}.sectionTitle p{color:var(--muted);margin:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.stat,.card,.rule,.faq,.purpose{background:rgba(255,255,255,.9);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:22px}
+.stat{padding:22px;text-align:center}.stat b{font-size:28px;color:var(--red);display:block}.stat small{color:var(--muted);font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.card{padding:26px}.icon{width:45px;height:45px;border-radius:14px;background:var(--red3);display:grid;place-items:center;color:var(--red);font-size:21px;margin-bottom:13px}
+.card h3{margin:0 0 7px;font-size:20px}.card p{color:var(--muted);margin:0}
+.ruleNav{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:25px}
+.ruleNav button{border:1px solid var(--line);background:#fff;border-radius:15px;padding:14px;text-align:left;cursor:pointer;font-weight:850;color:#604b4b}
+.ruleNav button:hover{border-color:#eaa; background:var(--red3);color:var(--red)}
+.rule{padding:0;margin-bottom:13px;overflow:hidden}.rule summary,.faq summary{list-style:none;cursor:pointer;padding:19px 21px;font-weight:900;font-size:17px;display:flex;justify-content:space-between;gap:12px}
+.rule summary::-webkit-details-marker,.faq summary::-webkit-details-marker{display:none}
+.rule summary::after,.faq summary::after{content:"＋";color:var(--red);font-size:23px;line-height:1}
+.rule[open] summary::after,.faq[open] summary::after{content:"−"}
+.ruleContent{padding:0 21px 23px;color:#5f5050}.ruleContent h4{color:#482b2b;margin:18px 0 6px}.ruleContent strong{color:#a51f1f}
+.ruleContent ul{padding-left:22px}.highlight{background:linear-gradient(135deg,#fff0ef,#fff);border-left:5px solid var(--red);padding:15px 17px;border-radius:14px;margin:15px 0}
+.purpose{padding:17px 18px;margin:0 0 18px;background:linear-gradient(135deg,#fff7f6,#fff);border-left:5px solid #e53935}
+.purpose b{color:var(--red)}.purpose p{margin:5px 0 0;color:#6b5a5a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:17px}.tableWrap{overflow:auto}
+.scoreTable{width:100%;border-collapse:collapse;background:#fff;border-radius:17px;overflow:hidden}.scoreTable th,.scoreTable td{padding:12px;border-bottom:1px solid var(--line);text-align:left}.scoreTable th{background:#fff0ee;color:#8f1b1b}
+.faqs{max-width:850px;margin:auto}.faq{margin-bottom:11px}.faq p{padding:0 21px 19px;margin:0;color:var(--muted)}
+.footer{margin-top:50px;background:#3d2020;color:#fff;padding:45px 0}.footer .grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:25px}.footer p,.footer a{color:#e7cfcf}.footer a:hover{color:#fff}
+.drawer{position:fixed;inset:0;z-index:100;display:none}.drawer.open{display:block}.backdrop{position:absolute;inset:0;background:#2b11118c}
+.drawerPanel{position:absolute;right:0;top:0;height:100%;width:min(88vw,360px);background:#fffaf7;padding:23px;box-shadow:-20px 0 50px #0002}.drawerPanel h3{margin-top:0}
+.drawerPanel button{width:100%;text-align:left;border:0;background:transparent;padding:13px;border-radius:12px;font-weight:800}.drawerPanel button:hover{background:var(--red3);color:var(--red)}
+@media(max-width:850px){.navlinks{display:none}.menuBtn{display:block}.stats{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:1fr}.grid2,.ruleNav{grid-template-columns:1fr}.footer .grid{grid-template-columns:1fr}.hero{padding-top:48px}.hero h1{letter-spacing:-1px}}
+@media(max-width:520px){.nav{height:65px;padding:0 14px}.logo{width:39px;height:39px}.brand{font-size:14px}.stats{gap:9px}.stat{padding:17px 9px}.stat b{font-size:23px}.container{padding:0 14px}.hero p{font-size:16px}.rule summary,.faq summary{font-size:16px;padding:16px}.ruleContent{font-size:15px}}
+</style>
+</head>
+<body>
+<header class="header"><nav class="nav">
+<button class="brand" onclick="showView('home')"><span class="logo">5H</span><span>CLB 5H Sáng<small>Học tập • Kỷ luật • Đồng hành</small></span></button>
+<div class="navlinks">
+<button onclick="showView('home')">Trang chủ</button><button onclick="showView('rules')">Nội quy</button><button onclick="showView('attendance')">Điểm danh</button><button onclick="showView('faq')">FAQ</button><button onclick="showView('join')">Tham gia</button>
+</div><button class="menuBtn" onclick="openDrawer()">☰</button>
+</nav></header>
+
+<div class="drawer" id="drawer"><div class="backdrop" onclick="closeDrawer()"></div><div class="drawerPanel">
+<h3>☰ CLB 5H Sáng</h3>
+<button onclick="showView('home');closeDrawer()">🏠 Trang chủ</button>
+<button onclick="showView('rules');closeDrawer()">📜 Nội quy</button>
+<button onclick="showView('attendance');closeDrawer()">⏰ Điểm danh</button>
+<button onclick="showView('faq');closeDrawer()">❓ Câu hỏi thường gặp</button>
+<button onclick="showView('join');closeDrawer()">💚 Tham gia nhóm</button>
+</div></div>
+
+<main>
+<section id="home" class="view active">
+<div class="container hero"><span class="badge">🌅 MỖI SÁNG • MỘT BƯỚC TIẾN</span>
+<h1>CLB <span>5H SÁNG</span></h1>
+<p>Môi trường học tập kỷ luật, tích cực và đồng hành — giúp mỗi thành viên rèn thói quen dậy sớm, học tập đều đặn và tiến bộ từng ngày.</p>
+<div class="actions"><button class="btn primary" onclick="showView('join')">Tham gia nhóm →</button><button class="btn secondary" onclick="showView('rules')">Xem nội quy 📖</button></div></div>
+<div class="ticker"><span>📚 KIẾN THỨC LÀ SỨC MẠNH</span><span>⏰ DẬY SỚM — HỌC ĐỀU</span><span>🎯 KHÔNG BỎ CUỘC</span><span>💚 CÙNG NHAU TIẾN BỘ</span></div>
+<div class="container section"><div class="stats">
+<div class="stat"><b>5H</b><small>Học buổi sáng</small></div><div class="stat"><b>03:00–06:00</b><small>Khung điểm danh</small></div><div class="stat"><b>04/07</b><small>KPI tối thiểu/tuần</small></div><div class="stat"><b>💚</b><small>Kỷ luật & đồng hành</small></div>
+</div></div>
+<div class="container section"><div class="sectionTitle"><h2>CLB có để làm gì?</h2><p>Không chỉ là một nhóm điểm danh — mục tiêu là giúp bạn duy trì một thói quen học tập bền vững.</p></div>
+<div class="cards">
+<div class="card"><div class="icon">⏰</div><h3>Rèn thói quen dậy sớm</h3><p>Tạo một khung giờ ổn định để bắt đầu ngày mới bằng việc học tập và phát triển bản thân.</p></div>
+<div class="card"><div class="icon">📚</div><h3>Duy trì việc học</h3><p>KPI, điểm danh và cách ghi nhận giúp bạn có một cơ chế rõ ràng để theo dõi sự đều đặn.</p></div>
+<div class="card"><div class="icon">🤝</div><h3>Đồng hành cùng nhau</h3><p>Có cộng đồng, chia sẻ và hỗ trợ để bạn không phải tự duy trì động lực một mình.</p></div>
+</div></div>
+<div class="container section"><div class="sectionTitle"><h2>Những gì bạn sẽ nhận được</h2><p>Thông tin được tách thành từng phần để đọc dễ hơn trên điện thoại.</p></div>
+<div class="cards">
+<div class="card"><div class="icon">📊</div><h3>Theo dõi kỷ luật</h3><p>Điểm danh theo T/Y/H/P/N và theo dõi việc hoàn thành KPI học tập hằng tuần.</p></div>
+<div class="card"><div class="icon">🏆</div><h3>Mốc & phần thưởng</h3><p>Các mốc thưởng có thể được tổ chức theo tình hình quỹ và cơ chế thưởng của CLB.</p></div>
+<div class="card"><div class="icon">📖</div><h3>Không gian học tập</h3><p>Tích hợp phòng Zoom cùng hoạt động đọc sách để tạo môi trường học tập đông đủ và có năng lượng.</p></div>
+</div></div>
+</section>
+
+<section id="rules" class="view"><div class="container section">
+<div class="sectionTitle"><span class="badge">📜 NỘI QUY CLB</span><h2>Nội quy CLB 5H Sáng</h2><p>Mỗi mục đều có phần <b>“Có để làm gì?”</b> để thành viên hiểu lý do phía sau quy định.</p></div>
+<div class="ruleNav">
+<button onclick="openRule('notice')">⚠️ Trước khi tham gia</button><button onclick="openRule('kpi')">📖 KPI học tập</button>
+<button onclick="openRule('name')">🏷️ Đổi tên ca sáng</button><button onclick="openRule('attendance')">⏰ Điểm danh & cộng điểm</button>
+<button onclick="openRule('photo')">📸 Ảnh Zoom</button><button onclick="openRule('fees')">💰 Phí duy trì & vắng</button>
+<button onclick="openRule('absence')">📜 Vắng 3 ngày liên tiếp</button><button onclick="openRule('leave')">📌 Xin nghỉ rồi quay lại</button>
+<button onclick="openRule('book')">📚 CLB Đọc Sách</button><button onclick="openRule('terms')">📑 Thuật ngữ</button>
+<button onclick="openRule('message')">💗 Đôi lời từ BQT</button>
+</div>
+
+<details class="rule" id="notice"><summary>⚠️ Điều cần chú ý trước khi tham gia nhóm</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để bạn hiểu rõ mục tiêu của CLB trước khi tham gia và chủ động trao đổi nếu có khó khăn, thay vì tham gia rồi bỏ dở vì chưa phù hợp.</p></div>
+<p>CLB được xây dựng dành cho những bạn thật sự mong muốn rèn luyện thói quen dậy sớm, học tập đều đặn và xây dựng tính kỷ luật mỗi ngày.</p>
+<p>Khi tham gia, hãy cố gắng duy trì việc dậy sớm, tham gia học và điểm danh đầy đủ theo nội quy.</p>
+<h4>📝 Lưu ý từ Admin</h4>
+<p>Nếu gặp khó khăn trong việc đóng quỹ/khoản đóng góp, chưa có tài khoản ngân hàng, khó khăn tài chính hoặc lý do khách quan khác, hãy chủ động trao đổi riêng với Admin.</p>
+<p>Ban Quản trị sẵn sàng lắng nghe và tìm phương án hỗ trợ phù hợp, với mong muốn không bỏ lại thành viên nào trên hành trình rèn luyện.</p>
+<p>💬 Bạn cần có tài khoản Zalo để nhận thông báo, trao đổi với BQT và kết nối với thành viên.</p>
+<p>💰 Nhóm có quỹ duy trì hằng tháng cho Zoom và các chi phí vận hành. Phần thưởng không phải tháng nào cũng có; việc khen thưởng phụ thuộc tình hình quỹ.</p>
+</div></details>
+
+<details class="rule" id="kpi"><summary>📖 KPI học tập hằng tuần</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để hạn chế tình trạng nghỉ quá nhiều hoặc bỏ hoạt động dài ngày, đồng thời giúp mỗi thành viên có một mức cam kết tối thiểu rõ ràng.</p></div>
+<h4>🎯 Mục đích</h4><ul><li>Hạn chế xin nghỉ quá nhiều hoặc nghỉ liên tục.</li><li>Duy trì tính kỷ luật, trách nhiệm và cam kết.</li><li>Xây dựng môi trường học tập công bằng, cùng cố gắng.</li></ul>
+<h4>📖 Mức KPI</h4><ul><li>Học tối thiểu <strong>04/07 buổi mỗi tuần</strong>.</li><li>Mỗi buổi học tối thiểu <strong>30 phút</strong>.</li><li>Dưới 30 phút: <strong>vắng không phép</strong>.</li></ul>
+<h4>💰 Xử lý khi không đạt</h4><p>Thiếu mỗi buổi để đạt 04/07: <strong>5.000đ/buổi</strong>.</p><p>Ví dụ: 03/07 → thiếu 1 → 5.000đ; 02/07 → thiếu 2 → 10.000đ; 01/07 → thiếu 3 → 15.000đ.</p>
+<p>Buổi học dưới 30 phút: tính vắng không phép và đóng góp <strong>10.000đ/buổi</strong> theo quy định hiện hành.</p>
+<div class="highlight">🌱 Khoản đóng góp nhằm nhắc về cam kết và đưa vào quỹ hoạt động của nhóm; mục tiêu cuối cùng vẫn là duy trì thói quen học đều và không còn phải đóng khoản này.</div>
+</div></details>
+
+<details class="rule" id="name"><summary>🏷️ Cách đổi tên khi tham gia ca sáng</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để Admin nhận diện đúng thành viên khi điểm danh, tránh nhầm người và quản lý mã số thuận tiện hơn.</p></div>
+<p><strong>Cú pháp:</strong> B[Mã số] - [Họ và tên]</p><p>Ví dụ: <strong>B01 - Nguyễn Văn A</strong> hoặc <strong>B25 - Trần Thị B</strong>.</p>
+<ul><li>Bắt buộc có dấu gạch ngang (-) và khoảng trắng hai bên.</li><li>Viết hoa chữ cái đầu của họ, tên đệm và tên.</li><li>Chỉ áp dụng trong ca sáng; ngoài giờ có thể đổi tên theo nhu cầu.</li></ul>
+</div></details>
+
+<details class="rule" id="attendance"><summary>⏰ Quy trình điểm danh & khung giờ cộng điểm</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để ghi nhận mức độ chuyên cần theo thời gian tham gia, giúp thành viên nhìn thấy rõ việc đi sớm có giá trị hơn trong hệ thống điểm của CLB.</p></div>
+<h4>🕓 Thời gian điểm danh</h4><p><strong>03:00–06:00</strong></p>
+<h4>📸 Cú pháp điểm danh</h4><p><strong>SS + [Số thứ tự bài đăng] - [01 câu nói yêu thích] + Ảnh màn hình Zoom</strong></p><p>Ví dụ: <strong>SS05 - Kỷ luật là sức mạnh!</strong></p>
+<h4>🏆 Khung giờ cộng điểm</h4><div class="tableWrap"><table class="scoreTable">
+<tr><th>Ký hiệu</th><th>Khung giờ</th><th>Điểm</th><th>Ý nghĩa</th></tr>
+<tr><td>🟥 T</td><td>03:00–05:00</td><td><strong>+30</strong></td><td>Mức điểm cao nhất</td></tr>
+<tr><td>🟧 Y</td><td>05:01–05:30</td><td><strong>+20</strong></td><td>Mức trung gian</td></tr>
+<tr><td>🟨 H</td><td>05:31–06:00</td><td><strong>+10</strong></td><td>Mức thấp hơn</td></tr>
+<tr><td>😴 P</td><td>Vắng có phép</td><td>0</td><td>Không cộng điểm</td></tr>
+<tr><td>❌ N</td><td>Vắng không phép</td><td><strong>-10</strong></td><td>Trừ điểm</td></tr>
+</table></div>
+<h4>🔢 Nếu trùng số SS</h4><p>Nếu lỡ trùng số SS với người trước, không cần thu hồi. Chỉ cần nhắn tin mới với số SS tiếp theo.</p>
+</div></details>
+
+<details class="rule" id="photo"><summary>📸 Lưu ý khi chụp ảnh Zoom điểm danh</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để BQT có đủ căn cứ xác nhận bạn thực sự đang học trong phòng Zoom và hạn chế nhầm lẫn khi kiểm tra điểm danh.</p></div>
+<ul><li>Bật <strong>Gallery View/Chế độ nhiều người</strong>.</li><li>Ảnh phải thấy rõ khuôn mặt của bạn và các thành viên khác đang bật camera.</li><li>Camera đủ sáng, không nền ảo, không làm mờ, không dùng bộ lọc che khuất khuôn mặt.</li><li>Luôn bật camera trong thời gian học; không tắt quá 02 phút nếu không có lý do chính đáng.</li></ul>
+<div class="highlight">⚠️ Nếu vi phạm mà không có lý do chính đáng hoặc chưa được BQT xác nhận, bạn có thể bị chuyển vào phòng chờ và buổi học được tính là vắng mặt.</div>
+</div></details>
+
+<details class="rule" id="fees"><summary>💰 Phí duy trì nhóm & cách xử lý vắng không phép</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để duy trì Zoom, vận hành nhóm và tạo nguồn quỹ cho hoạt động chung, đồng thời nhắc mỗi thành viên về cam kết dậy sớm.</p></div>
+<div class="grid2"><div><h4>💻 Phí Zoom hằng tháng</h4><p>🎒 Học sinh: <strong>10.000 VNĐ/tháng</strong></p><p>🎓 Sinh viên: <strong>20.000 VNĐ/tháng</strong></p><p>💼 Người đi làm: <strong>30.000 VNĐ/tháng</strong></p></div>
+<div><h4>⚠️ Vắng không phép</h4><p><strong>10.000đ/buổi</strong> vào quỹ nhóm theo quy định, trừ trường hợp có lý do chính đáng được BQT xem xét.</p></div></div>
+<p>Khoản đóng góp không nhằm mục đích gây áp lực; toàn bộ khoản đóng góp được đưa vào quỹ hoạt động để duy trì Zoom, hoạt động chung và nguồn kinh phí cho chương trình/phần thưởng.</p>
+</div></details>
+
+<details class="rule" id="absence"><summary>📜 Xử lý thành viên vắng không phép nhiều ngày liên tiếp</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để bảo vệ tính kỷ luật chung và tránh việc một thành viên biến mất nhiều ngày mà không phản hồi, ảnh hưởng đến công tác quản lý và tinh thần của nhóm.</p></div>
+<p>Nếu vắng không phép <strong>03 ngày liên tiếp</strong>, thành viên sẽ tạm thời được mời ra khỏi nhóm.</p>
+<p>Nếu muốn quay lại: cần trao đổi và giải thích rõ lý do, cam kết học tập đầy đủ và cố gắng duy trì tính kỷ luật.</p>
+<p>Những quy định này nhằm duy trì môi trường công bằng, nghiêm túc và tích cực, không nhằm gây khó khăn cho thành viên.</p>
+</div></details>
+
+<details class="rule" id="leave"><summary>📌 Xin nghỉ nhưng quay lại tham gia học</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để kết quả điểm danh không bị thay đổi tùy ý sau khi Admin đã ghi nhận trạng thái nghỉ, từ đó đảm bảo công bằng và thống nhất cho mọi người.</p></div>
+<p>Nếu tin nhắn xin nghỉ <strong>chưa được quản lý ghi nhận</strong> (chưa đọc/chưa xác nhận), bạn được phép thu hồi tin nhắn, vào Zoom và điểm danh bình thường; buổi học được tính là có học.</p>
+<p>Nếu tin nhắn xin nghỉ <strong>đã được quản lý ghi nhận</strong>, dù sau đó bạn vào Zoom, điểm danh hay học, buổi đó vẫn được tính là <strong>vắng có phép</strong> và không được thay đổi kết quả.</p>
+<div class="highlight">⚠️ Nhóm không công nhận cách xin nghỉ kèm các chú thích như “nếu xong việc mình sẽ vào học”, “nếu kịp mình sẽ tham gia” rồi yêu cầu đổi kết quả sau đó.</div>
+</div></details>
+
+<details class="rule" id="book"><summary>📚 Tích hợp phòng Zoom cùng CLB Đọc Sách 5H Sáng</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để tạo một không gian buổi sáng đông đủ hơn, tăng năng lượng học tập và giúp thành viên tiếp cận thêm sách, góc nhìn và kinh nghiệm thực tế.</p></div>
+<p>Các nhóm học sử dụng chung phòng Zoom với CLB Đọc Sách 5H Sáng.</p><p>⏰ Khung giờ chia sẻ sách: <strong>05:50–06:30 sáng hằng ngày.</strong></p>
+<p>Trong thời gian chia sẻ, nếu cần tập trung học hoặc không có thời gian theo dõi, bạn có thể tắt âm thanh và tiếp tục học.</p>
+<p>Nếu cần hỗ trợ Zoom, liên hệ trực tiếp người quản lý phòng Zoom của CLB Đọc Sách theo thông tin của nhóm.</p>
+</div></details>
+
+<details class="rule" id="terms"><summary>📑 Giải thích thuật ngữ</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để tất cả thành viên hiểu thống nhất các ký hiệu được dùng trong điểm danh và quản lý thành viên.</p></div>
+<p><strong>SS:</strong> Số Thứ Tự bài đăng trong ngày, đồng thời mang ý nghĩa “Sẵn Sàng” bắt đầu buổi học.</p>
+<p><strong>STT cá nhân:</strong> Mã số cố định do Admin cấp riêng cho mỗi thành viên để phân biệt, quản lý điểm danh, điểm số và thông tin.</p>
+<p><strong>T/Y/H/P/N:</strong> Các trạng thái điểm danh tương ứng với mức điểm theo khung giờ hoặc tình trạng nghỉ.</p>
+</div></details>
+
+<details class="rule" id="message"><summary>💗 Đôi lời nhắn gửi từ Ban Quản trị</summary><div class="ruleContent">
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để thành viên biết rằng nội quy là một hệ thống đang được hoàn thiện cùng cộng đồng, và BQT luôn cần góp ý để điều chỉnh hợp lý hơn.</p></div>
+<p>Vì nhóm vẫn đang trong quá trình hoàn thiện nên chắc chắn khó tránh khỏi thiếu sót. Ban Quản trị rất mong nhận được sự thông cảm, góp ý và đồng hành từ tất cả các bạn.</p>
+<p>Nếu có thắc mắc về nội quy, thấy phần nào chưa hợp lý hoặc có ý tưởng xây dựng CLB, hãy nhắn tin riêng cho BQT. Mọi ý kiến sẽ được lắng nghe, xem xét và ghi nhận.</p>
+<p>💚 Cảm ơn các bạn đã tin tưởng, đồng hành và cùng xây dựng một cộng đồng học tập tích cực, kỷ luật và bền vững.</p>
+</div></details>
+</div></section>
+
+<section id="attendance" class="view"><div class="container section">
+<div class="sectionTitle"><span class="badge">⏰ ĐIỂM DANH</span><h2>Điểm danh & hệ thống điểm</h2><p>Bảng tra cứu nhanh khi bạn cần biết một trạng thái có ý nghĩa gì.</p></div>
+<div class="purpose"><b>💡 Có để làm gì?</b><p>Để bạn có thể nhìn nhanh ký hiệu, khung giờ và số điểm mà không phải tìm lại trong toàn bộ nội quy.</p></div>
+<div class="tableWrap"><table class="scoreTable">
+<tr><th>Ký hiệu</th><th>Khung giờ/trạng thái</th><th>Điểm</th><th>Ghi chú</th></tr>
+<tr><td>🟥 T</td><td>03:00–05:00</td><td><strong>+30</strong></td><td>Cao nhất</td></tr>
+<tr><td>🟧 Y</td><td>05:01–05:30</td><td><strong>+20</strong></td><td>Trung gian</td></tr>
+<tr><td>🟨 H</td><td>05:31–06:00</td><td><strong>+10</strong></td><td>Thấp hơn</td></tr>
+<tr><td>😴 P</td><td>Vắng có phép</td><td>0</td><td>Không cộng</td></tr>
+<tr><td>❌ N</td><td>Vắng không phép</td><td><strong>-10</strong></td><td>Trừ điểm</td></tr>
+</table></div>
+<div class="highlight">🏆 Nếu CLB triển khai đường đua/mốc thưởng, nên ghi rõ: thành viên chỉ nhận phần thưởng khi <strong>đứng đúng tại mốc thưởng</strong>; không mặc định nhận thưởng chỉ vì đã đi ngang qua mốc.</div>
+</div></section>
+
+<section id="faq" class="view"><div class="container section">
+<div class="sectionTitle"><span class="badge">❓ FAQ</span><h2>Câu hỏi thường gặp</h2><p>Nhấn câu hỏi để mở câu trả lời.</p></div><div class="faqs">
+<details class="faq"><summary>CLB 5H Sáng có để làm gì?</summary><p>Để rèn thói quen dậy sớm, duy trì học tập đều đặn, xây dựng tính kỷ luật và đồng hành cùng những người có mục tiêu tương tự.</p></details>
+<details class="faq"><summary>Tại sao phải điểm danh?</summary><p>Điểm danh giúp BQT xác nhận sự tham gia và tạo một cơ chế theo dõi thói quen học tập. Điểm không phải mục tiêu duy nhất; điều quan trọng là sự đều đặn.</p></details>
+<details class="faq"><summary>T/Y/H khác nhau như thế nào?</summary><p>T: 03:00–05:00 +30; Y: 05:01–05:30 +20; H: 05:31–06:00 +10.</p></details>
+<details class="faq"><summary>Xin nghỉ rồi quay lại học có được đổi điểm danh không?</summary><p>Nếu xin nghỉ chưa được Admin ghi nhận thì có thể thu hồi và điểm danh. Nếu đã được ghi nhận thì buổi đó vẫn là vắng có phép.</p></details>
+<details class="faq"><summary>Vắng không phép 3 ngày liên tiếp thì sao?</summary><p>Thành viên sẽ tạm thời được mời ra khỏi nhóm; muốn quay lại cần trao đổi lý do và cam kết duy trì việc học.</p></details>
+<details class="faq"><summary>Phần thưởng có phải tháng nào cũng có?</summary><p>Không. Việc khen thưởng phụ thuộc vào tình hình quỹ của nhóm.</p></details>
+<details class="faq"><summary>Vì sao mỗi quy định lại có phần “Có để làm gì?”</summary><p>Để thành viên hiểu mục đích của quy định, thay vì chỉ nhìn thấy yêu cầu phải làm gì mà không biết quy định đó giải quyết vấn đề nào.</p></details>
+</div></div></section>
+
+<section id="join" class="view"><div class="container section">
+<div class="sectionTitle"><span class="badge">💚 THAM GIA</span><h2>Sẵn sàng bắt đầu hành trình?</h2><p>Nếu CLB phù hợp với mục tiêu hiện tại của bạn, hãy đăng ký.</p></div>
+<div class="card" style="max-width:760px;margin:auto;text-align:center"><div class="icon" style="margin:0 auto 15px">🌅</div>
+<h3>CLB 5H SÁNG</h3><p>Học tập • Kỷ luật • Đồng hành</p>
+<div class="actions"><a class="btn primary" href="https://docs.google.com/forms/d/e/1FAIpQLSfw5l780K05AYFT5gMLaIZBNxBh4728dbpC6RXSQvbzrrIeGw/viewform" target="_blank">📝 Đăng ký tham gia</a>
+<a class="btn secondary" href="https://zalo.me/0983346399" target="_blank">💬 Liên hệ Zalo</a></div>
+<p style="margin-top:20px">Sau khi điền form, hãy nhắn tin trực tiếp qua Zalo để Admin xác nhận và hỗ trợ bạn.</p></div>
+</div></section>
+</main>
+
+<footer class="footer"><div class="container grid">
+<div><h2>🌅 CLB 5H Sáng</h2><p>Học tập • Kỷ luật • Đồng hành.</p></div>
+<div><h3>Đi nhanh</h3><p><a href="#" onclick="showView('home');return false">Trang chủ</a></p><p><a href="#" onclick="showView('rules');return false">Nội quy</a></p><p><a href="#" onclick="showView('faq');return false">FAQ</a></p></div>
+<div><h3>Liên hệ</h3><p><a href="https://zalo.me/0983346399" target="_blank">Zalo Admin</a></p><p><a href="https://docs.google.com/forms/d/e/1FAIpQLSfw5l780K05AYFT5gMLaIZBNxBh4728dbpC6RXSQvbzrrIeGw/viewform" target="_blank">Form đăng ký</a></p></div>
+</div></footer>
+
+<script>
+function showView(id){
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+ const el=document.getElementById(id)||document.getElementById('home'); el.classList.add('active');
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function openDrawer(){document.getElementById('drawer').classList.add('open')}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open')}
+function openRule(id){
+ showView('rules');
+ setTimeout(()=>{const el=document.getElementById(id);if(el){el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'})}},60);
+}
+</script>
+</body></html>
