@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLB 5H SÁNG</title>
+
+<style>
+:root{
+ --red:#d71920;--red2:#ef4444;--light:#fff5f5;--border:#fecaca;
+ --text:#252525;--muted:#6b7280;--green:#15803d;--yellow:#a16207;
+}
+body{background:#fffafa;color:var(--text)}
+.app-section{display:none;min-height:72vh}.app-section.active{display:block}
+.page{max-width:1050px;margin:0 auto;padding:28px 22px 70px}
+.hero-mini{background:linear-gradient(135deg,#fff1f2,#ffffff);border:1px solid var(--border);border-radius:24px;padding:30px;margin-bottom:24px}
+.hero-mini h1{margin:0 0 10px;font-size:34px;color:#991b1b}
+.kicker{color:var(--red);font-weight:900;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+.cardx{background:white;border:1px solid #f1d1d1;border-radius:18px;padding:22px;margin:18px 0;box-shadow:0 8px 24px #7f1d1d0b}
+.cardx h2{margin:0 0 12px;color:#991b1b;font-size:24px}
+.cardx h3{color:#9f1239;margin:18px 0 8px}
+.notice{padding:16px 18px;border-radius:14px;margin:14px 0;background:#fff1f2;border-left:5px solid var(--red)}
+.good{background:#f0fdf4;border-left-color:#22c55e}.money{background:#fffbeb;border-left-color:#f59e0b}
+.warn{background:#fff7ed;border-left-color:#f97316}
+ul{padding-left:24px}li{margin:7px 0}
+strong{color:#991b1b}
+.table{width:100%;border-collapse:collapse;margin:12px 0}.table th,.table td{padding:12px;border:1px solid #f3d1d1;text-align:left}.table th{background:#fff1f2;color:#991b1b}
+.back{display:inline-flex;margin-bottom:18px;padding:9px 13px;border-radius:10px;background:#fee2e2;color:#991b1b;font-weight:800}
+.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.quick a{padding:18px;border:1px solid var(--border);border-radius:16px;background:#fff;color:#991b1b;font-weight:800}
+@media(max-width:700px){.quick{grid-template-columns:1fr}.hero-mini h1{font-size:28px}}
+</style>
+
+<style>
+:root{
+  --red:#b91c1c; --red2:#dc2626; --dark:#171717; --cream:#fffaf7;
+  --green:#166534; --muted:#6b7280; --card:#ffffff; --line:#f0d9d9;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,Arial,sans-serif;color:var(--dark);background:var(--cream);line-height:1.65}
+a{text-decoration:none;color:inherit}
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,250,247,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.navin{max-width:1120px;margin:auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:900;color:var(--red);letter-spacing:.5px}
+.menu{display:flex;gap:20px;font-size:14px;font-weight:700}
+.menu a:hover{color:var(--red)}
+.hero{max-width:1120px;margin:auto;padding:80px 22px 70px;display:grid;grid-template-columns:1.15fr .85fr;gap:45px;align-items:center}
+.badge{display:inline-block;background:#fee2e2;color:#991b1b;border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px}
+h1{font-size:clamp(42px,6vw,72px);line-height:1.02;margin:18px 0}
+h1 span{color:var(--red)}
+.lead{font-size:19px;color:#4b5563;max-width:650px}
+.btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{padding:13px 19px;border-radius:12px;font-weight:900;display:inline-block}
+.primary{background:var(--red);color:white}.secondary{background:white;border:1px solid var(--line)}
+.hero-card{background:linear-gradient(145deg,#991b1b,#dc2626);color:white;border-radius:28px;padding:30px;box-shadow:0 20px 60px #7f1d1d33}
+.clock{font-size:58px;font-weight:950;line-height:1}
+.hero-card small{opacity:.8}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.stat{background:#ffffff18;border:1px solid #ffffff25;padding:16px;border-radius:16px}
+.stat b{font-size:25px;display:block}
+section{padding:72px 22px}
+.wrap{max-width:1120px;margin:auto}
+.section-head{max-width:700px;margin-bottom:35px}
+.kicker{color:var(--red);font-weight:900;text-transform:uppercase;font-size:13px;letter-spacing:1.4px}
+h2{font-size:38px;line-height:1.15;margin:8px 0 12px}
+.muted{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 8px 25px #7f1d1d0a}
+.icon{font-size:30px}.card h3{margin:10px 0 5px}
+.dark{background:#191919;color:white}.dark .muted{color:#d1d5db}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.rule{padding:20px;border-radius:18px;background:#fff;border:1px solid var(--line)}
+.timeline{border-left:3px solid #fecaca;margin-left:10px;padding-left:25px}
+.event{position:relative;background:white;border:1px solid var(--line);border-radius:18px;padding:20px;margin:18px 0}
+.event:before{content:"";position:absolute;width:12px;height:12px;background:var(--red);border-radius:50%;left:-33px;top:27px}
+.cta{background:linear-gradient(135deg,#166534,#15803d);color:white;border-radius:28px;padding:40px}
+footer{padding:35px 22px;background:#111;color:#d1d5db;text-align:center}
+@media(max-width:800px){
+ .hero{grid-template-columns:1fr;padding-top:55px}.menu{display:none}
+ .cards,.rules{grid-template-columns:1fr} section{padding:55px 18px}
+ .hero{padding-left:18px;padding-right:18px}
+}
+
+.app-section{display:none;min-height:70vh}
+.app-section.active{display:block}
+#home{display:block}
+.page-shell{min-height:72vh}
+.page-top{max-width:1120px;margin:0 auto;padding:28px 22px 0}
+.back{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:10px;background:#fee2e2;color:#991b1b;font-weight:800;font-size:14px}
+.menu a.active{color:#b91c1c}
+@media(max-width:800px){.menu{display:none}}
+</style>
+</head>
+<body>
+<nav class="nav">
+ <div class="navin">
+  <div class="logo">🌅 CLB 5H SÁNG</div>
+  <div class="menu">
+   <a href="#rules">Về CLB</a><a href="#how">Hoạt động</a><a href="#rules">Nội quy</a>
+   <a href="#events">Event</a><a href="#join">Tham gia</a>
+  </div>
+ </div>
+</nav>
+
+<section id="home" class="app-section active">
+<div class="page">
+<div class="hero-mini">
+<div class="kicker">🌅 Câu lạc bộ học tập</div>
+<h1>CLB 5H SÁNG</h1>
+<p><strong>Cùng nhau dậy sớm • Cùng nhau học tập • Cùng nhau giữ kỷ luật</strong></p>
+<p>Chọn nội dung bên dưới để xem. Mỗi mục được tách riêng để thành viên mới dễ đọc và không phải kéo một trang nội quy quá dài.</p>
+</div>
+<div class="quick">
+<a href="#rules">⚠️ Trước khi tham gia & Nội quy</a>
+<a href="#attendance">⏰ Điểm danh & khung giờ</a>
+<a href="#zoom">📹 Tham gia Zoom</a>
+<a href="#money">💰 Phí duy trì & khoản đóng góp</a>
+<a href="#special">📌 Các trường hợp đặc biệt</a>
+<a href="#book">📚 CLB Đọc Sách</a>
+<a href="#terms">📑 Giải thích thuật ngữ</a>
+<a href="#join">📝 Đăng ký tham gia</a>
+</div>
+</div>
+</section>
+
+
+<section id="rules" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>Trước khi tham gia & Nội quy</h1><p>Những điều thành viên cần biết trước khi chính thức đồng hành.</p></div>
+
+<div class="cardx">
+<h2>🌱 Trước khi quyết định tham gia</h2>
+<p><strong>Hãy xác định rõ mục tiêu của bản thân.</strong></p>
+<p>CLB được xây dựng dành cho những bạn thật sự mong muốn rèn luyện thói quen dậy sớm, học tập đều đặn và xây dựng tính kỷ luật mỗi ngày.</p>
+<div class="notice good">Khi tham gia nhóm, bạn tự nguyện cam kết với chính mình cố gắng duy trì việc dậy sớm, tham gia học và điểm danh đầy đủ theo nội quy.</div>
+</div>
+<div class="cardx">
+<h2>📖 KPI học tập hằng tuần</h2>
+<ul><li><strong>Học tối thiểu 04/07 buổi mỗi tuần.</strong></li><li><strong>Mỗi buổi học tối thiểu 30 phút.</strong></li><li>Thời gian học dưới 30 phút sẽ được tính là <strong>VẮNG KHÔNG PHÉP</strong>.</li></ul>
+<h3>💰 Xử lý khi không đạt KPI</h3>
+<p>Mỗi buổi còn thiếu để đạt 04 buổi/tuần sẽ đóng <strong>5.000đ</strong> vào quỹ nhóm.</p>
+<p>Ví dụ: 03/07 buổi → thiếu 01 → <strong>5.000đ</strong>; 02/07 → <strong>10.000đ</strong>; 01/07 → <strong>15.000đ</strong>.</p>
+</div>
+<div class="cardx">
+<h2>🏷️ Cách đổi tên khi tham gia ca sáng</h2>
+<p><strong>B[Mã số] - [Họ và tên]</strong></p>
+<p>Ví dụ: <strong>B01 - Nguyễn Văn A</strong></p>
+<p>Bắt buộc có dấu gạch ngang và khoảng trắng hai bên. Viết hoa chữ cái đầu của họ, tên đệm và tên.</p>
+</div>
+
+</div>
+</section>
+<section id="attendance" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>Điểm danh</h1><p>Cách điểm danh, cú pháp gửi ảnh và khung giờ cộng điểm.</p></div>
+
+<div class="cardx">
+<h2>⏰ Quy trình điểm danh</h2>
+<p><strong>Cú pháp:</strong> SS + [Số thứ tự bài đăng] - [01 câu nói yêu thích] + Ảnh màn hình Zoom</p>
+<div class="notice"><strong>Ví dụ:</strong> SS05 - Kỷ luật là sức mạnh!</div>
+<h3>🏆 Khung giờ cộng điểm</h3>
+<table class="table"><tr><th>Khung giờ</th><th>Điểm</th><th>Ký hiệu</th></tr>
+<tr><td>03:00 – 05:00</td><td><strong>+30</strong></td><td>T</td></tr>
+<tr><td>05:01 – 05:30</td><td><strong>+20</strong></td><td>Y</td></tr>
+<tr><td>05:31 – 06:00</td><td><strong>+10</strong></td><td>H</td></tr>
+<tr><td>Vắng có phép</td><td>0</td><td>P</td></tr>
+<tr><td>Vắng không phép</td><td><strong>-10</strong></td><td>N</td></tr></table>
+</div>
+<div class="cardx">
+<h2>📸 Ảnh điểm danh</h2>
+<ul><li>Bật <strong>Gallery View</strong>.</li><li>Ảnh phải thấy rõ khuôn mặt của bạn và các thành viên đang bật camera.</li><li>Không nền ảo, không làm mờ, không bộ lọc che khuất khuôn mặt.</li></ul>
+</div>
+
+</div>
+</section>
+<section id="zoom" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>Tham gia Zoom</h1><p>Các yêu cầu về camera và hình ảnh trong suốt buổi học.</p></div>
+
+<div class="cardx">
+<h2>📹 Khi tham gia Zoom</h2>
+<ul><li><strong>Luôn bật camera</strong> trong thời gian học.</li><li>Camera phải thấy rõ khuôn mặt và đủ ánh sáng.</li><li><strong>Không sử dụng nền ảo, làm mờ camera hoặc bộ lọc</strong> che khuất khuôn mặt.</li><li>Không tắt camera quá <strong>02 phút</strong> hoặc treo máy trong thời gian dài.</li></ul>
+<div class="notice warn">Nếu vi phạm mà không có lý do chính đáng hoặc chưa được BQT xác nhận, bạn có thể bị chuyển vào phòng chờ và buổi học hôm đó được tính là vắng.</div>
+</div>
+
+</div>
+</section>
+<section id="money" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>Phí duy trì & khoản đóng góp</h1><p>Thông tin về quỹ duy trì và cách xử lý vắng không phép.</p></div>
+
+<div class="cardx">
+<h2>💻 Phí duy trì nhóm</h2>
+<table class="table"><tr><th>Đối tượng</th><th>Mức phí/tháng</th></tr>
+<tr><td>🎒 Học sinh</td><td><strong>10.000 VNĐ</strong></td></tr>
+<tr><td>🎓 Sinh viên</td><td><strong>20.000 VNĐ</strong></td></tr>
+<tr><td>💼 Người đi làm</td><td><strong>30.000 VNĐ</strong></td></tr></table>
+</div>
+<div class="cardx">
+<h2>⚠️ Thành viên vắng không phép</h2>
+<p>Vắng không phép sẽ <strong>đóng góp 10.000đ/buổi</strong> vào quỹ nhóm.</p>
+<div class="notice good"><strong>Khoản đóng góp này không nhằm mục đích xử phạt.</strong> Đây là lời nhắc về cam kết dậy sớm mà bạn đã tự nguyện lựa chọn khi tham gia nhóm.</div>
+<p>Nếu hôm nay bạn chưa thể dậy sớm, hãy xem đây là lời nhắc: <strong>“Ngày mai mình hãy cố gắng hơn một chút.”</strong></p>
+<p><strong>Điều nhóm mong muốn nhất</strong> là mỗi thành viên duy trì được thói quen dậy sớm và không còn cần phải đóng khoản này.</p>
+<p>Toàn bộ khoản đóng góp được đưa vào quỹ để duy trì Zoom và phục vụ hoạt động chung của nhóm.</p>
+</div>
+
+</div>
+</section>
+<section id="special" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>Các trường hợp đặc biệt</h1><p>Quy định khi vắng nhiều ngày hoặc xin nghỉ rồi quay lại.</p></div>
+
+<div class="cardx">
+<h2>📜 Vắng không phép nhiều ngày liên tiếp</h2>
+<p>Nếu vắng không phép <strong>03 ngày liên tiếp</strong>, bạn sẽ tạm thời được mời ra khỏi nhóm theo quy định.</p>
+<ul><li>Trao đổi và giải thích rõ lý do với quản lý.</li><li><strong>Cam kết</strong> học tập đầy đủ và duy trì tính kỷ luật.</li><li>Nếu không thể tham gia, hãy xin nghỉ đúng quy định.</li></ul>
+</div>
+<div class="cardx">
+<h2>📌 Xin nghỉ nhưng quay lại học</h2>
+<p>Nếu tin nhắn xin nghỉ <strong>chưa được quản lý ghi nhận</strong>, bạn có thể thu hồi, vào Zoom và điểm danh bình thường.</p>
+<p>Nếu tin nhắn đã <strong>được quản lý ghi nhận</strong>, buổi học vẫn tính là <strong>vắng có phép</strong>, dù sau đó bạn vào Zoom.</p>
+</div>
+
+</div>
+</section>
+<section id="book" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>CLB Đọc Sách</h1><p>Thông tin về phòng Zoom dùng chung với CLB Đọc Sách 5H Sáng.</p></div>
+
+<div class="cardx">
+<h2>📚 Tích hợp phòng Zoom cùng CLB Đọc Sách 5H Sáng</h2>
+<p>Các nhóm học sử dụng chung phòng Zoom nhằm tạo không gian học tập đông đủ và có thêm động lực dậy sớm.</p>
+<p><strong>⏰ Khung giờ chia sẻ sách: 05:50 – 06:30 sáng hằng ngày.</strong></p>
+<p>Thành viên có thể chia sẻ sách, bài học, kinh nghiệm và cách áp dụng vào học tập, công việc và cuộc sống.</p>
+<div class="notice">Nếu cần tập trung học, bạn có thể tắt âm thanh. Nếu gặp khó khăn với Zoom, liên hệ trực tiếp người quản lý phòng Zoom.</div>
+</div>
+
+</div>
+</section>
+<section id="terms" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>Thuật ngữ & lời nhắn BQT</h1><p>Các ký hiệu cần biết và thông điệp từ Ban Quản trị.</p></div>
+
+<div class="cardx">
+<h2>📑 Giải thích thuật ngữ</h2>
+<h3>🔖 SS</h3><p><strong>SS</strong> là viết tắt của “Số Thứ Tự” bài đăng trong ngày, đồng thời mang ý nghĩa “Sẵn Sàng” bắt đầu buổi học.</p>
+<h3>🆔 STT cá nhân</h3><p>Mã số cố định do Admin cấp để phân biệt, quản lý điểm danh, điểm số và thông tin của từng thành viên.</p>
+</div>
+<div class="cardx">
+<h2>💗 Đôi lời từ BQT</h2>
+<p>Nhóm vẫn đang trong quá trình hoàn thiện nên chắc chắn sẽ khó tránh khỏi thiếu sót. BQT rất mong nhận được sự thông cảm, góp ý và đồng hành từ tất cả các bạn.</p>
+<p>Nếu có thắc mắc về nội quy hoặc ý tưởng xây dựng CLB, hãy nhắn tin riêng cho BQT.</p>
+</div>
+
+</div>
+</section>
+<section id="join" class="app-section">
+<div class="page">
+<a class="back" href="#home">← Trang chủ</a>
+<div class="hero-mini"><div class="kicker">CLB 5H SÁNG</div><h1>Đăng ký tham gia</h1><p>Biểu mẫu đăng ký và cách liên hệ Admin.</p></div>
+
+<div class="cardx">
+<h2>📝 Đăng ký tham gia</h2>
+<p>Nếu CLB 5H Sáng phù hợp với mục tiêu hiện tại của bạn, rất mong được đồng hành cùng bạn.</p>
+<a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfw5l780K05AYFT5gMLaIZBNxBh4728dbpC6RXSQvbzrrIeGw/viewform" target="_blank">📝 Mở biểu mẫu đăng ký</a>
+<a class="btn" href="https://zalo.me/0983346399" target="_blank">💬 Liên hệ Admin qua Zalo</a>
+<div class="notice good"><strong>Sau khi điền biểu mẫu, hãy nhắn tin trực tiếp cho Admin</strong> để thông báo đã hoàn tất đăng ký.</div>
+</div>
+
+</div>
+</section>
+
+<script>
+(function(){
+ const ids=["home","rules","attendance","zoom","money","special","book","terms","join"];
+ function show(id,write=true){
+   if(!ids.includes(id))id="home";
+   document.querySelectorAll(".app-section").forEach(x=>x.classList.remove("active"));
+   document.getElementById(id).classList.add("active");
+   if(write) history.pushState({}, "", "#"+id);
+   window.scrollTo(0,0);
+ }
+ document.addEventListener("click",e=>{
+   const a=e.target.closest('a[href^="#"]'); if(!a)return;
+   const id=a.getAttribute("href").slice(1);
+   if(ids.includes(id)){e.preventDefault();show(id);}
+ });
+ window.addEventListener("popstate",()=>show(location.hash.slice(1)||"home",false));
+ show(location.hash.slice(1)||"home",false);
+})();
+</script>
+
+</body>
+</html>
