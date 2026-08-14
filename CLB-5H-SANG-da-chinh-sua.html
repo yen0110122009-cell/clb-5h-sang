@@ -1,0 +1,859 @@
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLB 5H SÁNG 🌅☘️ - Cùng Nhau Dậy Sớm, Cùng Nhau Tiến Bộ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #E63946;
+            --primary-red-hover: #C52838;
+            --clover-green: #27A745;
+            --clover-green-light: #E8F5E9;
+            --clover-green-hover: #1E8E3E;
+            --bg-light: #F8F9FA;
+            --text-dark: #212529;
+            --text-muted: #6C757D;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --border-radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Lexend', sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
+
+        header {
+            background: #FFFFFF; position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom: 3px solid var(--primary-red);
+        }
+
+        .header-container {
+            max-width: 1200px; margin: 0 auto; display: flex;
+            justify-content: space-between; align-items: center; padding: 12px 20px;
+        }
+
+        .logo { font-weight: 700; font-size: 1.2rem; color: var(--primary-red); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .logo span { color: var(--clover-green); }
+
+        .nav-menu { display: flex; gap: 4px; list-style: none; flex-wrap: wrap; }
+        .nav-link {
+            padding: 7px 10px; text-decoration: none; color: var(--text-dark);
+            font-size: 0.85rem; font-weight: 500; border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .nav-link:hover, .nav-link.active { background-color: #FFEAEB; color: var(--primary-red); }
+        .btn-register-nav { background-color: var(--clover-green) !important; color: #FFFFFF !important; font-weight: 600; }
+
+        .mobile-toggle { display: none; font-size: 1.5rem; background: none; border: none; cursor: pointer; color: var(--primary-red); }
+
+        .container { max-width: 1000px; margin: 25px auto; padding: 0 15px; }
+        .page-section { display: none; animation: fadeIn 0.25s ease-in-out; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: #FFFFFF; border-radius: var(--border-radius); padding: 22px; margin-bottom: 20px; box-shadow: var(--card-shadow); border-left: 5px solid var(--primary-red); }
+        .card.clover-border { border-left-color: var(--clover-green); }
+
+        h1 { font-size: 1.7rem; color: var(--primary-red); margin-bottom: 14px; text-align: center; }
+        h2 { font-size: 1.3rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--primary-red); }
+        .clover-border h2 { color: var(--clover-green); }
+        h3 { font-size: 1.05rem; margin-bottom: 8px; font-weight: 600; }
+
+        .badge-green { background-color: var(--clover-green-light); color: var(--clover-green); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .badge-red { background-color: #FFEAEB; color: var(--primary-red); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; font-size: 0.92rem; transition: 0.2s; }
+        .btn-primary { background: var(--primary-red); color: white; }
+        .btn-primary:hover { background: var(--primary-red-hover); }
+        .btn-success { background: var(--clover-green); color: white; }
+        .btn-success:hover { background: var(--clover-green-hover); }
+        .btn-secondary { background: #6C757D; color: white; }
+        .btn-block { width: 100%; }
+
+        .hero { background: linear-gradient(135deg, #FFF0F0 0%, #E8F5E9 100%); padding: 32px 20px; border-radius: var(--border-radius); text-align: center; margin-bottom: 20px; border: 1px solid #FFD6D6; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+        .feature-box { background: #FFFFFF; padding: 16px; border-radius: var(--border-radius); box-shadow: var(--card-shadow); text-align: center; border-top: 3px solid var(--clover-green); }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #EEEEEE; font-size: 0.9rem; }
+        th { background-color: #F8F9FA; color: var(--primary-red); font-weight: 600; }
+
+        .faq-item { border: 1px solid #E9ECEF; border-radius: 8px; margin-bottom: 10px; background: #FFF; }
+        .faq-question { padding: 12px 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-dark); }
+        .faq-answer { padding: 0 16px; max-height: 0; overflow: hidden; transition: all 0.3s ease; background: #FAFAFA; font-size: 0.92rem; }
+        .faq-item.active .faq-answer { padding: 12px 16px; max-height: 500px; border-top: 1px solid #EEE; }
+
+        .notice-box {
+            background-color: #FFF5F5;
+            border-left: 4px solid var(--primary-red);
+            padding: 14px;
+            margin-top: 12px;
+            border-radius: 6px;
+            font-size: 0.92rem;
+        }
+
+        .clover-box {
+            background-color: #F0FDF4;
+            border-left: 4px solid var(--clover-green);
+            padding: 14px;
+            margin-top: 12px;
+            border-radius: 6px;
+            font-size: 0.92rem;
+        }
+
+        .webcam-highlight-box {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FEF2F2 100%);
+            border: 3px solid var(--primary-red);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 18px 0;
+            box-shadow: 0 6px 15px rgba(230, 57, 70, 0.15);
+        }
+
+        .webcam-highlight-title {
+            color: var(--primary-red);
+            font-size: 1.2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .webcam-reason-item {
+            background: #FFFFFF;
+            border-left: 4px solid var(--clover-green);
+            padding: 12px 16px;
+            margin-top: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            font-size: 0.95rem;
+        }
+
+        .letter-box { background: #FFFDF0; border: 2px dashed #F3D250; border-radius: var(--border-radius); padding: 20px; margin-top: 15px; }
+
+        .bqt-card {
+            background: #F9FBF9;
+            border: 1px solid #D1E7DD;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #backToTop {
+            display: none; position: fixed; bottom: 20px; right: 20px;
+            background: var(--primary-red); color: white; border: none;
+            border-radius: 50%; width: 45px; height: 45px; font-size: 1.2rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 999;
+        }
+
+        @media (max-width: 900px) {
+            .mobile-toggle { display: block; }
+            .nav-menu { display: none; width: 100%; flex-direction: column; margin-top: 10px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #EEE; }
+            .nav-menu.show { display: flex; }
+            .header-container { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <a href="#" class="logo" onclick="showPage('trang-chu')">🌅 CLB 5H SÁNG <span>☘️</span></a>
+            <button class="mobile-toggle" onclick="toggleMenu()">☰</button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a class="nav-link active" onclick="showPage('trang-chu')">🏠 Trang Chủ</a></li>
+                <li><a class="nav-link" onclick="showPage('thanh-vien-moi-chu-y')">⚠️ Thành Viên Mới Chú Ý</a></li>
+                <li><a class="nav-link" onclick="showPage('noi-quy-kpi')">📖 Nội Quy & KPI</a></li>
+                <li><a class="nav-link" onclick="showPage('zoom-ca-sang')">📹 Quy Định Đổi Tên & Bật Cam</a></li>
+                <li><a class="nav-link" onclick="showPage('diem-danh-phep')">⏰ Điểm Danh & Nghỉ</a></li>
+                <li><a class="nav-link" onclick="showPage('quy-phi')">💰 Phí & Vắng Không Phép</a></li>
+                <li><a class="nav-link" onclick="showPage('clb-doc-sach-event')">📚 Đọc Sách & Sự Kiện</a></li>
+                <li><a class="nav-link" onclick="showPage('bang-diem')">📊 Bảng Điểm Danh</a></li>
+                <li><a class="nav-link" onclick="showPage('quy-tac-quyen')">🤝 Quy Tắc & Quyền</a></li>
+                <li><a class="nav-link" onclick="showPage('faq-bqt')">❓ Hỏi Đáp & Ban Quản Trị</a></li>
+                <li><a class="nav-link btn-register-nav" onclick="showPage('dang-ky')">📝 Đăng Ký ☘️</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. TRANG CHỦ -->
+        <section id="trang-chu" class="page-section active">
+            <div class="hero">
+                <h1>🌅 CLB 5H SÁNG – CÙNG NHAU DẬY SỚM, CÙNG NHAU TIẾN BỘ ☘️</h1>
+                <p style="font-size: 1.05rem; max-width: 800px; margin: 0 auto;">Một môi trường dành cho những người muốn rèn luyện thói quen dậy sớm, duy trì việc học và xây dựng tính kỷ luật mỗi ngày.</p>
+                
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px;">
+                    <button class="btn btn-primary" onclick="showPage('dang-ky')">📝 Đăng Ký Tham Gia Ngay ☘️</button>
+                    <button class="btn btn-success" onclick="showPage('thanh-vien-moi-chu-y')">⚠️ Thành Viên Mới Chú Ý</button>
+                    <button class="btn btn-secondary" onclick="showPage('bang-diem')">📊 Xem Bảng Điểm Danh</button>
+                </div>
+            </div>
+
+            <div class="card clover-border">
+                <h2>🌱 CLB 5H SÁNG LÀ GÌ? ☘️</h2>
+                <p>CLB 5H Sáng là một cộng đồng học tập tự giác được xây dựng dành cho những bạn muốn:</p>
+                <div class="grid-3" style="margin-top: 12px;">
+                    <div class="feature-box">⏰ <strong>Dậy Sớm</strong><br><span style="font-size:0.88rem;">Rèn luyện thói quen thức dậy từ 5:00 sáng mỗi ngày.</span></div>
+                    <div class="feature-box">📚 <strong>Duy Trì Việc Học</strong><br><span style="font-size:0.88rem;">Tạo không gian yên tĩnh tập trung học tập đều đặn.</span></div>
+                    <div class="feature-box">🔥 <strong>Tăng Kỷ Luật</strong><br><span style="font-size:0.88rem;">Tự giác thực hiện cam kết với bản thân.</span></div>
+                    <div class="feature-box">🤝 <strong>Đồng Hành</strong><br><span style="font-size:0.88rem;">Cùng những người bạn tích cực truyền năng lượng.</span></div>
+                    <div class="feature-box">🌱 <strong>Phát Triển</strong><br><span style="font-size:0.88rem;">Mỗi ngày tốt hơn 1% so với ngày hôm qua.</span></div>
+                </div>
+                <div class="clover-box" style="margin-top: 15px;">
+                    💚 <strong>Thông điệp từ CLB ☘️:</strong> CLB không hướng đến việc tạo ra một môi trường hoàn hảo và không yêu cầu bạn phải là người giỏi nhất. Điều quan trọng hơn hết là bạn có sẵn sàng cố gắng và giữ lời hứa với chính mình hay không.
+                </div>
+            </div>
+
+            <div class="card clover-border">
+                <h2>👥 AI NÊN THAM GIA CLB?</h2>
+                <div class="grid-2">
+                    <div>
+                        <h3 style="color:var(--clover-green);">✅ Phù hợp nếu bạn:</h3>
+                        <ul style="padding-left:18px; font-size:0.92rem; line-height:1.8;">
+                            <li>Muốn tập thói quen dậy sớm và giữ guồng học tập.</li>
+                            <li>Muốn có môi trường học tập cùng người khác để bớt cô đơn.</li>
+                            <li>Có khả năng tuân thủ các quy định cơ bản của nhóm.</li>
+                            <li>Sẵn sàng chịu trách nhiệm với cam kết của bản thân.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color:var(--primary-red);">⚠️ Không phù hợp nếu bạn:</h3>
+                        <p style="font-size:0.92rem; font-style:italic; margin-bottom:6px; color:var(--text-muted);">Điều đó hoàn toàn bình thường, mỗi người có một lựa chọn riêng!</p>
+                        <ul style="padding-left:18px; font-size:0.92rem; line-height:1.8;">
+                            <li>Không có nhu cầu dậy sớm hoặc học tập đều đặn.</li>
+                            <li>Không muốn tuân thủ quy định chung và không chấp nhận tính kỷ luật.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. THÀNH VIÊN MỚI CHÚ Ý -->
+        <section id="thanh-vien-moi-chu-y" class="page-section">
+            <div class="hero">
+                <h1>⚠️ THÀNH VIÊN MỚI CHỈ CẦN ĐỌC MỤC NÀY 🌅☘️</h1>
+                <p style="font-size:1.02rem; max-width:820px; margin:0 auto;">Bạn chỉ cần đọc mục này để nắm nhanh mục tiêu, nội quy và cách hoạt động của CLB 5H Sáng trước khi tham gia.</p>
+            </div>
+
+            <div class="card clover-border">
+                <h2>🌱 CLB 5H SÁNG HOẠT ĐỘNG NHƯ THẾ NÀO?</h2>
+                <p>CLB 5H Sáng là cộng đồng cùng nhau rèn luyện thói quen dậy sớm, học tập hoặc làm việc tập trung và xây dựng tính kỷ luật mỗi ngày. Thành viên không cần hoàn hảo hay luôn đạt kết quả cao; điều quan trọng là nghiêm túc với mục tiêu đã chọn, chủ động tham gia và tôn trọng cam kết của bản thân.</p>
+                <p style="margin-top:10px;">Mỗi ngày, ngay khi vào phòng Zoom trong khung điểm danh <strong>03:00–06:00 sáng</strong>, thành viên cần bật camera, chụp ảnh màn hình phòng học và gửi ảnh điểm danh lên nhóm Zalo ngay theo đúng cú pháp. Sau đó, thành viên tiếp tục học hoặc làm việc tập trung. Ban Quản trị tổng hợp dữ liệu để theo dõi quá trình duy trì thói quen và điểm chuyên cần.</p>
+                <div class="clover-box" style="margin-top:14px;">💚 <strong>Tinh thần chung:</strong> Cùng nhau dậy sớm, cùng nhau học tập, cùng nhau giữ kỷ luật và cùng nhau tiến bộ — không bỏ lại người đang thật sự muốn cố gắng.</div>
+            </div>
+
+            <div class="card">
+                <h2>📖 PHẦN 1 — NỘI QUY VÀ CÁCH HOẠT ĐỘNG</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>Nội dung</th><th>Quy định cần nhớ</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Tham gia học</strong></td><td>Mỗi tuần học tối thiểu <strong>04/07 buổi</strong>, mỗi buổi tối thiểu <strong>30 phút</strong>.</td></tr>
+                            <tr><td><strong>Khung điểm danh</strong></td><td>Điểm danh trong khoảng <strong>03:00–06:00 sáng</strong>. Vào càng sớm, điểm chuyên cần càng cao theo bảng điểm của CLB.</td></tr>
+                            <tr><td><strong>Đổi tên trong phòng</strong></td><td>Dùng cú pháp <code>B[Mã số] - [Họ và tên]</code>, ví dụ: <code>B01 - Nguyễn Văn A</code>.</td></tr>
+                            <tr><td><strong>Camera</strong></td><td><strong>Bật camera 100% trong suốt thời gian học.</strong> Không sử dụng nền ảo; được phép bật <strong>Làm mờ nền/Blur</strong>. Phải quay camera rõ mặt trong suốt buổi học.</td></tr>
+                            <tr><td><strong>Nền phía sau</strong></td><td><strong>Không sử dụng hình nền ảo hoặc video nền ảo.</strong> Được bật <strong>Làm mờ nền/Blur</strong> để bảo vệ không gian riêng tư, miễn là khuôn mặt vẫn rõ.</td></tr>
+                            <tr><td><strong>Rời camera</strong></td><td>Nếu cần rời camera, thời gian rời không được quá <strong>09 phút</strong>. Sau đó cần bật camera trở lại và tiếp tục học.</td></tr>
+                            <tr><td><strong>Cách điểm danh và cú pháp điểm danh</strong></td><td><code>SS + [Số thứ tự bài đăng] - [01 câu nói yêu thích] + Ảnh màn hình học</code>.</td></tr>
+                            <tr><td><strong>Xin nghỉ</strong></td><td>Nhắn xin nghỉ trước <strong>23:59 ngày hôm trước</strong>. Nếu có việc đột xuất, báo Ban Quản trị ngay khi có thể.</td></tr>
+                            <tr><td><strong>Tài khoản liên lạc</strong></td><td>Cần có tài khoản Zalo hoạt động để nhận thông báo, gửi điểm danh và nhận hỗ trợ.</td></tr>
+                            <tr><td><strong>Phí duy trì</strong></td><td>Học sinh: <strong>10.000đ/tháng</strong>; sinh viên: <strong>20.000đ/tháng</strong>; người đi làm: <strong>30.000đ/tháng</strong>. Nếu gặp khó khăn, thành viên có thể chủ động xin hỗ trợ từ Admin trong nhóm.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="webcam-highlight-box">
+                <div class="webcam-highlight-title">🚨 QUY ĐỊNH BẮT BUỘC: BẬT CAM 100% 📹</div>
+                <p style="font-weight:600; color:#444;">Trong toàn bộ thời gian học, thành viên phải bật camera liên tục. Không dùng hình nền ảo dạng ảnh/video và không dùng bộ lọc che mặt hoặc làm biến dạng khuôn mặt.</p>
+                <div class="webcam-reason-item">✅ <strong>Được phép:</strong> Dùng nền thật hoặc bật <strong>Làm mờ nền/Blur</strong> nếu muốn bảo vệ không gian riêng tư.</div>
+                <div class="webcam-reason-item">❌ <strong>Không được phép:</strong> Dùng hình nền ảo, rời camera quá <strong>09 phút</strong>, hướng camera lên trần nhà hoặc để màn hình quá tối khiến không thể xác minh rõ khuôn mặt.</div>
+                <div class="webcam-reason-item">💡 <strong>Lý do:</strong> Camera giúp xác nhận đúng thành viên đang học, hạn chế treo máy, tạo động lực tích cực và bảo đảm sự công bằng trong điểm danh.</div>
+                <div class="notice-box" style="margin-top:12px;">⚠️ Nếu vi phạm mà không báo trước hoặc không có lý do chính đáng, thành viên có thể bị chuyển vào phòng chờ và buổi học được tính là <strong>vắng mặt/không hợp lệ</strong>.</div>
+            </div>
+
+            <div class="card clover-border">
+                <h2>📌 ĐIỂM DANH, KPI VÀ CÁC TRƯỜNG HỢP VẮNG</h2>
+                <p>Khi tham gia ca sáng, thành viên cần đổi tên đúng cú pháp, bật camera, học tối thiểu 30 phút và gửi ảnh điểm danh đúng quy định. Nếu ghi sai hoặc bị trùng số thứ tự, không cần thu hồi tin nhắn; hãy trả lời lại tin nhắn có STT sai và ghi rõ STT đúng.</p>
+                <ul style="padding-left:20px; line-height:1.9; font-size:.93rem; margin-top:10px;">
+                    <li>Không đạt KPI 04 buổi/tuần: mỗi buổi còn thiếu đóng <strong>5.000đ</strong> vào quỹ.</li>
+                    <li>Học dưới 30 phút: tính là <strong>vắng không phép</strong>, trừ <strong>10 điểm</strong> và đóng <strong>10.000đ</strong>, trừ trường hợp được xem xét.</li>
+                    <li>Vắng không phép 03 ngày liên tiếp: có thể bị mời tạm thời ra khỏi nhóm; muốn quay lại cần trao đổi rõ lý do và cam kết thực hiện nghiêm túc.</li>
+                    <li>Nếu xin nghỉ, hãy báo đúng hạn. Nếu gặp việc đột xuất, cần nhắn cho Quản lý ngay khi có thể.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>💡 PHẦN 2 — GIẢI THÍCH LÝ DO CÁC QUY ĐỊNH</h2>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">Vì sao phải bật camera 100%? <span>+</span></div>
+                    <div class="faq-answer">Camera giúp Ban Quản trị xác nhận đúng thành viên đang tham gia, hạn chế treo máy và giúp mọi người có thêm động lực tập trung. Đây là cách bảo đảm sự minh bạch, không nhằm kiểm soát đời tư. Thành viên được dùng Làm mờ nền/Blur nếu cần bảo vệ không gian riêng tư.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">Vì sao không được dùng hình nền ảo hoặc bộ lọc che mặt? <span>+</span></div>
+                    <div class="faq-answer">Hình nền ảo và bộ lọc che mặt khiến việc xác minh, điểm danh và chụp ảnh màn hình không chính xác. Vì vậy, CLB chỉ chấp nhận nền thật hoặc Làm mờ nền/Blur, với điều kiện khuôn mặt vẫn đủ sáng và nhìn rõ.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">Vì sao cần KPI, điểm danh và khoản đóng góp? <span>+</span></div>
+                    <div class="faq-answer">KPI giúp duy trì nhịp học tối thiểu, điểm danh giúp theo dõi tiến độ, còn khoản đóng góp được dùng cho phòng học trực tuyến, công cụ vận hành, hoạt động chung và phần thưởng khi quỹ cho phép. Mục đích chính là duy trì môi trường học tập, không phải gây áp lực hay xử phạt.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">Thành viên mới cần đọc thêm mục nào? <span>+</span></div>
+                    <div class="faq-answer">Chỉ cần đọc mục này để hiểu nhanh. Khi cần tra cứu chi tiết, bạn có thể mở thêm các mục Nội quy & KPI, Quy định đổi tên & bật cam, Điểm danh & nghỉ, Phí & vắng không phép và Quy tắc & quyền.</div>
+                </div>
+            </div>
+
+            <div class="card clover-border">
+                <h2>📨 MẪU TIN NHẮN TUYỂN THÀNH VIÊN</h2>
+                <div class="letter-box">
+                    <p style="margin-top:10px;">Nếu bạn thấy phù hợp và muốn tham gia nhóm, bạn chỉ cần điền thông tin vào link đăng ký bên dưới nhé:</p>
+                    <p style="margin-top:10px; text-align:center;"><a href="https://docs.google.com/forms/d/e/1FAIpQLSfw5l780K05AYFT5gMLaIZBNxBh4728dbpC6RXSQvbzrrIeGw/viewform" target="_blank" class="btn btn-success">📝 MỞ LINK ĐĂNG KÝ ☘️</a></p>
+                    <p style="margin-top:10px;">Sau khi điền biểu mẫu, bạn hãy bấm vào mục <strong>“❓ Hỏi Đáp & Ban Quản Trị”</strong>, sau đó nhấn vào Zalo của bạn <strong>Bùi Hải Yến</strong> để được hỗ trợ nhanh nhất nhé!</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>✅ TÓM TẮT MỘT CÂU</h2>
+                <div class="clover-box" style="font-size:1rem;">Tham gia CLB nghĩa là cùng nhau dậy sớm, học tập nghiêm túc, <strong>bật camera đầy đủ</strong>, điểm danh trung thực, báo nghỉ đúng quy định và hỗ trợ nhau tiến bộ mỗi ngày.</div>
+            </div>
+        </section>
+
+        <!-- 3. NỘI QUY & KPI HỌC TẬP -->
+        <section id="noi-quy-kpi" class="page-section">
+            <div class="card">
+                <h2>📖 KPI HỌC TẬP HẰNG TUẦN 🎯☘️</h2>
+                
+                <div class="clover-box" style="margin-bottom: 15px;">
+                    <strong>🎯 MỤC ĐÍCH XÂY DỰNG KPI ☘️:</strong><br>
+                    Lý do có KPI là nhằm hạn chế tình trạng xin nghỉ quá nhiều, nghỉ liên tục hoặc không hoạt động trong thời gian dài. Giúp mỗi thành viên duy trì tính kỷ luật, trách nhiệm và sự cam kết với mục tiêu của bản thân, đồng thời xây dựng một môi trường học tập công bằng, nơi mọi người cùng cố gắng, cùng tạo động lực và truyền cảm hứng cho nhau.
+                </div>
+
+                <h3 style="color: var(--clover-green); margin-top: 15px;">📋 MỨC KPI ĐẠT CHUẨN MỖI TUẦN</h3>
+                <p>Mỗi thành viên cần đảm bảo:</p>
+                <div class="grid-2" style="margin-top: 10px;">
+                    <div style="background: var(--clover-green-light); padding: 14px; border-radius: 8px;">
+                        <p>✅ Học tối thiểu <strong>04/07 buổi</strong> mỗi tuần.</p>
+                    </div>
+                    <div style="background: var(--clover-green-light); padding: 14px; border-radius: 8px;">
+                        <p>✅ Thời gian mỗi buổi tối thiểu <strong>30 phút</strong>.</p>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--primary-red); margin-top: 20px;">💰 QUY ĐỊNH XỬ LÝ KHI THIẾU KPI HỌC TẬP</h3>
+                
+                <p style="margin-top: 8px;"><strong>1. Trường hợp không đạt đủ 04 buổi học/tuần:</strong></p>
+                <p>Mỗi buổi còn thiếu so với KPI 4 buổi sẽ đóng <strong>5.000 đồng</strong> vào quỹ nhóm:</p>
+                <ul style="padding-left: 20px; font-size: 0.92rem; margin: 6px 0;">
+                    <li>📌 Học 03/07 buổi (thiếu 01 buổi) → Đóng <strong>5.000đ</strong>.</li>
+                    <li>📌 Học 02/07 buổi (thiếu 02 buổi) → Đóng <strong>10.000đ</strong>.</li>
+                    <li>📌 Học 01/07 buổi (thiếu 03 buổi) → Đóng <strong>15.000đ</strong>.</li>
+                </ul>
+
+                <p style="margin-top: 12px;"><strong>2. Trường hợp học dưới 30 phút/buổi:</strong></p>
+                <ul style="padding-left: 20px; font-size: 0.92rem; margin: 6px 0;">
+                    <li>❌ Buổi học dưới 30 phút sẽ được tính là <strong>VẮNG KHÔNG PHÉP</strong>.</li>
+                    <li>💰 Đóng góp <strong>10.000đ</strong> vào quỹ nhóm cho buổi vắng đó.</li>
+                </ul>
+
+                <div class="clover-box" style="margin-top: 15px;">
+                    🌱 <strong>Ý NGHĨA KHOẢN ĐÓNG GÓP & TINH THẦN NỘI QUY ☘️:</strong><br>
+                    Toàn bộ khoản đóng góp thiếu KPI và vắng không phép sẽ được đưa vào quỹ hoạt động của nhóm, sử dụng để duy trì phòng học trực tuyến, tổ chức các hoạt động chung và tạo nguồn kinh phí cho các chương trình, phần thưởng CLB.<br>
+                    💚 Ban Quản trị hiểu mỗi thành viên đều có công việc và lịch trình cá nhân. Nếu bạn gặp khó khăn trong một khoảng thời gian nhất định, hãy chủ động nhắn riêng với Ban Quản trị để được hỗ trợ.
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. QUY ĐỊNH ĐỔI TÊN & CÁC QUY ĐỊNH BỔ SUNG KHỊ VÀO ZOOM -->
+        <section id="zoom-ca-sang" class="page-section">
+            <div class="card clover-border">
+                <h2>🏷️ QUY ĐỊNH ĐỔI TÊN KHI THAM GIA CA SÁNG ☀️☘️</h2>
+                <p><strong>📝 Cú pháp bắt buộc:</strong> <code style="background:#FFEAEB; padding:4px 10px; color:var(--primary-red); font-weight:bold; font-size:1rem; border-radius:6px;">B[Mã số] - [Họ và tên]</code></p>
+                
+                <div style="background:#F8F9FA; padding:12px; border-radius:8px; margin-top:10px; font-size:0.92rem;">
+                    Ví dụ đúng:<br>
+                    • <code style="color:var(--clover-green); font-weight:bold;">B01 - Nguyễn Văn A</code><br>
+                    • <code style="color:var(--clover-green); font-weight:bold;">B25 - Trần Thị B</code>
+                </div>
+
+                <div class="clover-box" style="margin-top: 15px;">
+                    <strong>💡 Ý NGHĨA VÀ LÝ DO CỦA QUY ĐỊNH ĐỔI TÊN ☘️:</strong>
+                    <ul style="padding-left: 20px; margin-top: 8px; line-height: 1.8; font-size: 0.92rem;">
+                        <li><strong>Đồng bộ & Dễ điểm danh:</strong> Phòng học có số lượng thành viên rất đông, việc đặt đúng mã số và tên giúp Ban Quản Trị dễ dàng nhận diện, kiểm soát và ghi nhận điểm chuyên cần chính xác cho bạn mà không bị nhầm lẫn.</li>
+                        <li><strong>Xây dựng môi trường chuyên nghiệp:</strong> Một cú pháp thống nhất giúp không gian học tập có tổ chức, chuyên nghiệp và gắn kết hơn.</li>
+                        <li><strong>Bảo mật phòng học:</strong> Giúp Ban Quản trị nhanh chóng phát hiện các tài khoản lạ xâm nhập phòng học để bảo vệ không gian an toàn cho mọi người.</li>
+                    </ul>
+                </div>
+
+                <div class="notice-box" style="margin-top: 15px;">
+                    ⚠️ <strong>Lưu ý kỹ thuật:</strong> Bắt buộc có dấu gạch ngang (-) và khoảng trắng ở hai bên dấu gạch. Viết hoa chữ cái đầu của Họ, Tên đệm và Tên. Quy định này chỉ áp dụng trong ca sáng, ngoài ca sáng bạn có thể đổi tên tùy ý. ☀️
+                </div>
+            </div>
+
+            <div class="webcam-highlight-box">
+                <div class="webcam-highlight-title">
+                    🚨 YÊU CẦU BẮT BUỘC: BẬT CAM LIÊN TỤC TRONG SUỐT GIỜ HỌC 📹✨
+                </div>
+                <p style="font-weight: 600; color: #444; margin-bottom: 10px;">💡 TẠI SAO BẠN CẦN BẬT CAM 100% THỜI GIAN?</p>
+                
+                <div class="webcam-reason-item">
+                    🔥 <strong>Tạo áp lực tích cực & Giám sát lẫn nhau:</strong> Việc nhìn thấy đồng đội đang chăm chỉ làm việc sẽ đánh thức tinh thần tự giác, giúp bạn loại bỏ ngay thói quen lướt điện thoại hay xao nhãng.
+                </div>
+                
+                <div class="webcam-reason-item">
+                    😴 <strong>Tránh việc lăn ra buồn ngủ lại:</strong> Việc bật camera buộc bạn phải ngồi nghiêm túc, giữ sự tỉnh táo và ngăn bản thân tự thỏa hiệp tuột vào lại giấc ngủ.
+                </div>
+                
+                <div class="webcam-reason-item">
+                    🤝 <strong>Minh bạch & Tôn trọng cam kết:</strong> Bật cam là cách bạn chứng minh sự nghiêm túc với chính bản thân và tôn trọng thời gian của các thành viên khác.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📹 CÁC QUY ĐỊNH BỔ SUNG KHI THAM GIA ☀️☘️</h2>
+                
+                <div class="webcam-reason-item">
+                    👤 <strong>Thấy rõ khuôn mặt & đủ ánh sáng:</strong> Để Ban Quản Trị xác minh đúng chính chủ đang ngồi học, tránh tình trạng treo máy hoặc bật cam hướng lên trần nhà hoặc màn hình tối.
+                </div>
+                
+                <div class="webcam-reason-item">
+                    🌫️ <strong>Quy định về Nền ảo & Bộ lọc khuôn mặt:</strong> Không sử dụng các bộ lọc che hay làm biến dạng khuôn mặt. Đối với Nền ảo (Virtual Background), bạn <strong>có thể bật chế độ Làm mờ (Blur)</strong> để bảo vệ không gian riêng tư của bản thân mà vẫn đảm bảo Ban Quản trị nhìn thấy rõ khuôn mặt để điểm danh chính xác ☘️.
+                </div>
+                
+                <div class="webcam-reason-item">
+                    ⏱️ <strong>Không tắt camera quá 02 phút hoặc rời phòng:</strong> Đảm bảo bạn thực sự dành thời gian đó để học tập và rèn luyện tính kỷ luật nghiêm túc.
+                </div>
+
+                <div class="notice-box" style="margin-top: 15px;">
+                    ⚠️ <strong>LÝ DO XỬ LÝ VI PHẠM:</strong> Nếu vi phạm các quy định trên mà không có lý do chính đáng hoặc chưa báo Ban Quản trị, bạn sẽ bị chuyển vào phòng chờ và buổi học tính là <strong>VẮNG MẶT / KHÔNG HỢP LỆ</strong>. Điều này nhằm giữ gìn sự công bằng cho tất cả các thành viên đang nghiêm túc tuân thủ.
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. QUY TRÌNH ĐIỂM DANH & XIN NGHỈ -->
+        <section id="diem-danh-phep" class="page-section">
+            <div class="card">
+                <h2>⏰ QUY TRÌNH ĐIỂM DANH & CỘNG ĐIỂM CHUYÊN CẦN ☘️</h2>
+                <p>🕓 <strong>Khung giờ điểm danh hằng ngày:</strong> <span style="color:var(--primary-red); font-weight:bold;">3:00 - 6:00 sáng</span></p>
+                
+                <p style="margin-top:10px;"><strong>📝 Cú pháp gửi ảnh điểm danh vào nhóm Zalo:</strong></p>
+                <p><code style="background: #E8F5E9; padding: 6px 12px; color: var(--clover-green); font-weight: bold; font-size: 0.95rem; border-radius: 6px; display:inline-block; margin-top:4px;">SS + [Số thứ tự bài đăng] - [01 câu nói yêu thích] + Ảnh màn hình học</code></p>
+                <p style="margin-top: 6px; font-size: 0.9rem;"><em>Ví dụ: SS05 - Kỷ luật là sức mạnh! + (Ảnh phòng học)</em></p>
+
+                <h3 style="margin-top: 18px; color: var(--primary-red);">🏆 KHUNG GIỜ CỘNG ĐIỂM CHUYÊN CẦN</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Khung Giờ Vào Học</th>
+                                <th>Ký Hiệu</th>
+                                <th>Điểm Cộng Chuyên Cần</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>🕓 03:00 – 05:00</td><td>🔥 (T)</td><td><span class="badge-green">+30 điểm</span> (Dậy siêu sớm)</td></tr>
+                            <tr><td>🕔 05:01 – 05:30</td><td>🥰 (Y)</td><td><span class="badge-green">+20 điểm</span> (Đúng giờ chuẩn)</td></tr>
+                            <tr><td>🕠 05:31 – 06:00</td><td>⏱️ (H)</td><td><span class="badge-green">+10 điểm</span> (Muộn nhẹ)</td></tr>
+                            <tr><td>😴 Vắng có phép</td><td>😴 (P)</td><td>0 điểm</td></tr>
+                            <tr><td>❌ Vắng không phép</td><td>❌ (N)</td><td><span class="badge-red">-10 điểm & Đóng 10k Quỹ</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="clover-box" style="margin-top: 14px;">
+                    🔢 <strong>XỬ LÝ KHI TRÙNG SỐ ĐIỂM DANH ☘️:</strong><br>
+                    Nếu bạn lỡ nhắn trùng số điểm danh với người phía trước (ví dụ người trước gửi SS15 và bạn cũng gửi SS15), bạn <strong>không cần thu hồi tin nhắn</strong>. Chỉ cần nhắn ngay một tin mới với số tiếp theo (ví dụ: SS16) là được.
+                </div>
+
+                <div class="card clover-border">
+                    <h2>🌅 Ý NGHĨA CỦA "SS" VÀ MÃ SỐ THÀNH VIÊN ☘️</h2>
+                    
+                    <div style="margin-bottom: 18px;">
+                        <h3 style="color: var(--clover-green); margin-bottom: 10px;">🔥 SS – Sẵn Sàng</h3>
+                        <p style="font-size: 0.95rem; line-height: 1.7;">SS mang ý nghĩa là <strong>"Sẵn Sàng"</strong> — sẵn sàng thức dậy, sẵn sàng học tập, sẵn sàng rèn luyện và sẵn sàng chịu trách nhiệm với mục tiêu mà chính mình đã lựa chọn.</p>
+                        <p style="font-size: 0.95rem; line-height: 1.7; margin-top: 10px;">Mỗi khi sử dụng SS trong bài điểm danh, đó cũng như một lời nhắc nhỏ:</p>
+                        <div style="background: #FFFFFF; border-left: 4px solid var(--clover-green); padding: 12px 16px; margin-top: 10px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                            <p style="font-size: 0.92rem; margin: 0;">✨ Sẵn sàng cho một ngày mới.</p>
+                            <p style="font-size: 0.92rem; margin: 6px 0 0 0;">✨ Sẵn sàng cố gắng hơn hôm qua.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="color: var(--clover-green); margin-bottom: 10px;">🔢 Mã số thành viên</h3>
+                        <p style="font-size: 0.95rem; line-height: 1.7;">Mỗi thành viên khi chính thức tham gia CLB sẽ được cấp một mã số thành viên riêng.</p>
+                        <p style="font-size: 0.95rem; line-height: 1.7; margin-top: 10px;"><strong>Mã số này được sử dụng để:</strong></p>
+                        <ul style="padding-left: 20px; font-size: 0.92rem; line-height: 1.8; margin-top: 8px;">
+                            <li>📌 Nhận diện thành viên trong CLB.</li>
+                            <li>📊 Theo dõi điểm danh và điểm số.</li>
+                            <li>🏆 Tham gia và ghi nhận kết quả các Event.</li>
+                            <li>🤝 Dễ dàng quản lý thành viên trong quá trình đồng hành.</li>
+                        </ul>
+                        <p style="font-size: 0.92rem; margin-top: 12px;"><strong>Ví dụ:</strong> <code style="background: #E8F5E9; padding: 2px 6px; color: var(--clover-green); font-weight: bold;">B01</code> → Thành viên số 01 của CLB</p>
+                    </div>
+
+                    <div class="clover-box" style="margin-top: 14px;">
+                        💚 <strong>Mỗi mã số không chỉ là một con số, mà còn đại diện cho hành trình đồng hành của bạn tại CLB 5H Sáng ☘️</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card clover-border">
+                <h2>📸 LƯU Ý KHI CHỤP ẢNH ĐIỂM DANH ☘️</h2>
+                <ul style="padding-left: 20px; line-height: 1.8; font-size: 0.92rem;">
+                    <li>Bật <strong>Chế độ xem nhiều người</strong> để ảnh hiển thị đầy đủ các thành viên cùng học.</li>
+                    <li>Ảnh điểm danh cần thấy rõ khuôn mặt của bạn và màn hình các thành viên khác đang bật camera.</li>
+                    <li>Ảnh chụp phải đáp ứng đúng quy định camera (có thể bật làm mờ nền, không sử dụng bộ lọc che mặt).</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>📝 QUY ĐỊNH XIN NGHỈ & XỬ LÝ ĐẶC BIỆT</h2>
+                <p>• <strong>Thời gian xin nghỉ:</strong> Nếu không thể tham gia buổi học, bạn vui lòng nhắn tin xin nghỉ trực tiếp lên nhóm CLB <strong>trước 23:59 ngày hôm trước</strong>.</p>
+                
+                <div class="notice-box">
+                    ⚠️ <strong>LƯU Ý VỀ VIỆC XIN NGHỈ KÈM CHÚ THÍCH:</strong><br>
+                    Nhóm <strong>không công nhận</strong> các trường hợp xin nghỉ kèm theo chú thích như: <em>"nếu xong việc mình sẽ vào học"</em>, <em>"nếu kịp mình sẽ tham gia"</em>... Quy định này áp dụng để đảm bảo tính minh bạch, thống nhất và tránh kẽ hở trong quá trình điểm danh.
+                </div>
+
+                <h3 style="margin-top: 16px; color: var(--clover-green);">📌 TRƯỜNG HỢP XIN NGHỈ NHƯNG QUAY LẠI THAM GIA HỌC</h3>
+                <p style="font-size: 0.92rem;">Nếu bạn xin nghỉ do có việc đột xuất, nhưng sau đó xử lý xong và quay lại học, cách xử lý căn cứ theo <strong>trạng thái ghi nhận của Quản lý</strong>:</p>
+                
+                <div class="grid-2" style="margin-top: 10px;">
+                    <div style="background:#E8F5E9; padding:14px; border-radius:8px;">
+                        <strong style="color:var(--clover-green);">🟢 TH1: Tin nhắn CHƯA được ghi nhận</strong>
+                        <p style="font-size:0.88rem; margin-top:4px;">Nếu tin nhắn xin nghỉ của bạn chưa được Quản lý ghi nhận (chưa đọc/chưa xác nhận), bạn được phép <strong>thu hồi tin nhắn xin nghỉ</strong>, vào phòng học điểm danh bình thường. Buổi học sẽ tính là <strong>CÓ HỌC</strong>.</p>
+                    </div>
+                    <div style="background:#FFF5F5; padding:14px; border-radius:8px;">
+                        <strong style="color:var(--primary-red);">🔴 TH2: Tin nhắn ĐÃ được ghi nhận</strong>
+                        <p style="font-size:0.88rem; margin-top:4px;">Nếu tin nhắn đã được Quản lý ghi nhận vào sổ điểm danh, thì dù sau đó bạn vào phòng học, buổi học hôm đó vẫn giữ nguyên kết quả là <strong>VẮNG CÓ PHÉP</strong> và không thay đổi sau khi đã chốt sổ.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. PHÍ DUY TRÌ & VẮNG KHÔNG PHÉP -->
+        <section id="quy-phi" class="page-section">
+            <div class="card clover-border">
+                <h2>💰 PHÍ DUY TRÌ CLB HẰNG THÁNG ☘️</h2>
+                <p>Khoản phí tượng trưng đóng hằng tháng để duy trì hạ tầng vận hành nhóm:</p>
+                
+                <div class="grid-3" style="margin: 15px 0;">
+                    <div class="feature-box">
+                        <h3>🎒 Học Sinh</h3>
+                        <p style="font-size: 1.3rem; font-weight: 700; color: var(--primary-red);">10.000 VNĐ/tháng</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🎓 Sinh Viên</h3>
+                        <p style="font-size: 1.3rem; font-weight: 700; color: var(--primary-red);">20.000 VNĐ/tháng</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>💼 Người Đi Làm</h3>
+                        <p style="font-size: 1.3rem; font-weight: 700; color: var(--primary-red);">30.000 VNĐ/tháng</p>
+                    </div>
+                </div>
+
+                <div class="clover-box">
+                    💡 <strong>Khoản phí này dùng làm gì? ☘️</strong><br>
+                    Dùng 100% công khai để duy trì phòng học trực tuyến không giới hạn thời gian, các công cụ vận hành tự động và làm giải thưởng khen thưởng cho các chương trình thi đua của CLB.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📜 QUY ĐỊNH VẮNG KHÔNG PHÉP NHIỀU NGÀY LIÊN TIẾP</h2>
+                <p>⚠️ <strong>Nếu vắng không phép 03 ngày liên tiếp:</strong> Bạn sẽ tạm thời bị mời ra khỏi nhóm theo quy định.</p>
+                
+                <div style="background: #F8F9FA; padding: 14px; border-radius: 8px; margin-top: 12px; font-size: 0.92rem;">
+                    <strong>🤝 Quy trình xin quay trở lại nhóm:</strong><br>
+                    1. Trao đổi và giải thích rõ lý do vắng không phép nhiều ngày liên tiếp với Quản lý nhóm.<br>
+                    2. Cam kết học tập đầy đủ và duy trì tính kỷ luật khi quay trở lại.
+                </div>
+
+                <div class="notice-box" style="margin-top: 14px;">
+                    💚 <strong>Thông điệp từ Ban Quản Trị:</strong><br>
+                    Những quy định trên không nhằm gây khó khăn hay tạo áp lực. Việc vắng không phép liên tiếp không có phản hồi làm giảm tinh thần học tập chung của cả nhóm. Nhóm cần quy định rõ ràng để đảm bảo môi trường học tập công bằng, nghiêm túc và tích cực cho tất cả mọi người.
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. CÂU LẠC BỘ ĐỌC SÁCH & SỰ KIỆN BẠN ĐỒNG HÀNH -->
+        <section id="clb-doc-sach-event" class="page-section">
+            <div class="card clover-border">
+                <h2>📢 SỰ KIỆN "BẠN ĐỒNG HÀNH" ☘️</h2>
+
+                <div class="clover-box" style="margin-top: 12px;">
+                    ❓ <strong>HỖ TRỢ:</strong> Có thắc mắc xin liên hệ trực tiếp cho <strong>Lê Yến Nhi</strong> để được giải đáp.
+                </div>
+
+                <h3 style="margin-top: 18px; color: var(--primary-red);">📌 TỔNG HỢP CHI TIẾT SỰ KIỆN</h3>
+                <ul style="padding-left: 20px; font-size: 0.92rem; line-height: 1.8;">
+                    <li>🎯 <strong>Nhiệm vụ hàng ngày:</strong> Cùng nhắc nhở nhau dậy sớm và vào học đúng giờ, theo dõi việc học của nhau và động viên khi đối phương nản.</li>
+                    <li>🤝 <strong>Cơ chế:</strong> Thưởng cùng thưởng - Phạt cùng phạt.</li>
+                    <li>📝 <strong>Cú pháp điểm danh mới:</strong> <code style="background:#E8F5E9; padding:2px 6px; color:var(--clover-green); font-weight:bold;">STT - [Tên đội]</code>.</li>
+                </ul>
+
+                <div style="background:#FFF5F5; padding:14px; border-radius:8px; margin-top:12px; border:1px dashed var(--primary-red);">
+                    <strong style="color:var(--primary-red);">📊 CÁCH TÍNH ĐIỂM ĐỘI HÀNG NGÀY:</strong><br>
+                    <p style="text-align:center; font-weight:bold; margin:8px 0; color:var(--primary-red);">Điểm Đội = (Điểm Cá Nhân A + Điểm Cá Nhân B) / 2</p>
+                    <p style="font-size:0.88rem;"><strong>Áp dụng cơ chế Thưởng/Phạt Đồng Đội:</strong></p>
+                    <p style="font-size:0.88rem;">• <strong>TH1: Cả hai cùng đi học</strong> → Điểm Đội + 5 điểm thưởng.</p>
+                    <p style="font-size:0.88rem;">• <strong>TH2: 1 người đi học + 1 người vắng không phép</strong> → Điểm Đội (dùng -10 cho người vắng) - 10 điểm phạt.</p>
+                    <p style="font-size:0.88rem;">• <strong>TH3: Cả hai cùng vắng không phép</strong> → Điểm Đội - 20 điểm phạt.</p>
+                    <p style="font-size:0.88rem;">• <strong>TH4: Có người nghỉ có phép:</strong><br>
+                        - 1 người nghỉ có phép, 1 người đi học → Điểm Đội = Điểm người đi học / 2.<br>
+                        - Cả 2 cùng nghỉ có phép → Điểm Đội = 0 điểm.
+                    </p>
+                </div>
+
+                <div style="background:#F8F9FA; padding:12px; border-radius:8px; margin-top:12px; font-size:0.88rem;">
+                    🏆 <strong>CƠ CẤU GIẢI THƯỞNG:</strong><br>
+                    🥇 <strong>Giải "Cặp Đôi Có Điểm Cao Nhất":</strong> Dành cho đội có tổng điểm Đội tích lũy cao nhất sau 1 tháng.<br>
+                    🚀 <strong>Giải "Cặp Đôi Đột Phá":</strong> Dành cho đội có sự bứt phá, tiến bộ vượt bậc nhất so với tuần đầu tiên.
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📚 CÂU LẠC BỘ ĐỌC SÁCH 📖☘️</h2>
+                <p>Nhóm học tập sử dụng chung phòng học trực tuyến với CLB Đọc Sách 5H Sáng nhằm tạo nên một không gian học tập đông đủ, nhiều năng lượng và truyền động lực cho nhau. 💚</p>
+                
+                <p style="margin-top: 10px;">⏰ <strong>Khung giờ chia sẻ sách:</strong> <span style="color:var(--clover-green); font-weight:bold;">05:50 – 06:30 sáng hằng ngày</span></p>
+                <p style="font-size:0.9rem; color:var(--text-muted); margin-top:4px;">Trong khung giờ này, các anh chị em sẽ chia sẻ về những cuốn sách hay, bài học và cách áp dụng vào cuộc sống.</p>
+
+                <div class="clover-box" style="margin-top:12px;">
+                    📢 <strong>Lưu ý kỹ thuật ☘️:</strong><br>
+                    • Nếu cần tập trung học bài riêng, bạn có thể tắt âm thanh thiết bị để tiếp tục học bình thường.<br>
+                    • Nếu gặp sự cố phòng học, vui lòng liên hệ trực tiếp <strong>Anh Trần Như Hiệp (Zalo: 0816333393)</strong> để được hỗ trợ nhanh nhất.<br>
+                    💬 <em>"Muốn đi nhanh hãy đi một mình. Muốn đi xa hãy đi cùng những người có kinh nghiệm."</em> — Trần Như Hiệp
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. BẢNG ĐIỂM DANH -->
+        <section id="bang-diem" class="page-section">
+            <div class="card clover-border">
+                <h2>📊 BẢNG ĐIỂM DANH & CHUYÊN CẦN TRỰC TUYẾN ☘️</h2>
+                <p style="margin-bottom: 14px;">Dữ liệu điểm danh, số ngày học, ngày vắng và tổng điểm tích lũy được cập nhật tự động. 💚</p>
+                
+                <div style="position: relative; width: 100%; height: 600px; border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); border: 1px solid #E0E0E0;">
+                    <iframe 
+                        src="https://docs.google.com/spreadsheets/d/1pv_B6pzmEsb6-ImhhifPZo2t3FmZCBB8uSq3DgwOlEY/htmlembed?gid=193311896&widget=true&headers=false" 
+                        style="width: 100%; height: 100%; border: none;">
+                    </iframe>
+                </div>
+
+                <div style="margin-top: 14px; text-align: center;">
+                    <a href="https://docs.google.com/spreadsheets/d/1pv_B6pzmEsb6-ImhhifPZo2t3FmZCBB8uSq3DgwOlEY/edit?gid=193311896#gid=193311896" target="_blank" class="btn btn-success">
+                        🟢 Mở Bảng Điểm Danh Trên Trang Mới ☘️
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. QUY TẮC ỨNG XỬ, QUYỀN & TRÁCH NHIỆM -->
+        <section id="quy-tac-quyen" class="page-section">
+            <div class="card">
+                <h2>🤝 5 QUY TẮC ỨNG XỬ CHUNG CỦA CLB ☘️</h2>
+                <div class="grid-2">
+                    <div style="background:#FFF5F5; padding:12px; border-radius:8px;">
+                        <strong style="color:var(--primary-red);">1. Tôn Trọng</strong>
+                        <p style="font-size:0.88rem;">Không công kích, xúc phạm hoặc làm ảnh hưởng đến thành viên khác.</p>
+                    </div>
+                    <div style="background:#E8F5E9; padding:12px; border-radius:8px;">
+                        <strong style="color:var(--clover-green);">2. Chủ Động</strong>
+                        <p style="font-size:0.88rem;">Gặp khó khăn hay có vấn đề cá nhân → Hãy chủ động nhắn cho Ban Quản trị.</p>
+                    </div>
+                    <div style="background:#E8F5E9; padding:12px; border-radius:8px;">
+                        <strong style="color:var(--clover-green);">3. Trung Thực</strong>
+                        <p style="font-size:0.88rem;">Điểm danh, báo cáo ảnh chụp màn hình và giờ giấc đúng sự thật.</p>
+                    </div>
+                    <div style="background:#FFF5F5; padding:12px; border-radius:8px;">
+                        <strong style="color:var(--primary-red);">4. Có Trách Nhiệm</strong>
+                        <p style="font-size:0.88rem;">Đã đặt mục tiêu và cam kết → Hãy cố gắng thực hiện hết mình.</p>
+                    </div>
+                </div>
+                <div style="background:#F8F9FA; padding:12px; border-radius:8px; margin-top:10px; text-align:center;">
+                    <strong style="color:var(--clover-green);">5. Đồng Hành</strong>: Không phải ai cũng có cùng tốc độ. Hãy hỗ trợ, động viên nhau thay vì phán xét.
+                </div>
+            </div>
+
+            <div class="card clover-border">
+                <h2>🛡️ QUYỀN VÀ TRÁCH NHIỆM CỦA THÀNH VIÊN ☘️</h2>
+                <div class="grid-2">
+                    <div>
+                        <h3 style="color:var(--clover-green);">🛡️ Quyền của thành viên:</h3>
+                        <ul style="padding-left:18px; font-size:0.9rem; line-height:1.8;">
+                            <li>Được biết rõ nội quy, quy trình điểm danh và thu chi quỹ.</li>
+                            <li>Được đặt câu hỏi, đóng góp ý kiến xây dựng CLB.</li>
+                            <li>Được đề xuất sự kiện và xem xét lý do đặc biệt khi gặp khó khăn.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color:var(--primary-red);">👑 Trách nhiệm của thành viên:</h3>
+                        <ul style="padding-left:18px; font-size:0.9rem; line-height:1.8;">
+                            <li>Đọc, hiểu và tuân thủ các quy định chung.</li>
+                            <li>Điểm danh trung thực, báo xin nghỉ đúng hạn.</li>
+                            <li>Giữ thái độ tôn trọng và hoàn thành phí duy trì hằng tháng.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🚪 QUY ĐỊNH KHI MUỐN RỜI CLB</h2>
+                <p>Bạn hoàn toàn có quyền rời khỏi CLB nếu cảm thấy môi trường không còn phù hợp với lịch trình hiện tại. Tuy nhiên, Ban Quản trị rất mong bạn nhắn một lời chào trước khi rời đi:</p>
+                <div class="notice-box" style="background:#FFFDF0; border-left-color:#F3D250;">
+                    💬 <em>"Mình cảm thấy hiện tại không còn phù hợp với lịch trình nên xin phép rời nhóm. Cảm ơn mọi người trong thời gian qua."</em><br>
+                    💚 Một lời tạm biệt nhỏ sẽ giúp chúng ta khép lại một hành trình thật văn minh và tốt đẹp.
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. CÂU HỎI THƯỜNG GẶP, GÓP Ý & BAN QUẢN TRỊ -->
+        <section id="faq-bqt" class="page-section">
+            <div class="card clover-border">
+                <h2>❓ CÂU HỎI THƯỜNG GẶP ☘️</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">1. CLB có bắt buộc phải học đúng từ 5:00 sáng không? <span>+</span></div>
+                    <div class="faq-answer">Khung điểm danh kéo dài từ 3:00 đến 6:00 sáng. Bạn có thể vào học sớm hơn và nhận điểm thưởng tương ứng theo khung giờ.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">2. Tiền đóng góp vắng không phép và phí duy trì dùng làm gì? <span>+</span></div>
+                    <div class="faq-answer">100% tiền thu được dùng để duy trì phòng học trực tuyến không giới hạn, mua phần mềm quản lý và trích quỹ trao thưởng sự kiện cho các thành viên xuất sắc.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">3. Tôi chưa có tài khoản ngân hàng hoặc gặp khó khăn tài chính thì sao? <span>+</span></div>
+                    <div class="faq-answer">Hãy chủ động nhắn tin riêng cho Admin. Ban Quản trị sẽ xem xét và hỗ trợ phương án phù hợp nhất, không để ai bị bỏ lại.</div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">4. Nếu bận đột xuất ngay trong buổi sáng thì xử lý thế nào? <span>+</span></div>
+                    <div class="faq-answer">Hãy nhắn tin báo cho Quản lý ngay khi có thể. Sự chủ động trao đổi luôn được Ban Quản trị ghi nhận và hỗ trợ.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>👑 BAN QUẢN TRỊ CLB 5H SÁNG ☘️</h2>
+                <p style="margin-bottom: 12px; font-size:0.92rem;">Mọi thắc mắc hoặc cần hỗ trợ, bạn vui lòng liên hệ Ban Quản trị theo thông tin dưới đây:</p>
+
+                <div class="bqt-card">
+                    <div>
+                        <strong>👑 Admin Sáng Lập & Kỹ Thuật Phòng Học:</strong>
+                        <p style="color: var(--text-muted); font-size: 0.88rem;">Anh Trần Như Hiệp (CLB Đọc Sách) - Định hướng & Quản lý phòng học.</p>
+                    </div>
+                    <a href="https://zalo.me/0816333393" target="_blank" class="btn btn-primary">💬 Zalo: 0816333393</a>
+                </div>
+
+                <div class="bqt-card">
+                    <div>
+                        <strong>📋 Quản Lý Điểm Danh:</strong>
+                        <p style="color: var(--text-muted); font-size: 0.88rem;">Bạn Lê Yến Nhi - Hỗ trợ thành viên & điểm danh.</p>
+                    </div>
+                    <span class="btn btn-secondary">Cập nhật Zalo sau</span>
+                </div>
+
+                <div class="bqt-card">
+                    <div>
+                        <strong>📋 Quản Lý Điểm Danh & Tài Chính:</strong>
+                        <p style="color: var(--text-muted); font-size: 0.88rem;">Bạn Bùi Hải Yến - Phụ trách quỹ, hỗ trợ thành viên & điểm danh.</p>
+                    </div>
+                    <a href="https://zalo.me/0983346399" target="_blank" class="btn btn-success">💬 Zalo: 0983346399 ☘️</a>
+                </div>
+            </div>
+
+            <div class="letter-box">
+                <h2 style="color: var(--primary-red);">💗 ĐÔI LỜI NHẮN GỬI TỪ BAN QUẢN TRỊ ☘️</h2>
+                <p style="font-size:0.92rem;">Vì nhóm của tụi mình vẫn đang trong quá trình hoàn thiện nên chắc chắn sẽ khó tránh khỏi những thiếu sót. Ban Quản trị rất mong nhận được sự thông cảm, góp ý và đồng hành từ tất cả các bạn để cùng xây dựng một môi trường học tập ngày càng tốt hơn.</p>
+                <p style="margin-top: 10px; font-size:0.92rem;">Nếu bạn có thắc mắc về nội quy hoặc có ý tưởng giúp CLB phát triển hơn, đừng ngần ngại gửi góp ý ẩn danh cho chúng mình nhé. 💚</p>
+                <div style="margin-top:12px; text-align:center;">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfw5l780K05AYFT5gMLaIZBNxBh4728dbpC6RXSQvbzrrIeGw/viewform" target="_blank" class="btn btn-success">📝 Biểu Mẫu Góp Ý Ẩn Danh ☘️</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. ĐĂNG KÝ THAM GIA -->
+        <section id="dang-ky" class="page-section">
+            <div class="card clover-border">
+                <h2>📝 ĐĂNG KÝ THAM GIA CLB 5H SÁNG ☘️</h2>
+                <p>Nếu bạn thấy CLB 5H Sáng phù hợp với mục tiêu hiện tại của bản thân thì rất mong được đồng hành cùng bạn trên hành trình rèn luyện tính kỷ luật. 💚</p>
+                
+                <div style="margin: 20px 0;">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfw5l780K05AYFT5gMLaIZBNxBh4728dbpC6RXSQvbzrrIeGw/viewform" target="_blank" class="btn btn-success btn-block" style="font-size: 1.1rem; padding: 14px;">
+                        📝 BIỂU MẪU ĐĂNG KÝ THAM GIA NHÓM ☘️
+                    </a>
+                </div>
+
+                <div class="notice-box">
+                    📌 <strong>LƯU Ý CỰC KỲ QUAN TRỌNG SAU KHI ĐIỀN BIỂU MẪU:</strong><br>
+                    Sau khi điền xong Biểu mẫu đăng ký tham gia nhóm, bạn vui lòng <strong>nhắn tin trực tiếp qua Zalo cho Admin (Bùi Hải Yến - 0983346399)</strong> để thông báo rằng bạn đã hoàn tất đăng ký nhé.<br>
+                    💚 Điều này sẽ giúp Admin xác nhận, cấp Mã số và hỗ trợ bạn tham gia nhóm nhanh hơn. Cảm ơn bạn.
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <button id="backToTop" onclick="scrollToTop()">↑</button>
+
+    <footer style="text-align: center; padding: 25px 15px; background: white; margin-top: 40px; border-top: 1px solid #EEE; font-size: 0.9rem; color: var(--text-muted);">
+        <p>© CLB 5H SÁNG 🌅 – Cùng Nhau Dậy Sớm, Cùng Nhau Tiến Bộ 💚☘️</p>
+        <p style="margin-top:4px; font-size:0.82rem;">Chúc bạn luôn nhiều sức khỏe, thật nhiều động lực và thành công trên con đường phía trước.</p>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById(pageId);
+            if (target) {
+                target.classList.add('active');
+            }
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('onclick')?.includes(pageId)) {
+                    link.classList.add('active');
+                }
+            });
+
+            document.getElementById('navMenu').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMenu() { 
+            document.getElementById('navMenu').classList.toggle('show'); 
+        }
+
+        function toggleFaq(el) {
+            const item = el.parentElement;
+            item.classList.toggle('active');
+            el.querySelector('span').textContent = item.classList.contains('active') ? '−' : '+';
+        }
+
+        window.onscroll = function() {
+            const btn = document.getElementById("backToTop");
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                btn.style.display = "block";
+            } else {
+                btn.style.display = "none";
+            }
+        };
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
