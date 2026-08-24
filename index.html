@@ -1092,6 +1092,7 @@
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7aYuYqRgExVRMDGoC-WuQg_vDv18v4L';
         const SUPABASE_DIARY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-diary`;
         const SUPABASE_FEEDBACK_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-feedback`;
+        const SUPABASE_EVENTS_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-events`;
         const CLOUDINARY_CLOUD_NAME = 'ub55zqyk';
         const CLOUDINARY_UPLOAD_PRESET = 'clb5h_diary_unsigned';
         const CLOUDINARY_UPLOAD_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -1111,6 +1112,9 @@
 
         let events = loadEvents();
         let trashEvents = loadTrashEvents();
+        let legacyEventsForMigration = JSON.parse(JSON.stringify(events));
+        let legacyTrashEventsForMigration = JSON.parse(JSON.stringify(trashEvents));
+        let eventsSyncError = '';
         let diaryEntries = [];
         let diarySyncPending = true;
         let diarySyncError = '';
@@ -1155,6 +1159,83 @@
         function persistEvents() {
             localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
             localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(trashEvents));
+        }
+
+        function eventRowToEvent(row) {
+            return {
+                id: String(row?.id || ''),
+                title: String(row?.title || '').slice(0, 120),
+                date: String(row?.event_date || '').slice(0, 120),
+                month: String(row?.month || '').slice(0, 7),
+                description: String(row?.description || '').slice(0, 4000),
+                status: row?.status === 'ended' ? 'ended' : row?.status === 'hidden' ? 'hidden' : 'active',
+                feedback: []
+            };
+        }
+
+        async function fetchEventsFromSupabase() {
+            const params = new URLSearchParams({
+                select: 'id,title,event_date,month,description,status,deleted_at,created_at,updated_at',
+                order: 'updated_at.desc',
+                limit: '500'
+            });
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/clb5h_events?${params}`, {
+                headers: {
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                }
+            });
+            const result = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(result?.message || 'supabase-events-read-failed');
+            const rows = Array.isArray(result) ? result : [];
+            events = rows.filter(row => !row.deleted_at).map(eventRowToEvent);
+            trashEvents = rows.filter(row => row.deleted_at).map(row => ({ ...eventRowToEvent(row), deletedAt: row.deleted_at }));
+            eventsSyncError = '';
+            persistEvents();
+        }
+
+        async function syncEventsFromSupabase() {
+            try {
+                await fetchEventsFromSupabase();
+            } catch (error) {
+                console.warn('Không thể tải sự kiện từ Supabase, dùng cache trên thiết bị.', error);
+                eventsSyncError = 'Chưa kết nối được dữ liệu sự kiện chung.';
+            }
+            renderPublicEvents();
+            if (adminUnlocked) renderAdminEvents();
+        }
+
+        async function adminEventRequest(action, item) {
+            if (!eventAdminCodeToken) throw new Error('admin-session-required');
+            const response = await fetch(SUPABASE_EVENTS_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ action, code: eventAdminCodeToken, item })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result?.error || 'supabase-event-write-failed');
+            return result;
+        }
+
+        async function migrateLegacyEventsToSupabase() {
+            if (!eventAdminCodeToken) return;
+            const remoteIds = new Set(events.map(event => event.id).concat(trashEvents.map(event => event.id)));
+            for (const event of legacyEventsForMigration) {
+                if (remoteIds.has(event.id)) continue;
+                await adminEventRequest('create', event);
+                remoteIds.add(event.id);
+            }
+            for (const event of legacyTrashEventsForMigration) {
+                if (!remoteIds.has(event.id)) {
+                    await adminEventRequest('create', event);
+                    remoteIds.add(event.id);
+                }
+                await adminEventRequest('delete', event);
+            }
         }
 
         function getDiaryDate(entry) {
@@ -1372,7 +1453,7 @@
         async function migrateLegacyFeedbackToSupabase() {
             if (!eventAdminCodeToken) return;
             const legacyItems = [];
-            events.forEach(event => (event.feedback || []).forEach(item => {
+            legacyEventsForMigration.forEach(event => (event.feedback || []).forEach(item => {
                 if (!isRemoteFeedbackId(item.id)) legacyItems.push({ event, item });
             }));
             if (!legacyItems.length) return;
@@ -1911,14 +1992,17 @@
             renderPublicEvents();
             renderAdminEvents();
             resetEventForm();
-            migrateLegacyFeedbackToSupabase().catch(error => {
-                console.warn('Không thể chuyển cảm nhận cũ lên Supabase.', error);
-                const feedbackMessage = document.getElementById('feedbackMessage');
-                if (feedbackMessage) {
-                    feedbackMessage.textContent = 'Một số cảm nhận cũ chưa được đồng bộ. Vui lòng thử lại sau.';
-                    feedbackMessage.classList.add('error');
-                }
-            });
+            migrateLegacyEventsToSupabase()
+                .then(() => syncEventsFromSupabase())
+                .then(() => migrateLegacyFeedbackToSupabase())
+                .catch(error => {
+                    console.warn('Không thể chuyển dữ liệu cũ lên Supabase.', error);
+                    const feedbackMessage = document.getElementById('feedbackMessage');
+                    if (feedbackMessage) {
+                        feedbackMessage.textContent = 'Một số dữ liệu cũ chưa được đồng bộ. Vui lòng thử lại sau.';
+                        feedbackMessage.classList.add('error');
+                    }
+                });
         }
 
         function lockAdmin() {
@@ -1959,7 +2043,7 @@
                 : '<div class="empty-events">Thùng rác đang trống.</div>';
         }
 
-        function saveEvent(event) {
+        async function saveEvent(event) {
             event.preventDefault();
             if (!adminUnlocked) return;
             const id = document.getElementById('eventId').value || `event-${Date.now()}`;
@@ -1973,13 +2057,19 @@
                 status: document.getElementById('eventStatus').value,
                 feedback: existingIndex >= 0 && Array.isArray(events[existingIndex].feedback) ? events[existingIndex].feedback : []
             };
-            if (existingIndex >= 0) events[existingIndex] = eventData;
-            else events.unshift(eventData);
-            persistEvents();
-            renderPublicEvents();
-            renderAdminEvents();
-            resetEventForm();
-            alert(existingIndex >= 0 ? 'Đã cập nhật sự kiện.' : 'Đã thêm sự kiện mới.');
+            try {
+                const saved = await adminEventRequest(existingIndex >= 0 ? 'update' : 'create', eventData);
+                const remote = eventRowToEvent(Array.isArray(saved) ? saved[0] : saved);
+                if (existingIndex >= 0) events[existingIndex] = remote.id ? { ...remote, feedback: eventData.feedback } : eventData;
+                else events.unshift(remote.id ? { ...remote, feedback: [] } : eventData);
+                persistEvents();
+                renderPublicEvents();
+                renderAdminEvents();
+                resetEventForm();
+                alert(existingIndex >= 0 ? 'Đã cập nhật sự kiện trên Supabase.' : 'Đã thêm sự kiện mới trên Supabase.');
+            } catch (error) {
+                alert('Không thể lưu sự kiện lên Supabase. Vui lòng kiểm tra kết nối và thử lại.');
+            }
         }
 
         function editEvent(id) {
@@ -2147,46 +2237,67 @@
             }
         }
 
-        function toggleEvent(id) {
+        async function toggleEvent(id) {
             if (!adminUnlocked) return;
             const event = events.find(item => item.id === id);
             if (!event) return;
-            event.status = event.status === 'hidden' ? 'active' : 'hidden';
-            persistEvents();
-            renderPublicEvents();
-            renderAdminEvents();
+            const nextStatus = event.status === 'hidden' ? 'active' : 'hidden';
+            try {
+                await adminEventRequest('toggle', { ...event, status: nextStatus });
+                event.status = nextStatus;
+                persistEvents();
+                renderPublicEvents();
+                renderAdminEvents();
+            } catch (error) {
+                alert('Không thể cập nhật trạng thái sự kiện trên Supabase.');
+            }
         }
 
-        function deleteEvent(id) {
+        async function deleteEvent(id) {
             if (!adminUnlocked) return;
             const event = events.find(item => item.id === id);
             if (!event || !confirm(`Chuyển sự kiện “${event.title}” vào thùng rác?`)) return;
-            events = events.filter(item => item.id !== id);
-            trashEvents.unshift({ ...event, deletedAt: new Date().toISOString() });
-            persistEvents();
-            renderPublicEvents();
-            renderAdminEvents();
-            resetEventForm();
+            try {
+                await adminEventRequest('delete', event);
+                events = events.filter(item => item.id !== id);
+                trashEvents.unshift({ ...event, deletedAt: new Date().toISOString() });
+                persistEvents();
+                renderPublicEvents();
+                renderAdminEvents();
+                resetEventForm();
+            } catch (error) {
+                alert('Không thể chuyển sự kiện vào thùng rác trên Supabase.');
+            }
         }
 
-        function restoreEvent(id) {
+        async function restoreEvent(id) {
             if (!adminUnlocked) return;
             const event = trashEvents.find(item => item.id === id);
             if (!event) return;
-            events.unshift({ ...event, status: event.status === 'hidden' ? 'hidden' : 'active' });
-            trashEvents = trashEvents.filter(item => item.id !== id);
-            persistEvents();
-            renderPublicEvents();
-            renderAdminEvents();
+            try {
+                await adminEventRequest('restore', event);
+                events.unshift({ ...event, deletedAt: undefined, status: event.status === 'hidden' ? 'hidden' : event.status === 'ended' ? 'ended' : 'active' });
+                trashEvents = trashEvents.filter(item => item.id !== id);
+                persistEvents();
+                renderPublicEvents();
+                renderAdminEvents();
+            } catch (error) {
+                alert('Không thể khôi phục sự kiện trên Supabase.');
+            }
         }
 
-        function permanentlyDeleteEvent(id) {
+        async function permanentlyDeleteEvent(id) {
             if (!adminUnlocked) return;
             const event = trashEvents.find(item => item.id === id);
             if (!event || !confirm(`Xóa vĩnh viễn sự kiện “${event.title}”? Không thể khôi phục sau thao tác này.`)) return;
-            trashEvents = trashEvents.filter(item => item.id !== id);
-            persistEvents();
-            renderAdminEvents();
+            try {
+                await adminEventRequest('permanentDelete', event);
+                trashEvents = trashEvents.filter(item => item.id !== id);
+                persistEvents();
+                renderAdminEvents();
+            } catch (error) {
+                alert('Không thể xóa vĩnh viễn vì sự kiện có thể vẫn còn cảm nhận liên kết. Hãy giữ sự kiện trong thùng rác để bảo toàn lịch sử.');
+            }
         }
 
         function exportEvents() {
@@ -2242,7 +2353,7 @@
             renderDiary();
             renderDiaryAdmin();
             syncDiaryFromSupabase();
-            syncEventFeedbackFromSupabase();
+            syncEventsFromSupabase().then(() => syncEventFeedbackFromSupabase());
         });
 
         function scrollToTop() {
