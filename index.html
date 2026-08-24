@@ -847,7 +847,7 @@
                         <input id="diaryDate" type="date" required>
                         <label for="diaryImage">Ảnh nhóm</label>
                         <input id="diaryImage" type="file" accept="image/*" multiple onchange="renderDiaryCaptionFields()">
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px;">Có thể chọn nhiều ảnh trong cùng một ngày. Mỗi ảnh có lời dẫn riêng; ảnh sẽ được tự tối ưu trước khi lưu.</p>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px;">Có thể chọn nhiều ảnh trong cùng một ngày. Mỗi ảnh có lời dẫn riêng; ảnh sẽ được nén rồi tải lên Cloudinary.</p>
                         <div id="diaryCaptionFields" class="diary-caption-fields" hidden></div>
                         <label for="diaryCaption">Lời dẫn (không bắt buộc)</label>
                         <textarea id="diaryCaption" maxlength="1000" placeholder="Có thể ghi lời dẫn cho ảnh đang sửa..."></textarea>
@@ -1088,6 +1088,9 @@
         const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
         const DIARY_STORAGE_KEY = 'clb5h_sang_diary_v1';
         const DIARY_IMAGE_STORAGE_PREFIX = 'clb5h_sang_diary_image_';
+        const CLOUDINARY_CLOUD_NAME = 'ub55zqyk';
+        const CLOUDINARY_UPLOAD_PRESET = 'clb5h_diary_unsigned';
+        const CLOUDINARY_UPLOAD_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
         const DIARY_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="12" viewBox="0 0 16 12"%3E%3Crect width="16" height="12" fill="%23f1f3f5"/%3E%3C/svg%3E';
         const DEFAULT_EVENT_MONTH = '2026-08';
         const DEFAULT_EVENTS = [
@@ -1160,13 +1163,16 @@
         function normalizeDiaryEntry(item) {
             const date = String(item?.date || '').slice(0, 10);
             const image = safeImageSource(item?.image);
+            const imageUrl = safeImageSource(item?.imageUrl);
             const imageKey = String(item?.imageKey || '').startsWith(DIARY_IMAGE_STORAGE_PREFIX) ? String(item.imageKey) : (image ? diaryImageKey(String(item.id || 'pending')) : '');
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (!image && !imageKey)) return null;
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (!image && !imageUrl && !imageKey)) return null;
             return {
                 id: String(item.id || `diary-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`),
                 date,
                 image,
+                imageUrl,
                 imageKey,
+                publicId: String(item.publicId || ''),
                 caption: String(item.caption || '').slice(0, 1000),
                 author: String(item.author || 'Ban Quản trị CLB 5H Sáng').slice(0, 100)
             };
@@ -1174,6 +1180,7 @@
 
         function getDiaryImage(entry) {
             if (!entry) return '';
+            if (entry.imageUrl) return safeImageSource(entry.imageUrl);
             if (entry.image) return safeImageSource(entry.image);
             return safeImageSource(localStorage.getItem(entry.imageKey || diaryImageKey(entry.id)));
         }
@@ -1214,7 +1221,7 @@
                 if (image) localStorage.setItem(imageKey, image);
                 entry.image = '';
                 entry.imageKey = imageKey;
-                return { ...entry, image: '', imageKey };
+                return { ...entry, image: '', imageUrl: safeImageSource(entry.imageUrl), imageKey };
             });
             localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(compactEntries));
         }
@@ -1344,7 +1351,7 @@
             if (!target) return;
             target.innerHTML = diaryEntries.length ? `<h3 style="color: var(--primary-red); margin-bottom: 4px;">📋 Danh sách ảnh (${diaryEntries.length})</h3>${sortDiaryEntries([...diaryEntries]).map(entry => `
                 <div class="diary-admin-row">
-                    <img class="diary-admin-thumb lazy-diary-image" src="${DIARY_PLACEHOLDER}" data-diary-key="${escapeHtml(entry.imageKey || diaryImageKey(entry.id))}" alt="Ảnh nhật ký ${formatDiaryDate(getDiaryDate(entry))}" loading="lazy">
+                    <img class="diary-admin-thumb lazy-diary-image" src="${DIARY_PLACEHOLDER}" data-diary-key="${escapeHtml(entry.imageKey || diaryImageKey(entry.id))}" data-diary-url="${escapeHtml(entry.imageUrl || '')}" alt="Ảnh nhật ký ${formatDiaryDate(getDiaryDate(entry))}" loading="lazy">
                     <div><strong>${formatDiaryDate(getDiaryDate(entry))}</strong><br><small>${escapeHtml(entry.author)}</small>${entry.caption ? `<p style="margin-top: 5px;">${escapeHtml(entry.caption)}</p>` : '<p style="margin-top: 5px; color: var(--text-muted);">Không có lời dẫn.</p>'}</div>
                     <div class="event-actions"><button class="btn btn-secondary" type="button" onclick="editDiaryEntry('${escapeHtml(entry.id)}')">✏️ Sửa</button><button class="btn btn-primary" type="button" onclick="deleteDiaryEntry('${escapeHtml(entry.id)}')">🗑️ Xóa</button></div>
                 </div>`).join('')}` : '<div class="empty-events">Chưa có ảnh nhật ký nào.</div>';
@@ -1386,29 +1393,49 @@
             return compressDiarySource(source);
         }
 
+        async function uploadDiaryImageToCloudinary(file) {
+            const compressed = await compressDiaryImage(file);
+            const formData = new FormData();
+            formData.append('file', compressed);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            formData.append('folder', 'clb5h-diary');
+            const response = await fetch(CLOUDINARY_UPLOAD_ENDPOINT, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (!response.ok || !result.secure_url) throw new Error(result.error?.message || 'cloudinary-upload-failed');
+            return { imageUrl: result.secure_url, publicId: result.public_id || '' };
+        }
+
         async function optimizeDiaryImages() {
             if (!diaryAdminUnlocked || !diaryEntries.length) return;
             const message = document.getElementById('diaryMessage');
-            message.textContent = 'Đang tối ưu ảnh cũ, vui lòng chờ...';
+            message.textContent = 'Đang chuyển ảnh cũ lên Cloudinary, vui lòng chờ...';
             message.classList.remove('error');
             try {
                 for (const entry of diaryEntries) {
+                    if (entry.imageUrl) continue;
                     const source = getDiaryImage(entry);
-                    if (source) localStorage.setItem(entry.imageKey || diaryImageKey(entry.id), await compressDiarySource(source));
+                    if (!source) continue;
+                    const blob = await (await fetch(source)).blob();
+                    const file = new File([blob], `${entry.id}.jpg`, { type: blob.type || 'image/jpeg' });
+                    const uploaded = await uploadDiaryImageToCloudinary(file);
+                    entry.imageUrl = uploaded.imageUrl;
+                    entry.publicId = uploaded.publicId;
                 }
+                persistDiary();
                 renderDiary();
                 renderDiaryAdmin();
-                message.textContent = `Đã tối ưu ${diaryEntries.length} ảnh nhật ký.`;
+                message.textContent = `Đã chuyển ${diaryEntries.filter(entry => entry.imageUrl).length} ảnh lên Cloudinary.`;
             } catch (error) {
-                message.textContent = 'Không thể tối ưu một hoặc nhiều ảnh. Vui lòng thử lại.';
+                message.textContent = 'Không thể chuyển một hoặc nhiều ảnh lên Cloudinary. Vui lòng thử lại.';
                 message.classList.add('error');
             }
         }
 
         function loadLazyDiaryImage(image) {
             const key = image?.dataset?.diaryKey;
-            if (!key) return;
-            const source = safeImageSource(localStorage.getItem(key));
+            const remoteUrl = image?.dataset?.diaryUrl;
+            if (!key && !remoteUrl) return;
+            const source = safeImageSource(remoteUrl) || safeImageSource(localStorage.getItem(key));
             if (source) {
                 image.src = source;
                 image.removeAttribute('data-diary-key');
@@ -1543,26 +1570,32 @@
                 message.classList.add('error');
                 return;
             }
-            const finish = images => {
+            const finish = uploads => {
                 if (existing) {
                     existing.date = date;
                     existing.caption = caption;
                     existing.author = author;
-                    if (images[0]) existing.image = images[0];
+                    if (uploads[0]) {
+                        existing.imageUrl = uploads[0].imageUrl;
+                        existing.publicId = uploads[0].publicId;
+                        existing.image = '';
+                        existing.imageKey = '';
+                    }
                 } else {
-                    images.forEach((image, index) => diaryEntries.push({ id: `diary-${Date.now()}-${index}`, date, caption: individualCaptions[index] || caption, author, image }));
+                    uploads.forEach((upload, index) => diaryEntries.push({ id: `diary-${Date.now()}-${index}`, date, caption: individualCaptions[index] || caption, author, image: '', imageUrl: upload.imageUrl, publicId: upload.publicId, imageKey: '' }));
                 }
                 diaryEntries = sortDiaryEntries(diaryEntries);
                 persistDiary();
                 renderDiary();
                 renderDiaryAdmin();
-                const resultMessage = existing ? 'Đã cập nhật ảnh nhật ký.' : `Đã đăng ${images.length} ảnh nhật ký.`;
+                const resultMessage = existing ? 'Đã cập nhật ảnh nhật ký.' : `Đã đăng ${uploads.length} ảnh nhật ký.`;
                 resetDiaryForm();
                 document.getElementById('diaryMessage').textContent = resultMessage;
             };
             if (imageFiles.length) {
-                Promise.all(imageFiles.map(compressDiaryImage)).then(finish).catch(() => {
-                    message.textContent = 'Không thể đọc ảnh. Vui lòng thử lại.';
+                message.textContent = `Đang nén và tải ${imageFiles.length} ảnh lên Cloudinary...`;
+                Promise.all(imageFiles.map(uploadDiaryImageToCloudinary)).then(finish).catch(() => {
+                    message.textContent = 'Không thể tải ảnh lên Cloudinary. Kiểm tra lại Upload preset Unsigned và kết nối mạng.';
                     message.classList.add('error');
                 });
             } else finish([]);
