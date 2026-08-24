@@ -154,6 +154,26 @@
         .events-subtitle { margin: 22px 0 10px; color: var(--primary-red); font-size: 1.1rem; }
         .past-events { display: grid; gap: 14px; }
         .past-event-card { background: #FFFDF0; border: 1px solid #F3D250; border-left: 5px solid #F3B5B9; border-radius: var(--border-radius); padding: 16px; }
+        .diary-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 16px; padding: 12px; background: #F8F9FA; border: 1px solid #E9ECEF; border-radius: 10px; }
+        .diary-filter label { display: block; margin-bottom: 4px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
+        .diary-filter input { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #CED4DA; border-radius: 8px; background: #FFFFFF; font: inherit; font-size: 0.88rem; }
+        .diary-tree { display: grid; gap: 10px; }
+        .diary-year, .diary-month { border: 1px solid #D1E7DD; border-radius: 10px; background: #FFFFFF; overflow: hidden; }
+        .diary-year > summary, .diary-month > summary { cursor: pointer; padding: 12px 14px; font-weight: 700; color: var(--clover-green); list-style-position: inside; }
+        .diary-year > summary:hover, .diary-month > summary:hover { background: #F0FDF4; }
+        .diary-month { margin: 0 10px 10px; border-color: #E9ECEF; }
+        .diary-month > summary { color: var(--primary-red); padding: 10px 12px; }
+        .diary-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; padding: 10px 12px 12px; }
+        .diary-day { min-width: 0; min-height: 48px; padding: 7px 4px; border: 1px solid #E9ECEF; border-radius: 8px; background: #F1F3F5; color: #ADB5BD; font: inherit; font-size: 0.78rem; line-height: 1.25; cursor: not-allowed; }
+        .diary-day.has-entry { border-color: #B7E4C7; background: #F0FDF4; color: var(--clover-green); cursor: pointer; font-weight: 700; }
+        .diary-day.has-entry:hover { background: #D8F3DC; transform: translateY(-1px); }
+        .diary-day small { display: block; margin-top: 3px; font-size: 0.68rem; font-weight: 400; }
+        .diary-viewer { margin-top: 16px; padding: 16px; background: #FFFDF0; border: 1px solid #F3D250; border-radius: var(--border-radius); min-width: 0; overflow-wrap: anywhere; }
+        .diary-viewer img { display: block; width: 100%; max-width: 760px; max-height: 620px; margin: 12px auto 0; object-fit: contain; border-radius: 10px; border: 1px solid #E9ECEF; background: #FFFFFF; }
+        .diary-admin-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid #E9ECEF; }
+        .diary-admin-thumb { width: 110px; height: 82px; object-fit: cover; border-radius: 8px; border: 1px solid #E9ECEF; background: #F8F9FA; }
+        .diary-admin-row p { white-space: pre-line; overflow-wrap: anywhere; }
+        .diary-admin-row .event-actions { margin-top: 0; }
         .past-event-card h3 { color: var(--primary-red); margin-bottom: 6px; }
         .feedback-box { margin-top: 13px; padding: 12px; background: #FFFFFF; border-radius: 8px; border-left: 4px solid #F3D250; white-space: pre-line; font-size: 0.9rem; }
         #eventAdminFab { display: flex; position: fixed; top: 92px; right: 20px; z-index: 998; width: 46px; height: 46px; border: none; border-radius: 50%; align-items: center; justify-content: center; background: var(--clover-green); color: #FFFFFF; font-size: 1.25rem; cursor: pointer; box-shadow: 0 4px 12px rgba(39,167,69,0.3); transition: transform 0.2s, background 0.2s; }
@@ -209,6 +229,12 @@
             .admin-event-row .event-actions { margin-top: 0; }
             #eventAdminFab { top: 84px; right: 12px; width: 42px; height: 42px; }
             .event-filters { grid-template-columns: 1fr; }
+            .diary-filters { grid-template-columns: 1fr; }
+            .diary-days { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; padding-left: 7px; padding-right: 7px; }
+            .diary-day { min-height: 42px; font-size: 0.7rem; }
+            .diary-admin-row { grid-template-columns: 82px minmax(0, 1fr); }
+            .diary-admin-thumb { width: 82px; height: 64px; }
+            .diary-admin-row .event-actions { grid-column: 1 / -1; }
             .feedback-item-body { grid-template-columns: 1fr; }
             .feedback-item img { width: min(100%, 240px); max-width: 100%; }
             .event-card, .past-event-card, .event-detail-panel { min-width: 0; overflow-wrap: anywhere; }
@@ -236,6 +262,7 @@
                 <li><a class="nav-link" onclick="showPage('diem-danh-phep')">⏰ Điểm Danh & Nghỉ</a></li>
                 <li><a class="nav-link" onclick="showPage('quy-phi')">💰 Phí & Vắng Không Phép</a></li>
                 <li><a class="nav-link" onclick="showPage('clb-doc-sach-event')">📚 Đọc Sách & Sự Kiện</a></li>
+                <li><a class="nav-link" onclick="showPage('clb-diary')">📸 Nhật ký CLB 5h sáng</a></li>
                 <li><a class="nav-link" onclick="showPage('bang-diem')">📊 Bảng Điểm Danh</a></li>
                 <li><a class="nav-link" onclick="showPage('quy-tac-quyen')">🤝 Quy Tắc & Quyền</a></li>
                 <li><a class="nav-link" onclick="showPage('faq-bqt')">❓ Hỏi Đáp & Ban Quản Trị</a></li>
@@ -767,7 +794,71 @@
             </div>
         </section>
 
-        <!-- 8. BẢNG ĐIỂM DANH -->
+        <!-- 8. NHẬT KÝ CLB 5H SÁNG -->
+        <section id="clb-diary" class="page-section">
+            <div class="card clover-border">
+                <h2>📸 Nhật ký CLB 5h sáng</h2>
+                <p>Những bức ảnh hành trình của CLB được sắp xếp từ mới nhất đến cũ nhất. Bấm vào năm, tháng rồi chọn ngày có ảnh để xem chi tiết.</p>
+                <div class="diary-filters" aria-label="Bộ lọc nhật ký">
+                    <div class="diary-filter">
+                        <label for="diaryFromDate">Từ ngày</label>
+                        <input id="diaryFromDate" type="date" onchange="renderDiary()">
+                    </div>
+                    <div class="diary-filter">
+                        <label for="diaryToDate">Đến ngày</label>
+                        <input id="diaryToDate" type="date" onchange="renderDiary()">
+                    </div>
+                    <button class="btn btn-secondary" type="button" onclick="resetDiaryFilters()" style="justify-self: start;">↺ Xóa bộ lọc</button>
+                </div>
+                <p id="diarySummary" style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 10px;"></p>
+                <div id="diaryTree" class="diary-tree" aria-live="polite"></div>
+                <div id="diaryViewer" class="diary-viewer" hidden aria-live="polite"></div>
+            </div>
+
+            <div class="card">
+                <div class="admin-toolbar">
+                    <div>
+                        <h2 style="color: var(--clover-green); margin-bottom: 4px;">🔐 Quản lý nhật ký</h2>
+                        <p style="font-size: 0.86rem; color: var(--text-muted);">Chỉ quản trị viên có mã quản lý mới được đăng, sửa hoặc xóa ảnh.</p>
+                    </div>
+                    <button id="diaryAdminLoginButton" class="btn btn-success" type="button" onclick="openDiaryAdmin()">🔑 Nhập mã quản lý</button>
+                </div>
+                <div id="diaryAdminLoginBox" hidden>
+                    <div class="admin-form">
+                        <label for="diaryAdminCode">Mã quản lý</label>
+                        <input id="diaryAdminCode" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập mã được cung cấp" onkeydown="if(event.key === 'Enter') unlockDiaryAdmin()">
+                        <div class="admin-actions">
+                            <button class="btn btn-success" type="button" onclick="unlockDiaryAdmin()">Mở quản lý</button>
+                            <button class="btn btn-secondary" type="button" onclick="closeDiaryAdminLogin()">Hủy</button>
+                        </div>
+                        <p id="diaryAdminLoginMessage" class="admin-message" role="status"></p>
+                    </div>
+                </div>
+                <div id="diaryAdminControls" hidden>
+                    <div class="notice-box" style="margin-top: 0; font-size: 0.86rem;">💡 Ảnh mới nhất sẽ tự động nằm ở trên. Lời dẫn là tùy chọn, có thể để trống.</div>
+                    <form id="diaryForm" class="admin-form" onsubmit="saveDiaryEntry(event)" style="margin-top: 14px;">
+                        <input id="diaryId" type="hidden">
+                        <label for="diaryDate">Ngày đăng ảnh</label>
+                        <input id="diaryDate" type="date" required>
+                        <label for="diaryImage">Ảnh nhóm</label>
+                        <input id="diaryImage" type="file" accept="image/*">
+                        <label for="diaryCaption">Lời dẫn (không bắt buộc)</label>
+                        <textarea id="diaryCaption" maxlength="1000" placeholder="Có thể ghi ngắn gọn hôm nay CLB đã làm gì..."></textarea>
+                        <label for="diaryAuthor">Người đăng</label>
+                        <input id="diaryAuthor" type="text" maxlength="100" value="Ban Quản trị CLB 5H Sáng">
+                        <div class="admin-actions">
+                            <button id="diarySaveButton" class="btn btn-success" type="submit">➕ Đăng ảnh nhật ký</button>
+                            <button class="btn btn-secondary" type="button" onclick="resetDiaryForm()">↺ Tạo mới / Hủy sửa</button>
+                            <button class="btn btn-primary" type="button" onclick="lockDiaryAdmin()">🔒 Đóng quản lý</button>
+                        </div>
+                        <p id="diaryMessage" class="admin-message" role="status"></p>
+                    </form>
+                    <div id="diaryAdminList" style="margin-top: 16px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. BẢNG ĐIỂM DANH -->
         <section id="bang-diem" class="page-section">
             <div class="card clover-border">
                 <h2>📊 BẢNG ĐIỂM DANH & CHUYÊN CẦN TRỰC TUYẾN ☘️</h2>
@@ -958,6 +1049,10 @@
             });
 
             document.getElementById('navMenu').classList.remove('show');
+            if (pageId === 'clb-diary') {
+                renderDiary();
+                renderDiaryAdmin();
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -983,6 +1078,7 @@
         const ADMIN_CODE = String.fromCharCode(49, 49, 49);
         const EVENTS_STORAGE_KEY = 'clb5h_sang_events_v1';
         const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
+        const DIARY_STORAGE_KEY = 'clb5h_sang_diary_v1';
         const DEFAULT_EVENT_MONTH = '2026-08';
         const DEFAULT_EVENTS = [
             {
@@ -998,7 +1094,9 @@
 
         let events = loadEvents();
         let trashEvents = loadTrashEvents();
+        let diaryEntries = loadDiaryEntries();
         let adminUnlocked = false;
+        let diaryAdminUnlocked = false;
 
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -1037,6 +1135,51 @@
             localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(trashEvents));
         }
 
+        function getDiaryDate(entry) {
+            return String(entry?.date || '').slice(0, 10);
+        }
+
+        function sortDiaryEntries(items) {
+            return items.sort((a, b) => getDiaryDate(b).localeCompare(getDiaryDate(a)));
+        }
+
+        function normalizeDiaryEntry(item) {
+            const date = String(item?.date || '').slice(0, 10);
+            const image = safeImageSource(item?.image);
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !image) return null;
+            return {
+                id: String(item.id || `diary-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`),
+                date,
+                image,
+                caption: String(item.caption || '').slice(0, 1000),
+                author: String(item.author || 'Ban Quản trị CLB 5H Sáng').slice(0, 100)
+            };
+        }
+
+        function loadDiaryEntries() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY));
+                if (Array.isArray(saved)) return sortDiaryEntries(saved.map(normalizeDiaryEntry).filter(Boolean));
+            } catch (error) {
+                console.warn('Không thể đọc dữ liệu nhật ký đã lưu.', error);
+            }
+            return [];
+        }
+
+        function persistDiary() {
+            localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(sortDiaryEntries(diaryEntries)));
+        }
+
+        function formatDiaryDate(date) {
+            const [year, month, day] = date.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function formatDiaryMonth(yearMonth) {
+            const [year, month] = yearMonth.split('-');
+            return `Tháng ${month}/${year}`;
+        }
+
         function safeImageSource(source) {
             const value = String(source || '');
             return /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(value) || /^https:\/\//i.test(value) ? value : '';
@@ -1063,6 +1206,217 @@
             if (rangeMatch) return `${rangeMatch[2]}-${String(rangeMatch[1]).padStart(2, '0')}`;
             const monthYearMatch = dateText.match(/(?:^|\D)(\d{1,2})[\/-](\d{4})/);
             return monthYearMatch ? `${monthYearMatch[2]}-${String(monthYearMatch[1]).padStart(2, '0')}` : '';
+        }
+
+        function renderDiary() {
+            const target = document.getElementById('diaryTree');
+            const summary = document.getElementById('diarySummary');
+            if (!target) return;
+            const fromDate = document.getElementById('diaryFromDate')?.value || '';
+            const toDate = document.getElementById('diaryToDate')?.value || '';
+            const invalidRange = fromDate && toDate && fromDate > toDate;
+            const filteredEntries = invalidRange ? [] : diaryEntries.filter(entry => {
+                const date = getDiaryDate(entry);
+                return (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
+            });
+            const groups = {};
+            filteredEntries.forEach(entry => {
+                const date = getDiaryDate(entry);
+                const [year, month] = date.split('-');
+                groups[year] ??= {};
+                groups[year][`${year}-${month}`] ??= [];
+                groups[year][`${year}-${month}`].push(entry);
+            });
+            if (summary) {
+                summary.textContent = invalidRange
+                    ? 'Khoảng ngày chưa hợp lệ. Vui lòng chọn ngày bắt đầu không muộn hơn ngày kết thúc.'
+                    : (fromDate || toDate ? `Đang hiển thị ${filteredEntries.length} ảnh theo khoảng ngày đã chọn.` : `Đang hiển thị ${filteredEntries.length} ảnh nhật ký.`);
+            }
+            if (!filteredEntries.length) {
+                target.innerHTML = '<div class="empty-events">Chưa có ảnh nhật ký phù hợp với khoảng ngày đã chọn.</div>';
+                const viewer = document.getElementById('diaryViewer');
+                if (viewer) viewer.hidden = true;
+                return;
+            }
+            const years = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+            target.innerHTML = years.map(year => {
+                const months = Object.keys(groups[year]).sort((a, b) => b.localeCompare(a));
+                return `<details class="diary-year" open><summary>📅 Năm ${year}</summary>${months.map(yearMonth => {
+                    const monthEntries = groups[year][yearMonth];
+                    const [monthYear, monthNumber] = yearMonth.split('-');
+                    const daysInMonth = new Date(Number(monthYear), Number(monthNumber), 0).getDate();
+                    const entryMap = Object.fromEntries(monthEntries.map(entry => [getDiaryDate(entry), entry]));
+                    const days = Array.from({ length: daysInMonth }, (_, index) => {
+                        const day = String(index + 1).padStart(2, '0');
+                        const date = `${yearMonth}-${day}`;
+                        const entry = entryMap[date];
+                        return entry
+                            ? `<button class="diary-day has-entry" type="button" onclick="openDiaryEntry('${escapeHtml(entry.id)}')">Ngày ${index + 1}<small>Có ảnh</small></button>`
+                            : `<button class="diary-day" type="button" disabled aria-disabled="true" title="Ngày này chưa có ảnh">Ngày ${index + 1}<small>Chưa có ảnh</small></button>`;
+                    }).join('');
+                    return `<details class="diary-month" open><summary>🗓️ ${formatDiaryMonth(yearMonth)} · ${monthEntries.length} ảnh</summary><div class="diary-days">${days}</div></details>`;
+                }).join('')}</details>`;
+            }).join('');
+        }
+
+        function openDiaryEntry(id) {
+            const entry = diaryEntries.find(item => item.id === id);
+            const viewer = document.getElementById('diaryViewer');
+            if (!entry || !viewer) return;
+            viewer.innerHTML = `<h3>📸 Nhật ký ngày ${formatDiaryDate(getDiaryDate(entry))}</h3><p style="font-size: 0.84rem; color: var(--text-muted);">Người đăng: ${escapeHtml(entry.author)}</p>${entry.caption ? `<p class="diary-caption">${escapeHtml(entry.caption)}</p>` : ''}<img src="${safeImageSource(entry.image)}" alt="Ảnh nhật ký CLB ngày ${formatDiaryDate(getDiaryDate(entry))}" loading="lazy">`;
+            viewer.hidden = false;
+            viewer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetDiaryFilters() {
+            const fromDate = document.getElementById('diaryFromDate');
+            const toDate = document.getElementById('diaryToDate');
+            if (fromDate) fromDate.value = '';
+            if (toDate) toDate.value = '';
+            renderDiary();
+        }
+
+        function renderDiaryAdmin() {
+            const target = document.getElementById('diaryAdminList');
+            if (!target) return;
+            target.innerHTML = diaryEntries.length ? `<h3 style="color: var(--primary-red); margin-bottom: 4px;">📋 Danh sách ảnh (${diaryEntries.length})</h3>${sortDiaryEntries([...diaryEntries]).map(entry => `
+                <div class="diary-admin-row">
+                    <img class="diary-admin-thumb" src="${safeImageSource(entry.image)}" alt="Ảnh nhật ký ${formatDiaryDate(getDiaryDate(entry))}" loading="lazy">
+                    <div><strong>${formatDiaryDate(getDiaryDate(entry))}</strong><br><small>${escapeHtml(entry.author)}</small>${entry.caption ? `<p style="margin-top: 5px;">${escapeHtml(entry.caption)}</p>` : '<p style="margin-top: 5px; color: var(--text-muted);">Không có lời dẫn.</p>'}</div>
+                    <div class="event-actions"><button class="btn btn-secondary" type="button" onclick="editDiaryEntry('${escapeHtml(entry.id)}')">✏️ Sửa</button><button class="btn btn-primary" type="button" onclick="deleteDiaryEntry('${escapeHtml(entry.id)}')">🗑️ Xóa</button></div>
+                </div>`).join('')}` : '<div class="empty-events">Chưa có ảnh nhật ký nào.</div>';
+        }
+
+        function openDiaryAdmin() {
+            showPage('clb-diary');
+            document.getElementById('diaryAdminLoginBox').hidden = false;
+            document.getElementById('diaryAdminCode').focus();
+            document.getElementById('diaryAdminLoginMessage').textContent = '';
+        }
+
+        function closeDiaryAdminLogin() {
+            document.getElementById('diaryAdminLoginBox').hidden = true;
+            document.getElementById('diaryAdminCode').value = '';
+            document.getElementById('diaryAdminLoginMessage').textContent = '';
+        }
+
+        function unlockDiaryAdmin() {
+            const codeInput = document.getElementById('diaryAdminCode');
+            const message = document.getElementById('diaryAdminLoginMessage');
+            if (codeInput.value.trim() !== ADMIN_CODE) {
+                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+                message.classList.add('error');
+                codeInput.select();
+                return;
+            }
+            diaryAdminUnlocked = true;
+            message.textContent = '';
+            message.classList.remove('error');
+            document.getElementById('diaryAdminLoginBox').hidden = true;
+            document.getElementById('diaryAdminControls').hidden = false;
+            document.getElementById('diaryAdminLoginButton').hidden = true;
+            renderDiaryAdmin();
+            resetDiaryForm();
+        }
+
+        function lockDiaryAdmin() {
+            diaryAdminUnlocked = false;
+            document.getElementById('diaryAdminControls').hidden = true;
+            document.getElementById('diaryAdminLoginButton').hidden = false;
+            closeDiaryAdminLogin();
+            resetDiaryForm();
+        }
+
+        function resetDiaryForm() {
+            const form = document.getElementById('diaryForm');
+            if (!form) return;
+            form.reset();
+            document.getElementById('diaryId').value = '';
+            document.getElementById('diaryAuthor').value = 'Ban Quản trị CLB 5H Sáng';
+            document.getElementById('diarySaveButton').textContent = '➕ Đăng ảnh nhật ký';
+            const message = document.getElementById('diaryMessage');
+            message.textContent = '';
+            message.classList.remove('error');
+        }
+
+        function editDiaryEntry(id) {
+            if (!diaryAdminUnlocked) return;
+            const entry = diaryEntries.find(item => item.id === id);
+            if (!entry) return;
+            document.getElementById('diaryId').value = entry.id;
+            document.getElementById('diaryDate').value = getDiaryDate(entry);
+            document.getElementById('diaryCaption').value = entry.caption || '';
+            document.getElementById('diaryAuthor').value = entry.author || 'Ban Quản trị CLB 5H Sáng';
+            document.getElementById('diaryImage').value = '';
+            document.getElementById('diarySaveButton').textContent = '💾 Cập nhật ảnh nhật ký';
+            const message = document.getElementById('diaryMessage');
+            message.textContent = 'Đang sửa ảnh. Chọn ảnh mới nếu muốn thay ảnh hiện tại.';
+            message.classList.remove('error');
+            document.getElementById('diaryForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function saveDiaryEntry(event) {
+            event.preventDefault();
+            if (!diaryAdminUnlocked) return;
+            const message = document.getElementById('diaryMessage');
+            const id = document.getElementById('diaryId').value;
+            const date = document.getElementById('diaryDate').value;
+            const caption = document.getElementById('diaryCaption').value.trim();
+            const author = document.getElementById('diaryAuthor').value.trim() || 'Ban Quản trị CLB 5H Sáng';
+            const imageFile = document.getElementById('diaryImage').files[0];
+            const existing = diaryEntries.find(item => item.id === id);
+            const duplicate = diaryEntries.find(item => getDiaryDate(item) === date && item.id !== id);
+            if (duplicate) {
+                message.textContent = 'Mỗi ngày chỉ nên có một ảnh nhật ký. Hãy sửa ảnh đã có trong ngày này.';
+                message.classList.add('error');
+                return;
+            }
+            if (!existing && !imageFile) {
+                message.textContent = 'Vui lòng chọn một ảnh nhóm để đăng.';
+                message.classList.add('error');
+                return;
+            }
+            if (imageFile && imageFile.size > 2 * 1024 * 1024) {
+                message.textContent = 'Ảnh cần có dung lượng không quá 2 MB.';
+                message.classList.add('error');
+                return;
+            }
+            const finish = image => {
+                const item = existing || { id: id || `diary-${Date.now()}` };
+                item.date = date;
+                item.caption = caption;
+                item.author = author;
+                item.image = image || existing?.image || '';
+                if (!item.image) return;
+                if (!existing) diaryEntries.push(item);
+                diaryEntries = sortDiaryEntries(diaryEntries);
+                persistDiary();
+                renderDiary();
+                renderDiaryAdmin();
+                const resultMessage = existing ? 'Đã cập nhật ảnh nhật ký.' : 'Đã đăng ảnh nhật ký.';
+                resetDiaryForm();
+                document.getElementById('diaryMessage').textContent = resultMessage;
+            };
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = () => finish(reader.result);
+                reader.onerror = () => {
+                    message.textContent = 'Không thể đọc ảnh. Vui lòng thử lại.';
+                    message.classList.add('error');
+                };
+                reader.readAsDataURL(imageFile);
+            } else finish('');
+        }
+
+        function deleteDiaryEntry(id) {
+            if (!diaryAdminUnlocked) return;
+            const entry = diaryEntries.find(item => item.id === id);
+            if (!entry || !confirm(`Xóa ảnh nhật ký ngày ${formatDiaryDate(getDiaryDate(entry))}?`)) return;
+            diaryEntries = diaryEntries.filter(item => item.id !== id);
+            persistDiary();
+            renderDiary();
+            renderDiaryAdmin();
+            resetDiaryForm();
         }
 
         function renderPublicEvents() {
@@ -1409,10 +1763,10 @@
 
         function exportEvents() {
             if (!adminUnlocked) return;
-            const blob = new Blob([JSON.stringify({ events, trashEvents }, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify({ events, trashEvents, diaryEntries }, null, 2)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'su-kien-clb-5h-sang.json';
+            link.download = 'clb-5h-sang-sao-luu.json';
             link.click();
             URL.revokeObjectURL(link.href);
         }
@@ -1426,6 +1780,7 @@
                     const imported = JSON.parse(reader.result);
                     const importedEvents = Array.isArray(imported) ? imported : imported.events;
                     const importedTrash = Array.isArray(imported) ? [] : imported.trashEvents;
+                    const importedDiary = Array.isArray(imported) ? [] : imported.diaryEntries;
                     if (!Array.isArray(importedEvents) || importedEvents.some(item => !item.id || !item.title || !item.description)) throw new Error('invalid');
                     const normalizeEvent = item => ({
                         id: String(item.id), title: String(item.title).slice(0, 120), date: String(item.date || '').slice(0, 120),
@@ -1437,10 +1792,14 @@
                     });
                     events = importedEvents.map(normalizeEvent);
                     trashEvents = Array.isArray(importedTrash) ? importedTrash.filter(item => item.id && item.title && item.description).map(normalizeEvent) : [];
+                    diaryEntries = Array.isArray(importedDiary) ? sortDiaryEntries(importedDiary.map(normalizeDiaryEntry).filter(Boolean)) : [];
                     persistEvents();
+                    persistDiary();
                     renderPublicEvents();
                     renderAdminEvents();
-                    alert('Đã khôi phục danh sách sự kiện.');
+                    renderDiary();
+                    renderDiaryAdmin();
+                    alert('Đã khôi phục danh sách sự kiện và nhật ký.');
                 } catch (error) {
                     alert('Tệp không hợp lệ. Vui lòng chọn tệp JSON đã được sao lưu từ website.');
                 }
@@ -1449,7 +1808,11 @@
             reader.readAsText(file);
         }
 
-        document.addEventListener('DOMContentLoaded', renderPublicEvents);
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPublicEvents();
+            renderDiary();
+            renderDiaryAdmin();
+        });
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
