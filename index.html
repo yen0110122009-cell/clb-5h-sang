@@ -1377,12 +1377,20 @@
             }));
             if (!legacyItems.length) return;
             for (const { event, item } of legacyItems) {
+                let imageUrl = getFeedbackImage(item);
+                let imagePublicId = item.imagePublicId || '';
+                if (/^data:image\//i.test(imageUrl)) {
+                    const blob = await (await fetch(imageUrl)).blob();
+                    const uploaded = await uploadDiaryImageToCloudinary(new File([blob], `feedback-${item.id}.jpg`, { type: blob.type || 'image/jpeg' }));
+                    imageUrl = uploaded.imageUrl;
+                    imagePublicId = uploaded.publicId;
+                }
                 const saved = await adminFeedbackRequest('create', {
                     eventId: event.id,
                     member: item.member,
                     text: item.text,
-                    imageUrl: getFeedbackImage(item),
-                    imagePublicId: item.imagePublicId || ''
+                    imageUrl,
+                    imagePublicId
                 });
                 const returned = feedbackRowToItem(Array.isArray(saved) ? saved[0] : saved);
                 if (returned) {
