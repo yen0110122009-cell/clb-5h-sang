@@ -841,7 +841,8 @@
                         <label for="diaryDate">Ngày đăng ảnh</label>
                         <input id="diaryDate" type="date" required>
                         <label for="diaryImage">Ảnh nhóm</label>
-                        <input id="diaryImage" type="file" accept="image/*">
+                        <input id="diaryImage" type="file" accept="image/*" multiple>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px;">Có thể chọn nhiều ảnh trong cùng một ngày.</p>
                         <label for="diaryCaption">Lời dẫn (không bắt buộc)</label>
                         <textarea id="diaryCaption" maxlength="1000" placeholder="Có thể ghi ngắn gọn hôm nay CLB đã làm gì..."></textarea>
                         <label for="diaryAuthor">Người đăng</label>
@@ -1245,13 +1246,18 @@
                     const monthEntries = groups[year][yearMonth];
                     const [monthYear, monthNumber] = yearMonth.split('-');
                     const daysInMonth = new Date(Number(monthYear), Number(monthNumber), 0).getDate();
-                    const entryMap = Object.fromEntries(monthEntries.map(entry => [getDiaryDate(entry), entry]));
+                    const entryMap = {};
+                    monthEntries.forEach(entry => {
+                        const date = getDiaryDate(entry);
+                        entryMap[date] ??= [];
+                        entryMap[date].push(entry);
+                    });
                     const days = Array.from({ length: daysInMonth }, (_, index) => {
                         const day = String(index + 1).padStart(2, '0');
                         const date = `${yearMonth}-${day}`;
-                        const entry = entryMap[date];
-                        return entry
-                            ? `<button class="diary-day has-entry" type="button" onclick="openDiaryEntry('${escapeHtml(entry.id)}')">Ngày ${index + 1}<small>Có ảnh</small></button>`
+                        const entries = entryMap[date] || [];
+                        return entries.length
+                            ? `<button class="diary-day has-entry" type="button" onclick="openDiaryDate('${escapeHtml(date)}')">Ngày ${index + 1}<small>${entries.length} ảnh</small></button>`
                             : `<button class="diary-day" type="button" disabled aria-disabled="true" title="Ngày này chưa có ảnh">Ngày ${index + 1}<small>Chưa có ảnh</small></button>`;
                     }).join('');
                     return `<details class="diary-month" open><summary>🗓️ ${formatDiaryMonth(yearMonth)} · ${monthEntries.length} ảnh</summary><div class="diary-days">${days}</div></details>`;
@@ -1261,9 +1267,14 @@
 
         function openDiaryEntry(id) {
             const entry = diaryEntries.find(item => item.id === id);
+            if (entry) openDiaryDate(getDiaryDate(entry));
+        }
+
+        function openDiaryDate(date) {
+            const entries = diaryEntries.filter(item => getDiaryDate(item) === date);
             const viewer = document.getElementById('diaryViewer');
-            if (!entry || !viewer) return;
-            viewer.innerHTML = `<h3>📸 Nhật ký ngày ${formatDiaryDate(getDiaryDate(entry))}</h3><p style="font-size: 0.84rem; color: var(--text-muted);">Người đăng: ${escapeHtml(entry.author)}</p>${entry.caption ? `<p class="diary-caption">${escapeHtml(entry.caption)}</p>` : ''}<img src="${safeImageSource(entry.image)}" alt="Ảnh nhật ký CLB ngày ${formatDiaryDate(getDiaryDate(entry))}" loading="lazy">`;
+            if (!entries.length || !viewer) return;
+            viewer.innerHTML = `<h3>📸 Nhật ký ngày ${formatDiaryDate(date)} · ${entries.length} ảnh</h3>${entries.map((entry, index) => `<article class="diary-viewer-entry"><p style="font-size: 0.84rem; color: var(--text-muted);">Ảnh ${index + 1} · Người đăng: ${escapeHtml(entry.author)}</p>${entry.caption ? `<p class="diary-caption">${escapeHtml(entry.caption)}</p>` : ''}<img src="${safeImageSource(entry.image)}" alt="Ảnh nhật ký CLB ngày ${formatDiaryDate(date)}, ảnh ${index + 1}" loading="lazy"></article>`).join('')}`;
             viewer.hidden = false;
             viewer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
@@ -1363,49 +1374,46 @@
             const date = document.getElementById('diaryDate').value;
             const caption = document.getElementById('diaryCaption').value.trim();
             const author = document.getElementById('diaryAuthor').value.trim() || 'Ban Quản trị CLB 5H Sáng';
-            const imageFile = document.getElementById('diaryImage').files[0];
+            const imageFiles = [...document.getElementById('diaryImage').files];
             const existing = diaryEntries.find(item => item.id === id);
-            const duplicate = diaryEntries.find(item => getDiaryDate(item) === date && item.id !== id);
-            if (duplicate) {
-                message.textContent = 'Mỗi ngày chỉ nên có một ảnh nhật ký. Hãy sửa ảnh đã có trong ngày này.';
-                message.classList.add('error');
-                return;
-            }
-            if (!existing && !imageFile) {
+            if (!existing && !imageFiles.length) {
                 message.textContent = 'Vui lòng chọn một ảnh nhóm để đăng.';
                 message.classList.add('error');
                 return;
             }
-            if (imageFile && imageFile.size > 2 * 1024 * 1024) {
-                message.textContent = 'Ảnh cần có dung lượng không quá 2 MB.';
+            if (imageFiles.some(file => file.size > 2 * 1024 * 1024)) {
+                message.textContent = 'Mỗi ảnh cần có dung lượng không quá 2 MB.';
                 message.classList.add('error');
                 return;
             }
-            const finish = image => {
-                const item = existing || { id: id || `diary-${Date.now()}` };
-                item.date = date;
-                item.caption = caption;
-                item.author = author;
-                item.image = image || existing?.image || '';
-                if (!item.image) return;
-                if (!existing) diaryEntries.push(item);
+            const finish = images => {
+                if (existing) {
+                    existing.date = date;
+                    existing.caption = caption;
+                    existing.author = author;
+                    if (images[0]) existing.image = images[0];
+                } else {
+                    images.forEach((image, index) => diaryEntries.push({ id: `diary-${Date.now()}-${index}`, date, caption, author, image }));
+                }
                 diaryEntries = sortDiaryEntries(diaryEntries);
                 persistDiary();
                 renderDiary();
                 renderDiaryAdmin();
-                const resultMessage = existing ? 'Đã cập nhật ảnh nhật ký.' : 'Đã đăng ảnh nhật ký.';
+                const resultMessage = existing ? 'Đã cập nhật ảnh nhật ký.' : `Đã đăng ${images.length} ảnh nhật ký.`;
                 resetDiaryForm();
                 document.getElementById('diaryMessage').textContent = resultMessage;
             };
-            if (imageFile) {
-                const reader = new FileReader();
-                reader.onload = () => finish(reader.result);
-                reader.onerror = () => {
+            if (imageFiles.length) {
+                Promise.all(imageFiles.map(file => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                }))).then(finish).catch(() => {
                     message.textContent = 'Không thể đọc ảnh. Vui lòng thử lại.';
                     message.classList.add('error');
-                };
-                reader.readAsDataURL(imageFile);
-            } else finish('');
+                });
+            } else finish([]);
         }
 
         function deleteDiaryEntry(id) {
