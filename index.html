@@ -150,11 +150,39 @@
             gap: 10px;
         }
 
+        .events-list { display: grid; gap: 16px; }
+        .event-card { background: #FFFFFF; border: 1px solid #D1E7DD; border-left: 5px solid var(--clover-green); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--card-shadow); }
+        .event-card.is-hidden { opacity: 0.68; border-left-color: #6C757D; }
+        .event-card h3 { color: var(--primary-red); font-size: 1.12rem; margin-bottom: 6px; }
+        .event-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; color: var(--text-muted); font-size: 0.88rem; }
+        .event-content { white-space: pre-line; font-size: 0.92rem; line-height: 1.75; }
+        .event-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .event-actions .btn { padding: 8px 12px; font-size: 0.84rem; }
+        .admin-panel { background: linear-gradient(135deg, #FFFDF0 0%, #F0FDF4 100%); border: 1px solid #D1E7DD; border-radius: var(--border-radius); padding: 18px; margin-top: 18px; }
+        .admin-toolbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 14px; }
+        .admin-form { display: grid; gap: 10px; }
+        .admin-form label { font-size: 0.86rem; font-weight: 600; color: var(--text-dark); }
+        .admin-form input, .admin-form textarea, .admin-form select { width: 100%; padding: 10px 12px; border: 1px solid #CED4DA; border-radius: 8px; font: inherit; font-size: 0.9rem; background: #FFFFFF; }
+        .admin-form textarea { min-height: 135px; resize: vertical; }
+        .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .admin-message { margin-top: 10px; font-size: 0.88rem; color: var(--clover-green); }
+        .admin-message.error { color: var(--primary-red); }
+        .admin-event-row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-top: 1px solid #E9ECEF; }
+        .admin-event-row small { color: var(--text-muted); }
+        .empty-events { padding: 18px; text-align: center; background: #F8F9FA; border-radius: 8px; color: var(--text-muted); }
+        .trash-panel { margin-top: 18px; padding: 14px; background: #FFF5F5; border: 1px dashed #F3B5B9; border-radius: 10px; }
+        .trash-panel h3 { color: var(--primary-red); }
+
         #backToTop {
             display: none; position: fixed; bottom: 20px; right: 20px;
             background: var(--primary-red); color: white; border: none;
             border-radius: 50%; width: 45px; height: 45px; font-size: 1.2rem;
             cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 999;
+        }
+
+        @media (max-width: 600px) {
+            .admin-event-row { flex-direction: column; }
+            .admin-event-row .event-actions { margin-top: 0; }
         }
 
         @media (max-width: 900px) {
@@ -587,39 +615,69 @@
             </div>
         </section>
 
-        <!-- 7. CÂU LẠC BỘ ĐỌC SÁCH & SỰ KIỆN BẠN ĐỒNG HÀNH -->
+        <!-- 7. CÂU LẠC BỘ ĐỌC SÁCH & CÁC SỰ KIỆN -->
         <section id="clb-doc-sach-event" class="page-section">
             <div class="card clover-border">
-                <h2>📢 SỰ KIỆN "BẠN ĐỒNG HÀNH" ☘️</h2>
+                <h2>📢 CÁC SỰ KIỆN CỦA CLB ☘️</h2>
+                <p style="margin-bottom: 14px;">Các sự kiện đang diễn ra sẽ được hiển thị tại đây. Sự kiện <strong>“Bạn đồng hành”</strong> hiện vẫn được giữ nguyên cho đến khi Ban Quản trị cập nhật.</p>
+                <div id="eventsPublicList" class="events-list" aria-live="polite"></div>
 
-                <div class="clover-box" style="margin-top: 12px;">
-                    ❓ <strong>HỖ TRỢ:</strong> Có thắc mắc xin liên hệ trực tiếp cho <strong>Lê Yến Nhi</strong> để được giải đáp.
-                </div>
+                <div class="admin-panel">
+                    <div class="admin-toolbar">
+                        <div>
+                            <h3 style="color: var(--clover-green); margin-bottom: 4px;">🔐 KHU VỰC QUẢN LÝ SỰ KIỆN</h3>
+                            <p style="font-size: 0.86rem; color: var(--text-muted);">Nhập mã quản lý để thêm, sửa, ẩn/gỡ hoặc xóa sự kiện.</p>
+                        </div>
+                        <button id="adminLoginButton" class="btn btn-success" onclick="openAdminLogin()">🔑 Nhập mã quản lý</button>
+                    </div>
 
-                <h3 style="margin-top: 18px; color: var(--primary-red);">📌 TỔNG HỢP CHI TIẾT SỰ KIỆN</h3>
-                <ul style="padding-left: 20px; font-size: 0.92rem; line-height: 1.8;">
-                    <li>🎯 <strong>Nhiệm vụ hàng ngày:</strong> Cùng nhắc nhở nhau dậy sớm và vào học đúng giờ, theo dõi việc học của nhau và động viên khi đối phương nản.</li>
-                    <li>🤝 <strong>Cơ chế:</strong> Thưởng cùng thưởng - Phạt cùng phạt.</li>
-                    <li>📝 <strong>Cú pháp điểm danh mới:</strong> <code style="background:#E8F5E9; padding:2px 6px; color:var(--clover-green); font-weight:bold;">STT - [Tên đội]</code>.</li>
-                </ul>
+                    <div id="adminLoginBox" hidden>
+                        <div class="admin-form">
+                            <label for="adminCode">Mã quản lý</label>
+                            <input id="adminCode" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập mã 111" onkeydown="if(event.key === 'Enter') unlockAdmin()">
+                            <div class="admin-actions">
+                                <button class="btn btn-success" type="button" onclick="unlockAdmin()">Mở quản lý</button>
+                                <button class="btn btn-secondary" type="button" onclick="closeAdminLogin()">Hủy</button>
+                            </div>
+                            <p id="adminLoginMessage" class="admin-message" role="status"></p>
+                        </div>
+                    </div>
 
-                <div style="background:#FFF5F5; padding:14px; border-radius:8px; margin-top:12px; border:1px dashed var(--primary-red);">
-                    <strong style="color:var(--primary-red);">📊 CÁCH TÍNH ĐIỂM ĐỘI HÀNG NGÀY:</strong><br>
-                    <p style="text-align:center; font-weight:bold; margin:8px 0; color:var(--primary-red);">Điểm Đội = (Điểm Cá Nhân A + Điểm Cá Nhân B) / 2</p>
-                    <p style="font-size:0.88rem;"><strong>Áp dụng cơ chế Thưởng/Phạt Đồng Đội:</strong></p>
-                    <p style="font-size:0.88rem;">• <strong>TH1: Cả hai cùng đi học</strong> → Điểm Đội + 5 điểm thưởng.</p>
-                    <p style="font-size:0.88rem;">• <strong>TH2: 1 người đi học + 1 người vắng không phép</strong> → Điểm Đội (dùng -10 cho người vắng) - 10 điểm phạt.</p>
-                    <p style="font-size:0.88rem;">• <strong>TH3: Cả hai cùng vắng không phép</strong> → Điểm Đội - 20 điểm phạt.</p>
-                    <p style="font-size:0.88rem;">• <strong>TH4: Có người nghỉ có phép:</strong><br>
-                        - 1 người nghỉ có phép, 1 người đi học → Điểm Đội = Điểm người đi học / 2.<br>
-                        - Cả 2 cùng nghỉ có phép → Điểm Đội = 0 điểm.
-                    </p>
-                </div>
-
-                <div style="background:#F8F9FA; padding:12px; border-radius:8px; margin-top:12px; font-size:0.88rem;">
-                    🏆 <strong>CƠ CẤU GIẢI THƯỞNG:</strong><br>
-                    🥇 <strong>Giải "Cặp Đôi Có Điểm Cao Nhất":</strong> Dành cho đội có tổng điểm Đội tích lũy cao nhất sau 1 tháng.<br>
-                    🚀 <strong>Giải "Cặp Đôi Đột Phá":</strong> Dành cho đội có sự bứt phá, tiến bộ vượt bậc nhất so với tuần đầu tiên.
+                    <div id="adminControls" hidden>
+                        <div class="notice-box" style="margin-top: 0; font-size: 0.86rem;">
+                            💡 <strong>Lưu ý:</strong> Các thay đổi được lưu trong trình duyệt này. Hãy dùng nút sao lưu để giữ lại dữ liệu khi đổi thiết bị hoặc trình duyệt.
+                        </div>
+                        <form id="eventForm" class="admin-form" onsubmit="saveEvent(event)" style="margin-top: 14px;">
+                            <input id="eventId" type="hidden">
+                            <label for="eventTitle">Tên sự kiện</label>
+                            <input id="eventTitle" type="text" required maxlength="120" placeholder="Ví dụ: Bạn đồng hành">
+                            <label for="eventDate">Thời gian / thời hạn</label>
+                            <input id="eventDate" type="text" maxlength="120" placeholder="Ví dụ: 01/08 – 31/08/2026">
+                            <label for="eventDescription">Nội dung sự kiện</label>
+                            <textarea id="eventDescription" required maxlength="4000" placeholder="Mô tả nhiệm vụ, cách tham gia, giải thưởng..."></textarea>
+                            <label for="eventStatus">Trạng thái hiển thị</label>
+                            <select id="eventStatus">
+                                <option value="active">Đang hiển thị</option>
+                                <option value="hidden">Đang ẩn / đã gỡ khỏi trang công khai</option>
+                            </select>
+                            <div class="admin-actions">
+                                <button class="btn btn-success" type="submit">💾 Lưu sự kiện</button>
+                                <button class="btn btn-secondary" type="button" onclick="resetEventForm()">↺ Tạo mới / Hủy sửa</button>
+                            </div>
+                        </form>
+                        <div id="adminEventsList" style="margin-top: 16px;"></div>
+                        <div class="trash-panel">
+                            <h3>🗑️ Thùng rác</h3>
+                            <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 8px;">Sự kiện bị xóa sẽ được lưu tại đây để bạn khôi phục lại sau này.</p>
+                            <div id="trashEventsList"></div>
+                        </div>
+                        <div class="admin-actions" style="margin-top: 14px;">
+                            <button class="btn btn-secondary" type="button" onclick="exportEvents()">⬇️ Sao lưu sự kiện</button>
+                            <label class="btn btn-secondary" for="importEventsFile">⬆️ Khôi phục từ tệp</label>
+                            <input id="importEventsFile" type="file" accept="application/json" hidden onchange="importEvents(event)">
+                            <button class="btn btn-primary" type="button" onclick="lockAdmin()">🔒 Đóng quản lý</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -850,6 +908,261 @@
                 btn.style.display = "none";
             }
         };
+
+        const ADMIN_CODE = '111';
+        const EVENTS_STORAGE_KEY = 'clb5h_sang_events_v1';
+        const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
+        const DEFAULT_EVENTS = [
+            {
+                id: 'ban-dong-hanh',
+                title: 'Sự kiện “Bạn đồng hành”',
+                date: 'Đang diễn ra',
+                description: '🎯 Nhiệm vụ hàng ngày: Cùng nhắc nhở nhau dậy sớm và vào học đúng giờ, theo dõi việc học của nhau và động viên khi đối phương nản.\n\n🤝 Cơ chế: Thưởng cùng thưởng - Phạt cùng phạt.\n\n📝 Cú pháp điểm danh mới: STT - [Tên đội].\n\n📊 Cách tính điểm đội: (Điểm cá nhân A + Điểm cá nhân B) / 2.\n• Cả hai cùng đi học: Điểm đội + 5 điểm thưởng.\n• Một người đi học, một người vắng không phép: Điểm đội - 10 điểm phạt.\n• Cả hai cùng vắng không phép: Điểm đội - 20 điểm phạt.\n• Có người nghỉ có phép: tính theo quy định của Ban Quản trị.\n\n🏆 Giải thưởng: “Cặp đôi có điểm cao nhất” và “Cặp đôi đột phá”.\n\n❓ Hỗ trợ: Có thắc mắc xin liên hệ trực tiếp cho Lê Yến Nhi để được giải đáp.',
+                status: 'active'
+            }
+        ];
+
+        let events = loadEvents();
+        let trashEvents = loadTrashEvents();
+        let adminUnlocked = false;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[character]));
+        }
+
+        function loadEvents() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(EVENTS_STORAGE_KEY));
+                if (Array.isArray(saved) && saved.length) return saved;
+            } catch (error) {
+                console.warn('Không thể đọc dữ liệu sự kiện đã lưu.', error);
+            }
+            return DEFAULT_EVENTS.map(event => ({ ...event }));
+        }
+
+        function loadTrashEvents() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(TRASH_STORAGE_KEY));
+                return Array.isArray(saved) ? saved : [];
+            } catch (error) {
+                console.warn('Không thể đọc thùng rác sự kiện.', error);
+                return [];
+            }
+        }
+
+        function persistEvents() {
+            localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
+            localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(trashEvents));
+        }
+
+        function renderPublicEvents() {
+            const target = document.getElementById('eventsPublicList');
+            if (!target) return;
+            const visibleEvents = events.filter(event => event.status !== 'hidden');
+            if (!visibleEvents.length) {
+                target.innerHTML = '<div class="empty-events">Hiện chưa có sự kiện nào đang hiển thị.</div>';
+                return;
+            }
+            target.innerHTML = visibleEvents.map(event => `
+                <article class="event-card">
+                    <h3>📌 ${escapeHtml(event.title)}</h3>
+                    <div class="event-meta"><span class="badge-green">${escapeHtml(event.date || 'Chưa cập nhật thời gian')}</span><span>☘️ CLB 5H Sáng</span></div>
+                    <div class="event-content">${escapeHtml(event.description)}</div>
+                </article>
+            `).join('');
+        }
+
+        function openAdminLogin() {
+            document.getElementById('adminLoginBox').hidden = false;
+            document.getElementById('adminCode').focus();
+            document.getElementById('adminLoginMessage').textContent = '';
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('adminLoginBox').hidden = true;
+            document.getElementById('adminCode').value = '';
+            document.getElementById('adminLoginMessage').textContent = '';
+        }
+
+        function unlockAdmin() {
+            const codeInput = document.getElementById('adminCode');
+            const message = document.getElementById('adminLoginMessage');
+            if (codeInput.value.trim() !== ADMIN_CODE) {
+                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+                message.classList.add('error');
+                codeInput.select();
+                return;
+            }
+            adminUnlocked = true;
+            message.textContent = '';
+            message.classList.remove('error');
+            document.getElementById('adminLoginBox').hidden = true;
+            document.getElementById('adminControls').hidden = false;
+            document.getElementById('adminLoginButton').hidden = true;
+            renderAdminEvents();
+            resetEventForm();
+        }
+
+        function lockAdmin() {
+            adminUnlocked = false;
+            document.getElementById('adminControls').hidden = true;
+            document.getElementById('adminLoginButton').hidden = false;
+            resetEventForm();
+        }
+
+        function renderAdminEvents() {
+            const target = document.getElementById('adminEventsList');
+            const trashTarget = document.getElementById('trashEventsList');
+            if (!target || !trashTarget) return;
+            target.innerHTML = events.length
+                ? `<h3 style="color: var(--primary-red); margin-bottom: 4px;">📋 Danh sách sự kiện (${events.length})</h3>` + events.map(event => `
+                    <div class="admin-event-row">
+                        <div><strong>${escapeHtml(event.title)}</strong><br><small>${escapeHtml(event.date || 'Chưa cập nhật thời gian')} · ${event.status === 'hidden' ? 'Đang ẩn/gỡ' : 'Đang hiển thị'}</small></div>
+                        <div class="event-actions">
+                            <button class="btn btn-secondary" type="button" onclick="editEvent('${escapeHtml(event.id)}')">✏️ Sửa</button>
+                            <button class="btn btn-secondary" type="button" onclick="toggleEvent('${escapeHtml(event.id)}')">${event.status === 'hidden' ? '👁️ Hiện lại' : '🙈 Ẩn/gỡ'}</button>
+                            <button class="btn btn-primary" type="button" onclick="deleteEvent('${escapeHtml(event.id)}')">🗑️ Chuyển vào thùng rác</button>
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="empty-events">Chưa có sự kiện đang quản lý.</div>';
+            trashTarget.innerHTML = trashEvents.length
+                ? trashEvents.map(event => `
+                    <div class="admin-event-row">
+                        <div><strong>${escapeHtml(event.title)}</strong><br><small>${escapeHtml(event.date || 'Chưa cập nhật thời gian')} · Đã chuyển vào thùng rác</small></div>
+                        <div class="event-actions">
+                            <button class="btn btn-success" type="button" onclick="restoreEvent('${escapeHtml(event.id)}')">↩️ Khôi phục</button>
+                            <button class="btn btn-primary" type="button" onclick="permanentlyDeleteEvent('${escapeHtml(event.id)}')">❌ Xóa vĩnh viễn</button>
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="empty-events">Thùng rác đang trống.</div>';
+        }
+
+        function saveEvent(event) {
+            event.preventDefault();
+            if (!adminUnlocked) return;
+            const id = document.getElementById('eventId').value || `event-${Date.now()}`;
+            const eventData = {
+                id,
+                title: document.getElementById('eventTitle').value.trim(),
+                date: document.getElementById('eventDate').value.trim(),
+                description: document.getElementById('eventDescription').value.trim(),
+                status: document.getElementById('eventStatus').value
+            };
+            const existingIndex = events.findIndex(item => item.id === id);
+            if (existingIndex >= 0) events[existingIndex] = eventData;
+            else events.unshift(eventData);
+            persistEvents();
+            renderPublicEvents();
+            renderAdminEvents();
+            resetEventForm();
+            alert(existingIndex >= 0 ? 'Đã cập nhật sự kiện.' : 'Đã thêm sự kiện mới.');
+        }
+
+        function editEvent(id) {
+            if (!adminUnlocked) return;
+            const event = events.find(item => item.id === id);
+            if (!event) return;
+            document.getElementById('eventId').value = event.id;
+            document.getElementById('eventTitle').value = event.title;
+            document.getElementById('eventDate').value = event.date || '';
+            document.getElementById('eventDescription').value = event.description;
+            document.getElementById('eventStatus').value = event.status || 'active';
+            document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetEventForm() {
+            const form = document.getElementById('eventForm');
+            if (!form) return;
+            form.reset();
+            document.getElementById('eventId').value = '';
+            document.getElementById('eventStatus').value = 'active';
+        }
+
+        function toggleEvent(id) {
+            if (!adminUnlocked) return;
+            const event = events.find(item => item.id === id);
+            if (!event) return;
+            event.status = event.status === 'hidden' ? 'active' : 'hidden';
+            persistEvents();
+            renderPublicEvents();
+            renderAdminEvents();
+        }
+
+        function deleteEvent(id) {
+            if (!adminUnlocked) return;
+            const event = events.find(item => item.id === id);
+            if (!event || !confirm(`Chuyển sự kiện “${event.title}” vào thùng rác?`)) return;
+            events = events.filter(item => item.id !== id);
+            trashEvents.unshift({ ...event, deletedAt: new Date().toISOString() });
+            persistEvents();
+            renderPublicEvents();
+            renderAdminEvents();
+            resetEventForm();
+        }
+
+        function restoreEvent(id) {
+            if (!adminUnlocked) return;
+            const event = trashEvents.find(item => item.id === id);
+            if (!event) return;
+            events.unshift({ ...event, status: event.status === 'hidden' ? 'hidden' : 'active' });
+            trashEvents = trashEvents.filter(item => item.id !== id);
+            persistEvents();
+            renderPublicEvents();
+            renderAdminEvents();
+        }
+
+        function permanentlyDeleteEvent(id) {
+            if (!adminUnlocked) return;
+            const event = trashEvents.find(item => item.id === id);
+            if (!event || !confirm(`Xóa vĩnh viễn sự kiện “${event.title}”? Không thể khôi phục sau thao tác này.`)) return;
+            trashEvents = trashEvents.filter(item => item.id !== id);
+            persistEvents();
+            renderAdminEvents();
+        }
+
+        function exportEvents() {
+            if (!adminUnlocked) return;
+            const blob = new Blob([JSON.stringify({ events, trashEvents }, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'su-kien-clb-5h-sang.json';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function importEvents(event) {
+            if (!adminUnlocked || !event.target.files[0]) return;
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function() {
+                try {
+                    const imported = JSON.parse(reader.result);
+                    const importedEvents = Array.isArray(imported) ? imported : imported.events;
+                    const importedTrash = Array.isArray(imported) ? [] : imported.trashEvents;
+                    if (!Array.isArray(importedEvents) || importedEvents.some(item => !item.id || !item.title || !item.description)) throw new Error('invalid');
+                    const normalizeEvent = item => ({
+                        id: String(item.id), title: String(item.title).slice(0, 120), date: String(item.date || '').slice(0, 120),
+                        description: String(item.description).slice(0, 4000), status: item.status === 'hidden' ? 'hidden' : 'active'
+                    });
+                    events = importedEvents.map(normalizeEvent);
+                    trashEvents = Array.isArray(importedTrash) ? importedTrash.filter(item => item.id && item.title && item.description).map(normalizeEvent) : [];
+                    persistEvents();
+                    renderPublicEvents();
+                    renderAdminEvents();
+                    alert('Đã khôi phục danh sách sự kiện.');
+                } catch (error) {
+                    alert('Tệp không hợp lệ. Vui lòng chọn tệp JSON đã được sao lưu từ website.');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        document.addEventListener('DOMContentLoaded', renderPublicEvents);
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
