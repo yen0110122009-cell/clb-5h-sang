@@ -174,6 +174,9 @@
         .diary-admin-thumb { width: 110px; height: 82px; object-fit: cover; border-radius: 8px; border: 1px solid #E9ECEF; background: #F8F9FA; }
         .diary-admin-row p { white-space: pre-line; overflow-wrap: anywhere; }
         .diary-admin-row .event-actions { margin-top: 0; }
+        .diary-caption-fields { display: grid; gap: 8px; padding: 10px; background: #F8F9FA; border: 1px solid #E9ECEF; border-radius: 8px; }
+        .diary-caption-field { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 8px; align-items: start; }
+        .diary-caption-field label { font-size: 0.82rem; color: var(--text-muted); padding-top: 9px; }
         .past-event-card h3 { color: var(--primary-red); margin-bottom: 6px; }
         .feedback-box { margin-top: 13px; padding: 12px; background: #FFFFFF; border-radius: 8px; border-left: 4px solid #F3D250; white-space: pre-line; font-size: 0.9rem; }
         #eventAdminFab { display: flex; position: fixed; top: 92px; right: 20px; z-index: 998; width: 46px; height: 46px; border: none; border-radius: 50%; align-items: center; justify-content: center; background: var(--clover-green); color: #FFFFFF; font-size: 1.25rem; cursor: pointer; box-shadow: 0 4px 12px rgba(39,167,69,0.3); transition: transform 0.2s, background 0.2s; }
@@ -235,6 +238,8 @@
             .diary-admin-row { grid-template-columns: 82px minmax(0, 1fr); }
             .diary-admin-thumb { width: 82px; height: 64px; }
             .diary-admin-row .event-actions { grid-column: 1 / -1; }
+            .diary-caption-field { grid-template-columns: 1fr; gap: 3px; }
+            .diary-caption-field label { padding-top: 0; }
             .feedback-item-body { grid-template-columns: 1fr; }
             .feedback-item img { width: min(100%, 240px); max-width: 100%; }
             .event-card, .past-event-card, .event-detail-panel { min-width: 0; overflow-wrap: anywhere; }
@@ -841,10 +846,11 @@
                         <label for="diaryDate">Ngày đăng ảnh</label>
                         <input id="diaryDate" type="date" required>
                         <label for="diaryImage">Ảnh nhóm</label>
-                        <input id="diaryImage" type="file" accept="image/*" multiple>
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px;">Có thể chọn nhiều ảnh trong cùng một ngày.</p>
+                        <input id="diaryImage" type="file" accept="image/*" multiple onchange="renderDiaryCaptionFields()">
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px;">Có thể chọn nhiều ảnh trong cùng một ngày. Mỗi ảnh có lời dẫn riêng.</p>
+                        <div id="diaryCaptionFields" class="diary-caption-fields" hidden></div>
                         <label for="diaryCaption">Lời dẫn (không bắt buộc)</label>
-                        <textarea id="diaryCaption" maxlength="1000" placeholder="Có thể ghi ngắn gọn hôm nay CLB đã làm gì..."></textarea>
+                        <textarea id="diaryCaption" maxlength="1000" placeholder="Có thể ghi lời dẫn cho ảnh đang sửa..."></textarea>
                         <label for="diaryAuthor">Người đăng</label>
                         <input id="diaryAuthor" type="text" maxlength="100" value="Ban Quản trị CLB 5H Sáng">
                         <div class="admin-actions">
@@ -1338,6 +1344,27 @@
             resetDiaryForm();
         }
 
+        function renderDiaryCaptionFields() {
+            const imageInput = document.getElementById('diaryImage');
+            const captionFields = document.getElementById('diaryCaptionFields');
+            const captionLabel = document.querySelector('label[for="diaryCaption"]');
+            const captionInput = document.getElementById('diaryCaption');
+            if (!imageInput || !captionFields || !captionLabel || !captionInput) return;
+            const files = [...imageInput.files];
+            const isEditing = Boolean(document.getElementById('diaryId')?.value);
+            if (!isEditing && files.length > 1) {
+                captionLabel.hidden = true;
+                captionInput.hidden = true;
+                captionFields.hidden = false;
+                captionFields.innerHTML = files.map((file, index) => `<div class="diary-caption-field"><label for="diaryCaption-${index}">Ảnh ${index + 1}</label><textarea id="diaryCaption-${index}" data-diary-caption maxlength="1000" placeholder="Lời dẫn riêng cho ${escapeHtml(file.name)} (không bắt buộc)"></textarea></div>`).join('');
+            } else {
+                captionLabel.hidden = false;
+                captionInput.hidden = false;
+                captionFields.hidden = true;
+                captionFields.innerHTML = '';
+            }
+        }
+
         function resetDiaryForm() {
             const form = document.getElementById('diaryForm');
             if (!form) return;
@@ -1345,6 +1372,7 @@
             document.getElementById('diaryId').value = '';
             document.getElementById('diaryAuthor').value = 'Ban Quản trị CLB 5H Sáng';
             document.getElementById('diarySaveButton').textContent = '➕ Đăng ảnh nhật ký';
+            renderDiaryCaptionFields();
             const message = document.getElementById('diaryMessage');
             message.textContent = '';
             message.classList.remove('error');
@@ -1359,6 +1387,7 @@
             document.getElementById('diaryCaption').value = entry.caption || '';
             document.getElementById('diaryAuthor').value = entry.author || 'Ban Quản trị CLB 5H Sáng';
             document.getElementById('diaryImage').value = '';
+            renderDiaryCaptionFields();
             document.getElementById('diarySaveButton').textContent = '💾 Cập nhật ảnh nhật ký';
             const message = document.getElementById('diaryMessage');
             message.textContent = 'Đang sửa ảnh. Chọn ảnh mới nếu muốn thay ảnh hiện tại.';
@@ -1375,6 +1404,7 @@
             const caption = document.getElementById('diaryCaption').value.trim();
             const author = document.getElementById('diaryAuthor').value.trim() || 'Ban Quản trị CLB 5H Sáng';
             const imageFiles = [...document.getElementById('diaryImage').files];
+            const individualCaptions = [...document.querySelectorAll('[data-diary-caption]')].map(input => input.value.trim());
             const existing = diaryEntries.find(item => item.id === id);
             if (!existing && !imageFiles.length) {
                 message.textContent = 'Vui lòng chọn một ảnh nhóm để đăng.';
@@ -1393,7 +1423,7 @@
                     existing.author = author;
                     if (images[0]) existing.image = images[0];
                 } else {
-                    images.forEach((image, index) => diaryEntries.push({ id: `diary-${Date.now()}-${index}`, date, caption, author, image }));
+                    images.forEach((image, index) => diaryEntries.push({ id: `diary-${Date.now()}-${index}`, date, caption: individualCaptions[index] || caption, author, image }));
                 }
                 diaryEntries = sortDiaryEntries(diaryEntries);
                 persistDiary();
