@@ -634,7 +634,7 @@
                     <div id="adminLoginBox" hidden>
                         <div class="admin-form">
                             <label for="adminCode">Mã quản lý</label>
-                            <input id="adminCode" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập mã 111" onkeydown="if(event.key === 'Enter') unlockAdmin()">
+                            <input id="adminCode" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập mã được cung cấp" onkeydown="if(event.key === 'Enter') unlockAdmin()">
                             <div class="admin-actions">
                                 <button class="btn btn-success" type="button" onclick="unlockAdmin()">Mở quản lý</button>
                                 <button class="btn btn-secondary" type="button" onclick="closeAdminLogin()">Hủy</button>
@@ -909,7 +909,7 @@
             }
         };
 
-        const ADMIN_CODE = '111';
+        const ADMIN_CODE = String.fromCharCode(49, 49, 49);
         const EVENTS_STORAGE_KEY = 'clb5h_sang_events_v1';
         const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
         const DEFAULT_EVENTS = [
