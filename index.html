@@ -803,7 +803,7 @@
         <section id="clb-diary" class="page-section">
             <div class="card clover-border">
                 <h2>📸 Nhật ký CLB 5h sáng</h2>
-                <p>Những bức ảnh hành trình của CLB được sắp xếp từ mới nhất đến cũ nhất. Bấm vào năm, tháng rồi chọn ngày có ảnh để xem chi tiết.</p>
+                <p>Những bức ảnh hành trình của CLB được sắp xếp từ mới nhất đến cũ nhất. Bấm vào năm, tháng rồi chọn ngày có ảnh để xem chi tiết. Ảnh chỉ được tải khi bạn mở ngày tương ứng để trang luôn nhẹ và nhanh hơn.</p>
                 <div class="diary-filters" aria-label="Bộ lọc nhật ký">
                     <div class="diary-filter">
                         <label for="diaryFromDate">Từ ngày</label>
@@ -847,7 +847,7 @@
                         <input id="diaryDate" type="date" required>
                         <label for="diaryImage">Ảnh nhóm</label>
                         <input id="diaryImage" type="file" accept="image/*" multiple onchange="renderDiaryCaptionFields()">
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px;">Có thể chọn nhiều ảnh trong cùng một ngày. Mỗi ảnh có lời dẫn riêng.</p>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px;">Có thể chọn nhiều ảnh trong cùng một ngày. Mỗi ảnh có lời dẫn riêng; ảnh sẽ được tự tối ưu trước khi lưu.</p>
                         <div id="diaryCaptionFields" class="diary-caption-fields" hidden></div>
                         <label for="diaryCaption">Lời dẫn (không bắt buộc)</label>
                         <textarea id="diaryCaption" maxlength="1000" placeholder="Có thể ghi lời dẫn cho ảnh đang sửa..."></textarea>
@@ -856,6 +856,7 @@
                         <div class="admin-actions">
                             <button id="diarySaveButton" class="btn btn-success" type="submit">➕ Đăng ảnh nhật ký</button>
                             <button class="btn btn-secondary" type="button" onclick="resetDiaryForm()">↺ Tạo mới / Hủy sửa</button>
+                            <button class="btn btn-secondary" type="button" onclick="optimizeDiaryImages()">🪄 Tối ưu ảnh cũ</button>
                             <button class="btn btn-primary" type="button" onclick="lockDiaryAdmin()">🔒 Đóng quản lý</button>
                         </div>
                         <p id="diaryMessage" class="admin-message" role="status"></p>
@@ -1086,6 +1087,8 @@
         const EVENTS_STORAGE_KEY = 'clb5h_sang_events_v1';
         const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
         const DIARY_STORAGE_KEY = 'clb5h_sang_diary_v1';
+        const DIARY_IMAGE_STORAGE_PREFIX = 'clb5h_sang_diary_image_';
+        const DIARY_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="12" viewBox="0 0 16 12"%3E%3Crect width="16" height="12" fill="%23f1f3f5"/%3E%3C/svg%3E';
         const DEFAULT_EVENT_MONTH = '2026-08';
         const DEFAULT_EVENTS = [
             {
@@ -1150,31 +1153,74 @@
             return items.sort((a, b) => getDiaryDate(b).localeCompare(getDiaryDate(a)));
         }
 
+        function diaryImageKey(id) {
+            return `${DIARY_IMAGE_STORAGE_PREFIX}${id}`;
+        }
+
         function normalizeDiaryEntry(item) {
             const date = String(item?.date || '').slice(0, 10);
             const image = safeImageSource(item?.image);
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !image) return null;
+            const imageKey = String(item?.imageKey || '').startsWith(DIARY_IMAGE_STORAGE_PREFIX) ? String(item.imageKey) : (image ? diaryImageKey(String(item.id || 'pending')) : '');
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (!image && !imageKey)) return null;
             return {
                 id: String(item.id || `diary-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`),
                 date,
                 image,
+                imageKey,
                 caption: String(item.caption || '').slice(0, 1000),
                 author: String(item.author || 'Ban Quản trị CLB 5H Sáng').slice(0, 100)
             };
         }
 
+        function getDiaryImage(entry) {
+            if (!entry) return '';
+            if (entry.image) return safeImageSource(entry.image);
+            return safeImageSource(localStorage.getItem(entry.imageKey || diaryImageKey(entry.id)));
+        }
+
         function loadDiaryEntries() {
             try {
                 const saved = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY));
-                if (Array.isArray(saved)) return sortDiaryEntries(saved.map(normalizeDiaryEntry).filter(Boolean));
+                if (Array.isArray(saved)) {
+                    const entries = sortDiaryEntries(saved.map(normalizeDiaryEntry).filter(Boolean));
+                    const needsMigration = saved.some(item => item.image);
+                    if (needsMigration) {
+                        entries.forEach(entry => {
+                            const image = getDiaryImage(entry);
+                            const key = entry.imageKey || diaryImageKey(entry.id);
+                            if (image) localStorage.setItem(key, image);
+                            entry.imageKey = key;
+                            entry.image = '';
+                        });
+                        persistDiarySnapshot(entries);
+                    } else {
+                        entries.forEach(entry => {
+                            entry.imageKey = entry.imageKey || diaryImageKey(entry.id);
+                            entry.image = '';
+                        });
+                    }
+                    return entries;
+                }
             } catch (error) {
                 console.warn('Không thể đọc dữ liệu nhật ký đã lưu.', error);
             }
             return [];
         }
 
+        function persistDiarySnapshot(entries) {
+            const compactEntries = sortDiaryEntries(entries).map(entry => {
+                const image = getDiaryImage(entry);
+                const imageKey = entry.imageKey || diaryImageKey(entry.id);
+                if (image) localStorage.setItem(imageKey, image);
+                entry.image = '';
+                entry.imageKey = imageKey;
+                return { ...entry, image: '', imageKey };
+            });
+            localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(compactEntries));
+        }
+
         function persistDiary() {
-            localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(sortDiaryEntries(diaryEntries)));
+            persistDiarySnapshot(diaryEntries);
         }
 
         function formatDiaryDate(date) {
@@ -1280,7 +1326,7 @@
             const entries = diaryEntries.filter(item => getDiaryDate(item) === date);
             const viewer = document.getElementById('diaryViewer');
             if (!entries.length || !viewer) return;
-            viewer.innerHTML = `<h3>📸 Nhật ký ngày ${formatDiaryDate(date)} · ${entries.length} ảnh</h3>${entries.map((entry, index) => `<article class="diary-viewer-entry"><p style="font-size: 0.84rem; color: var(--text-muted);">Ảnh ${index + 1} · Người đăng: ${escapeHtml(entry.author)}</p>${entry.caption ? `<p class="diary-caption">${escapeHtml(entry.caption)}</p>` : ''}<img src="${safeImageSource(entry.image)}" alt="Ảnh nhật ký CLB ngày ${formatDiaryDate(date)}, ảnh ${index + 1}" loading="lazy"></article>`).join('')}`;
+            viewer.innerHTML = `<h3>📸 Nhật ký ngày ${formatDiaryDate(date)} · ${entries.length} ảnh</h3>${entries.map((entry, index) => `<article class="diary-viewer-entry"><p style="font-size: 0.84rem; color: var(--text-muted);">Ảnh ${index + 1} · Người đăng: ${escapeHtml(entry.author)}</p>${entry.caption ? `<p class="diary-caption">${escapeHtml(entry.caption)}</p>` : ''}<img src="${getDiaryImage(entry)}" alt="Ảnh nhật ký CLB ngày ${formatDiaryDate(date)}, ảnh ${index + 1}" loading="lazy"></article>`).join('')}`;
             viewer.hidden = false;
             viewer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
@@ -1298,10 +1344,91 @@
             if (!target) return;
             target.innerHTML = diaryEntries.length ? `<h3 style="color: var(--primary-red); margin-bottom: 4px;">📋 Danh sách ảnh (${diaryEntries.length})</h3>${sortDiaryEntries([...diaryEntries]).map(entry => `
                 <div class="diary-admin-row">
-                    <img class="diary-admin-thumb" src="${safeImageSource(entry.image)}" alt="Ảnh nhật ký ${formatDiaryDate(getDiaryDate(entry))}" loading="lazy">
+                    <img class="diary-admin-thumb lazy-diary-image" src="${DIARY_PLACEHOLDER}" data-diary-key="${escapeHtml(entry.imageKey || diaryImageKey(entry.id))}" alt="Ảnh nhật ký ${formatDiaryDate(getDiaryDate(entry))}" loading="lazy">
                     <div><strong>${formatDiaryDate(getDiaryDate(entry))}</strong><br><small>${escapeHtml(entry.author)}</small>${entry.caption ? `<p style="margin-top: 5px;">${escapeHtml(entry.caption)}</p>` : '<p style="margin-top: 5px; color: var(--text-muted);">Không có lời dẫn.</p>'}</div>
                     <div class="event-actions"><button class="btn btn-secondary" type="button" onclick="editDiaryEntry('${escapeHtml(entry.id)}')">✏️ Sửa</button><button class="btn btn-primary" type="button" onclick="deleteDiaryEntry('${escapeHtml(entry.id)}')">🗑️ Xóa</button></div>
                 </div>`).join('')}` : '<div class="empty-events">Chưa có ảnh nhật ký nào.</div>';
+            initLazyDiaryImages();
+        }
+
+        function readFileAsDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function compressDiarySource(source) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.onload = () => {
+                    const maxSide = 1600;
+                    const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+                    canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+                    const context = canvas.getContext('2d');
+                    if (!context) return reject(new Error('canvas-unavailable'));
+                    context.fillStyle = '#FFFFFF';
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.82));
+                };
+                image.onerror = reject;
+                image.src = source;
+            });
+        }
+
+        async function compressDiaryImage(file) {
+            const source = await readFileAsDataUrl(file);
+            return compressDiarySource(source);
+        }
+
+        async function optimizeDiaryImages() {
+            if (!diaryAdminUnlocked || !diaryEntries.length) return;
+            const message = document.getElementById('diaryMessage');
+            message.textContent = 'Đang tối ưu ảnh cũ, vui lòng chờ...';
+            message.classList.remove('error');
+            try {
+                for (const entry of diaryEntries) {
+                    const source = getDiaryImage(entry);
+                    if (source) localStorage.setItem(entry.imageKey || diaryImageKey(entry.id), await compressDiarySource(source));
+                }
+                renderDiary();
+                renderDiaryAdmin();
+                message.textContent = `Đã tối ưu ${diaryEntries.length} ảnh nhật ký.`;
+            } catch (error) {
+                message.textContent = 'Không thể tối ưu một hoặc nhiều ảnh. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
+        function loadLazyDiaryImage(image) {
+            const key = image?.dataset?.diaryKey;
+            if (!key) return;
+            const source = safeImageSource(localStorage.getItem(key));
+            if (source) {
+                image.src = source;
+                image.removeAttribute('data-diary-key');
+            }
+        }
+
+        function initLazyDiaryImages() {
+            const images = [...document.querySelectorAll('.lazy-diary-image[data-diary-key]')];
+            if (!images.length) return;
+            if (!('IntersectionObserver' in window)) {
+                images.forEach(loadLazyDiaryImage);
+                return;
+            }
+            const observer = new IntersectionObserver(entries => {
+                entries.filter(entry => entry.isIntersecting).forEach(entry => {
+                    loadLazyDiaryImage(entry.target);
+                    observer.unobserve(entry.target);
+                });
+            }, { rootMargin: '160px' });
+            images.forEach(image => observer.observe(image));
         }
 
         function openDiaryAdmin() {
@@ -1434,12 +1561,7 @@
                 document.getElementById('diaryMessage').textContent = resultMessage;
             };
             if (imageFiles.length) {
-                Promise.all(imageFiles.map(file => new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                }))).then(finish).catch(() => {
+                Promise.all(imageFiles.map(compressDiaryImage)).then(finish).catch(() => {
                     message.textContent = 'Không thể đọc ảnh. Vui lòng thử lại.';
                     message.classList.add('error');
                 });
@@ -1801,7 +1923,8 @@
 
         function exportEvents() {
             if (!adminUnlocked) return;
-            const blob = new Blob([JSON.stringify({ events, trashEvents, diaryEntries }, null, 2)], { type: 'application/json' });
+            const diaryBackup = diaryEntries.map(entry => ({ ...entry, image: getDiaryImage(entry) }));
+            const blob = new Blob([JSON.stringify({ events, trashEvents, diaryEntries: diaryBackup }, null, 2)], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = 'clb-5h-sang-sao-luu.json';
