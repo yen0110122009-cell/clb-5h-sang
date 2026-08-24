@@ -1091,6 +1091,7 @@
         const SUPABASE_URL = 'https://cuompgnxcbzufaeodgvx.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7aYuYqRgExVRMDGoC-WuQg_vDv18v4L';
         const SUPABASE_DIARY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-diary`;
+        const SUPABASE_FEEDBACK_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-feedback`;
         const CLOUDINARY_CLOUD_NAME = 'ub55zqyk';
         const CLOUDINARY_UPLOAD_PRESET = 'clb5h_diary_unsigned';
         const CLOUDINARY_UPLOAD_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -1114,6 +1115,8 @@
         let diarySyncPending = true;
         let diarySyncError = '';
         let diaryAdminCodeToken = '';
+        let eventAdminCodeToken = '';
+        let feedbackSyncError = '';
         let adminUnlocked = false;
         let diaryAdminUnlocked = false;
 
@@ -1312,15 +1315,111 @@
             return /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(value) || /^https:\/\//i.test(value) ? value : '';
         }
 
+        function getFeedbackImage(item) {
+            return safeImageSource(item?.imageUrl) || safeImageSource(item?.image);
+        }
+
+        function feedbackRowToItem(row) {
+            return {
+                id: String(row?.id || ''),
+                member: String(row?.member || '').slice(0, 80),
+                text: String(row?.feedback_text || '').slice(0, 2000),
+                image: safeImageSource(row?.image_url),
+                imageUrl: safeImageSource(row?.image_url),
+                imagePublicId: String(row?.image_public_id || '')
+            };
+        }
+
+        function isRemoteFeedbackId(id) {
+            return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(id || ''));
+        }
+
+        async function fetchEventFeedbackFromSupabase() {
+            const params = new URLSearchParams({
+                select: 'id,event_id,member,feedback_text,image_url,image_public_id,created_at',
+                order: 'created_at.asc'
+            });
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/clb5h_event_feedback?${params}`, {
+                headers: {
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                }
+            });
+            const result = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(result?.message || 'supabase-feedback-read-failed');
+            const rows = Array.isArray(result) ? result : [];
+            const legacyByEvent = new Map(events.map(event => [event.id, (event.feedback || []).filter(item => !isRemoteFeedbackId(item.id))]));
+            events.forEach(event => { event.feedback = [...(legacyByEvent.get(event.id) || [])]; });
+            rows.forEach(row => {
+                const targetEvent = events.find(event => event.id === String(row.event_id));
+                if (targetEvent) targetEvent.feedback.push(feedbackRowToItem(row));
+            });
+            persistEvents();
+            feedbackSyncError = '';
+        }
+
+        async function syncEventFeedbackFromSupabase() {
+            try {
+                await fetchEventFeedbackFromSupabase();
+            } catch (error) {
+                console.warn('Không thể tải cảm nhận từ Supabase.', error);
+                feedbackSyncError = 'Chưa kết nối được dữ liệu cảm nhận chung.';
+            }
+            renderPublicEvents();
+            if (adminUnlocked) renderAdminEvents();
+        }
+
+        async function migrateLegacyFeedbackToSupabase() {
+            if (!eventAdminCodeToken) return;
+            const legacyItems = [];
+            events.forEach(event => (event.feedback || []).forEach(item => {
+                if (!isRemoteFeedbackId(item.id)) legacyItems.push({ event, item });
+            }));
+            if (!legacyItems.length) return;
+            for (const { event, item } of legacyItems) {
+                const saved = await adminFeedbackRequest('create', {
+                    eventId: event.id,
+                    member: item.member,
+                    text: item.text,
+                    imageUrl: getFeedbackImage(item),
+                    imagePublicId: item.imagePublicId || ''
+                });
+                const returned = feedbackRowToItem(Array.isArray(saved) ? saved[0] : saved);
+                if (returned) {
+                    event.feedback = (event.feedback || []).map(candidate => candidate.id === item.id ? returned : candidate);
+                }
+            }
+            persistEvents();
+            renderPublicEvents();
+            renderAdminEvents();
+        }
+
+        async function adminFeedbackRequest(action, item) {
+            if (!eventAdminCodeToken) throw new Error('admin-session-required');
+            const response = await fetch(SUPABASE_FEEDBACK_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ action, code: eventAdminCodeToken, item })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result?.error || 'supabase-feedback-write-failed');
+            return result;
+        }
+
         function renderFeedbackHtml(feedback) {
             const items = Array.isArray(feedback) ? feedback : [];
-            if (!items.length) return '<div class="empty-events">Chưa có cảm nhận nào được cập nhật.</div>';
-            return `<div class="feedback-list">${items.map(item => `
+            const syncNotice = feedbackSyncError ? `<p style="font-size: 0.82rem; color: var(--primary-red);">${escapeHtml(feedbackSyncError)}</p>` : '';
+            if (!items.length) return `${syncNotice}<div class="empty-events">Chưa có cảm nhận nào được cập nhật.</div>`;
+            return `${syncNotice}<div class="feedback-list">${items.map(item => `
                 <details class="feedback-item">
                     <summary>💬 ${escapeHtml(item.member || 'Thành viên CLB')}</summary>
                     <div class="feedback-item-body">
                         <div>${item.text ? `<p style="white-space: pre-line;">${escapeHtml(item.text)}</p>` : '<p style="color: var(--text-muted);">Thành viên chưa để lại nội dung chữ.</p>'}</div>
-                        ${safeImageSource(item.image) ? `<img src="${safeImageSource(item.image)}" alt="Ảnh cảm nhận của ${escapeHtml(item.member || 'thành viên')}" loading="lazy">` : '<p style="color: var(--text-muted);">Chưa có ảnh cảm nhận.</p>'}
+                        ${getFeedbackImage(item) ? `<img src="${getFeedbackImage(item)}" alt="Ảnh cảm nhận của ${escapeHtml(item.member || 'thành viên')}" loading="lazy">` : '<p style="color: var(--text-muted);">Chưa có ảnh cảm nhận.</p>'}
                     </div>
                 </details>
             `).join('')}</div>`;
@@ -1795,6 +1894,7 @@
                 return;
             }
             adminUnlocked = true;
+            eventAdminCodeToken = codeInput.value.trim();
             message.textContent = '';
             message.classList.remove('error');
             document.getElementById('adminLoginBox').hidden = true;
@@ -1803,10 +1903,19 @@
             renderPublicEvents();
             renderAdminEvents();
             resetEventForm();
+            migrateLegacyFeedbackToSupabase().catch(error => {
+                console.warn('Không thể chuyển cảm nhận cũ lên Supabase.', error);
+                const feedbackMessage = document.getElementById('feedbackMessage');
+                if (feedbackMessage) {
+                    feedbackMessage.textContent = 'Một số cảm nhận cũ chưa được đồng bộ. Vui lòng thử lại sau.';
+                    feedbackMessage.classList.add('error');
+                }
+            });
         }
 
         function lockAdmin() {
             adminUnlocked = false;
+            eventAdminCodeToken = '';
             document.getElementById('adminControls').hidden = true;
             document.getElementById('adminLoginButton').hidden = false;
             renderPublicEvents();
@@ -1929,7 +2038,7 @@
             }
         }
 
-        function addFeedback(event) {
+        async function addFeedback(event) {
             event.preventDefault();
             if (!adminUnlocked) return;
             const eventId = document.getElementById('eventId').value;
@@ -1954,32 +2063,40 @@
                 message.classList.add('error');
                 return;
             }
-            const saveFeedback = image => {
+            const existingFeedback = (targetEvent.feedback || []).find(item => item.id === feedbackId);
+            message.classList.remove('error');
+            message.textContent = imageFile ? 'Đang nén và tải ảnh cảm nhận lên Cloudinary...' : 'Đang lưu cảm nhận lên Supabase...';
+            try {
+                let imageUrl = getFeedbackImage(existingFeedback);
+                let imagePublicId = existingFeedback?.imagePublicId || '';
+                if (imageFile) {
+                    const uploaded = await uploadDiaryImageToCloudinary(imageFile);
+                    imageUrl = uploaded.imageUrl;
+                    imagePublicId = uploaded.publicId;
+                }
+                const draft = { id: feedbackId, eventId, member, text, imageUrl, imagePublicId };
+                const saved = await adminFeedbackRequest(existingFeedback ? 'update' : 'create', draft);
+                const returned = feedbackRowToItem(Array.isArray(saved) ? saved[0] : saved);
                 targetEvent.feedback = Array.isArray(targetEvent.feedback) ? targetEvent.feedback : [];
-                const existingFeedback = targetEvent.feedback.find(item => item.id === feedbackId);
                 if (existingFeedback) {
-                    existingFeedback.member = member;
-                    existingFeedback.text = text;
-                    if (image) existingFeedback.image = image;
+                    const index = targetEvent.feedback.findIndex(item => item.id === feedbackId);
+                    targetEvent.feedback[index] = returned || { ...existingFeedback, ...draft };
                 } else {
-                    targetEvent.feedback.push({ id: `feedback-${Date.now()}`, member, text, image: image || '' });
+                    targetEvent.feedback.push(returned || { ...draft, id: `feedback-${Date.now()}`, image: imageUrl });
                 }
                 persistEvents();
                 renderPublicEvents();
                 renderAdminEvents();
                 renderAdminFeedback(targetEvent);
                 resetFeedbackForm();
-                message.textContent = existingFeedback ? 'Đã cập nhật cảm nhận của thành viên.' : 'Đã thêm cảm nhận của thành viên.';
-            };
-            if (imageFile) {
-                const reader = new FileReader();
-                reader.onload = () => saveFeedback(reader.result);
-                reader.onerror = () => {
-                    message.textContent = 'Không thể đọc ảnh. Vui lòng thử lại.';
-                    message.classList.add('error');
-                };
-                reader.readAsDataURL(imageFile);
-            } else saveFeedback('');
+                message.textContent = existingFeedback ? 'Đã cập nhật cảm nhận trên Supabase.' : 'Đã thêm cảm nhận trên Supabase.';
+            } catch (error) {
+                console.error('Không thể lưu cảm nhận.', error);
+                message.textContent = error.message === 'invalid-admin-code'
+                    ? 'Phiên quản trị không hợp lệ. Vui lòng mở lại bằng mã quản lý.'
+                    : 'Không thể lưu cảm nhận lên Supabase. Vui lòng kiểm tra kết nối và thử lại.';
+                message.classList.add('error');
+            }
         }
 
         function editFeedback(feedbackId) {
@@ -1999,16 +2116,27 @@
             document.getElementById('feedbackForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        function removeFeedback(feedbackId) {
+        async function removeFeedback(feedbackId) {
             if (!adminUnlocked) return;
             const eventId = document.getElementById('eventId').value;
             const targetEvent = events.find(item => item.id === eventId);
-            if (!targetEvent || !confirm('Xóa cảm nhận này khỏi sự kiện?')) return;
-            targetEvent.feedback = (targetEvent.feedback || []).filter(item => item.id !== feedbackId);
-            persistEvents();
-            renderPublicEvents();
-            renderAdminEvents();
-            renderAdminFeedback(targetEvent);
+            const feedback = targetEvent?.feedback?.find(item => item.id === feedbackId);
+            if (!targetEvent || !feedback || !confirm('Xóa cảm nhận này khỏi sự kiện?')) return;
+            const message = document.getElementById('feedbackMessage');
+            try {
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(feedback.id)) {
+                    await adminFeedbackRequest('delete', feedback);
+                }
+                targetEvent.feedback = (targetEvent.feedback || []).filter(item => item.id !== feedbackId);
+                persistEvents();
+                renderPublicEvents();
+                renderAdminEvents();
+                renderAdminFeedback(targetEvent);
+                message.textContent = 'Đã xóa cảm nhận khỏi Supabase.';
+            } catch (error) {
+                message.textContent = 'Không thể xóa cảm nhận trên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
         }
 
         function toggleEvent(id) {
@@ -2106,6 +2234,7 @@
             renderDiary();
             renderDiaryAdmin();
             syncDiaryFromSupabase();
+            syncEventFeedbackFromSupabase();
         });
 
         function scrollToTop() {
