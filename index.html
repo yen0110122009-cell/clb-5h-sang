@@ -161,19 +161,25 @@
         #eventAdminFab:active { transform: scale(0.96); }
         .event-card { background: #FFFFFF; border: 1px solid #D1E7DD; border-left: 5px solid var(--clover-green); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--card-shadow); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
         .event-card:hover, .event-card:focus { transform: translateY(-2px); box-shadow: 0 7px 22px rgba(39,167,69,0.12); outline: none; }
-        .event-detail-panel { margin-top: 16px; padding: 18px; background: #F0FDF4; border: 1px solid #B7E4C7; border-radius: var(--border-radius); }
+        .event-detail-panel { margin-top: 16px; padding: 18px; background: #F0FDF4; border: 1px solid #B7E4C7; border-radius: var(--border-radius); min-width: 0; overflow-wrap: anywhere; }
+        .event-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 16px; padding: 12px; background: #F8F9FA; border: 1px solid #E9ECEF; border-radius: 10px; }
+        .event-filter label { display: block; margin-bottom: 4px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
+        .event-filter select { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #CED4DA; border-radius: 8px; background: #FFFFFF; font: inherit; font-size: 0.88rem; }
         .event-detail-panel h3 { color: var(--clover-green); }
         .feedback-list { display: grid; gap: 12px; margin-top: 10px; }
         .feedback-item { padding: 0; background: #FFFFFF; border-radius: 8px; border-left: 4px solid #F3D250; overflow: hidden; }
         .feedback-item summary { padding: 12px; cursor: pointer; font-weight: 600; list-style-position: inside; }
         .feedback-item summary:hover { background: #FFFDF0; }
-        .feedback-item-body { display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 12px; align-items: start; padding: 0 12px 12px; }
+        .feedback-item-body { display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 12px; align-items: start; padding: 0 12px 12px; min-width: 0; overflow-wrap: anywhere; }
         .feedback-item img { width: 160px; max-height: 180px; object-fit: cover; border-radius: 7px; border: 1px solid #E9ECEF; }
         .feedback-manager { margin-top: 16px; padding: 14px; border: 1px solid #D1E7DD; border-radius: 10px; background: #FFFFFF; }
         .event-card.is-hidden { opacity: 0.68; border-left-color: #6C757D; }
         .event-card h3 { color: var(--primary-red); font-size: 1.12rem; margin-bottom: 6px; }
+        .event-card-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .event-edit-button { flex: 0 0 auto; padding: 6px 9px; border: 1px solid #B7E4C7; border-radius: 7px; background: #F0FDF4; color: var(--clover-green); font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .event-edit-button:hover { background: var(--clover-green); color: #FFFFFF; }
         .event-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; color: var(--text-muted); font-size: 0.88rem; }
-        .event-content { white-space: pre-line; font-size: 0.92rem; line-height: 1.75; }
+        .event-content { white-space: pre-line; overflow-wrap: anywhere; word-break: break-word; font-size: 0.92rem; line-height: 1.75; }
         .event-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
         .event-actions .btn { padding: 8px 12px; font-size: 0.84rem; }
         .admin-panel { background: linear-gradient(135deg, #FFFDF0 0%, #F0FDF4 100%); border: 1px solid #D1E7DD; border-radius: var(--border-radius); padding: 18px; margin-top: 18px; }
@@ -202,6 +208,10 @@
             .admin-event-row { flex-direction: column; }
             .admin-event-row .event-actions { margin-top: 0; }
             #eventAdminFab { top: 84px; right: 12px; width: 42px; height: 42px; }
+            .event-filters { grid-template-columns: 1fr; }
+            .feedback-item-body { grid-template-columns: 1fr; }
+            .feedback-item img { width: min(100%, 240px); max-width: 100%; }
+            .event-card, .past-event-card, .event-detail-panel { min-width: 0; overflow-wrap: anywhere; }
         }
 
         @media (max-width: 900px) {
@@ -639,6 +649,22 @@
             <div class="card clover-border">
                 <h2>📢 CÁC SỰ KIỆN CỦA CLB ☘️</h2>
                 <p style="margin-bottom: 14px;">Các sự kiện đang diễn ra sẽ được hiển thị tại đây. Sự kiện <strong>“Bạn đồng hành”</strong> hiện vẫn được giữ nguyên cho đến khi Ban Quản trị cập nhật.</p>
+                <div class="event-filters" aria-label="Bộ lọc sự kiện">
+                    <div class="event-filter">
+                        <label for="eventMonthFilter">Lọc theo tháng</label>
+                        <input id="eventMonthFilter" type="month" onchange="renderPublicEvents()" style="width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #CED4DA; border-radius: 8px; background: #FFFFFF; font: inherit; font-size: 0.88rem;">
+                    </div>
+                    <div class="event-filter">
+                        <label for="eventStatusFilter">Lọc theo trạng thái</label>
+                        <select id="eventStatusFilter" onchange="renderPublicEvents()">
+                            <option value="all">Tất cả sự kiện</option>
+                            <option value="active">Đang diễn ra</option>
+                            <option value="ended">Đã kết thúc</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" type="button" onclick="resetEventFilters()" style="justify-self: start;">↺ Xóa bộ lọc</button>
+                </div>
+                <p id="eventFilterSummary" style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 10px;"></p>
                 <div id="eventsPublicList" class="events-list" aria-live="polite"></div>
                 <div id="eventDetailPanel" class="event-detail-panel" hidden aria-live="polite"></div>
                 <h3 class="events-subtitle">🗂️ SỰ KIỆN ĐÃ DIỄN RA</h3>
@@ -675,6 +701,8 @@
                             <input id="eventTitle" type="text" required maxlength="120" placeholder="Ví dụ: Bạn đồng hành">
                             <label for="eventDate">Thời gian / thời hạn</label>
                             <input id="eventDate" type="text" maxlength="120" placeholder="Ví dụ: 01/08 – 31/08/2026">
+                            <label for="eventMonth">Tháng của sự kiện (dùng cho bộ lọc)</label>
+                            <input id="eventMonth" type="month">
                             <label for="eventDescription">Nội dung sự kiện</label>
                             <textarea id="eventDescription" required maxlength="4000" placeholder="Mô tả nhiệm vụ, cách tham gia, giải thưởng..."></textarea>
                             <label for="eventStatus">Trạng thái hiển thị</label>
@@ -955,6 +983,7 @@
         const ADMIN_CODE = String.fromCharCode(49, 49, 49);
         const EVENTS_STORAGE_KEY = 'clb5h_sang_events_v1';
         const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
+        const DEFAULT_EVENT_MONTH = '2026-08';
         const DEFAULT_EVENTS = [
             {
                 id: 'ban-dong-hanh',
@@ -962,6 +991,7 @@
                 date: 'Đang diễn ra',
                 description: '🎯 Nhiệm vụ hàng ngày: Cùng nhắc nhở nhau dậy sớm và vào học đúng giờ, theo dõi việc học của nhau và động viên khi đối phương nản.\n\n🤝 Cơ chế: Thưởng cùng thưởng - Phạt cùng phạt.\n\n📝 Cú pháp điểm danh mới: STT - [Tên đội].\n\n📊 Cách tính điểm đội: (Điểm cá nhân A + Điểm cá nhân B) / 2.\n• Cả hai cùng đi học: Điểm đội + 5 điểm thưởng.\n• Một người đi học, một người vắng không phép: Điểm đội - 10 điểm phạt.\n• Cả hai cùng vắng không phép: Điểm đội - 20 điểm phạt.\n• Có người nghỉ có phép: tính theo quy định của Ban Quản trị.\n\n🏆 Giải thưởng: “Cặp đôi có điểm cao nhất” và “Cặp đôi đột phá”.\n\n❓ Hỗ trợ: Có thắc mắc xin liên hệ trực tiếp cho Lê Yến Nhi để được giải đáp.',
                 status: 'active',
+                month: '2026-08',
                 feedback: []
             }
         ];
@@ -979,7 +1009,13 @@
         function loadEvents() {
             try {
                 const saved = JSON.parse(localStorage.getItem(EVENTS_STORAGE_KEY));
-                if (Array.isArray(saved) && saved.length) return saved;
+                if (Array.isArray(saved) && saved.length) {
+                    return saved.map(event => ({
+                        ...event,
+                        month: event.month || (event.id === 'ban-dong-hanh' ? DEFAULT_EVENT_MONTH : ''),
+                        feedback: Array.isArray(event.feedback) ? event.feedback : []
+                    }));
+                }
             } catch (error) {
                 console.warn('Không thể đọc dữ liệu sự kiện đã lưu.', error);
             }
@@ -1020,26 +1056,59 @@
             `).join('')}</div>`;
         }
 
+        function getEventMonth(event) {
+            if (event.month) return event.month;
+            const dateText = String(event.date || '');
+            const rangeMatch = dateText.match(/(\d{1,2})[\/-]\d{1,2}[^\d]+(\d{4})/);
+            if (rangeMatch) return `${rangeMatch[2]}-${String(rangeMatch[1]).padStart(2, '0')}`;
+            const monthYearMatch = dateText.match(/(?:^|\D)(\d{1,2})[\/-](\d{4})/);
+            return monthYearMatch ? `${monthYearMatch[2]}-${String(monthYearMatch[1]).padStart(2, '0')}` : '';
+        }
+
         function renderPublicEvents() {
             const target = document.getElementById('eventsPublicList');
             const pastTarget = document.getElementById('pastEventsPublicList');
+            const summary = document.getElementById('eventFilterSummary');
             if (!target || !pastTarget) return;
-            const visibleEvents = events.filter(event => event.status === 'active');
-            const pastEvents = events.filter(event => event.status === 'ended');
+            const monthFilter = document.getElementById('eventMonthFilter')?.value || '';
+            const statusFilter = document.getElementById('eventStatusFilter')?.value || 'all';
+            const filteredEvents = events.filter(event => {
+                const isPublic = event.status === 'active' || event.status === 'ended';
+                const matchesMonth = !monthFilter || getEventMonth(event) === monthFilter;
+                const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+                return isPublic && matchesMonth && matchesStatus;
+            });
+            const visibleEvents = filteredEvents.filter(event => event.status === 'active');
+            const pastEvents = filteredEvents.filter(event => event.status === 'ended');
+            const filterParts = [];
+            if (monthFilter) filterParts.push(`tháng ${monthFilter.slice(5)}/${monthFilter.slice(0, 4)}`);
+            if (statusFilter === 'active') filterParts.push('đang diễn ra');
+            if (statusFilter === 'ended') filterParts.push('đã kết thúc');
+            if (summary) summary.textContent = filterParts.length ? `Đang lọc theo ${filterParts.join(' và ')}: ${filteredEvents.length} sự kiện.` : `Tổng cộng ${filteredEvents.length} sự kiện công khai.`;
             target.innerHTML = visibleEvents.length ? visibleEvents.map(event => `
                 <article class="event-card" role="button" tabindex="0" onclick="openEventDetails('${escapeHtml(event.id)}')" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openEventDetails('${escapeHtml(event.id)}'); }">
-                    <h3>📌 ${escapeHtml(event.title)}</h3>
+                    <div class="event-card-topline"><h3>📌 ${escapeHtml(event.title)}</h3>${adminUnlocked ? `<button class="event-edit-button" type="button" onclick="event.stopPropagation(); editEvent('${escapeHtml(event.id)}')">✏️ Chỉnh sửa</button>` : ''}</div>
                     <div class="event-meta"><span class="badge-green">${escapeHtml(event.date || 'Chưa cập nhật thời gian')}</span><span>☘️ Bấm để xem chi tiết và cảm nhận</span></div>
                     <div class="event-content">${escapeHtml(event.description)}</div>
                 </article>
-            `).join('') : '<div class="empty-events">Hiện chưa có sự kiện nào đang diễn ra.</div>';
+            `).join('') : '<div class="empty-events">Không có sự kiện đang diễn ra phù hợp với bộ lọc.</div>';
             pastTarget.innerHTML = pastEvents.length ? pastEvents.map(event => `
                 <details class="past-event-card">
                     <summary><h3>✅ ${escapeHtml(event.title)}</h3><div class="event-meta"><span class="badge-red">${escapeHtml(event.date || 'Đã kết thúc')}</span><span>☘️ Bấm để mở rộng</span></div></summary>
                     <div class="event-content">${escapeHtml(event.description)}</div>
                     <div class="feedback-box"><strong>💬 Cảm nhận của thành viên</strong><p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">Bấm vào tên thành viên để xem nội dung và ảnh cảm nhận.</p>${renderFeedbackHtml(event.feedback)}</div>
                 </details>
-            `).join('') : '<div class="empty-events">Chưa có sự kiện nào được chuyển sang trạng thái đã diễn ra.</div>';
+            `).join('') : '<div class="empty-events">Không có sự kiện đã kết thúc phù hợp với bộ lọc.</div>';
+            const detailPanel = document.getElementById('eventDetailPanel');
+            if (detailPanel) detailPanel.hidden = true;
+        }
+
+        function resetEventFilters() {
+            const monthFilter = document.getElementById('eventMonthFilter');
+            const statusFilter = document.getElementById('eventStatusFilter');
+            if (monthFilter) monthFilter.value = '';
+            if (statusFilter) statusFilter.value = 'all';
+            renderPublicEvents();
         }
 
         function openEventDetails(id) {
@@ -1085,6 +1154,7 @@
             document.getElementById('adminLoginBox').hidden = true;
             document.getElementById('adminControls').hidden = false;
             document.getElementById('adminLoginButton').hidden = true;
+            renderPublicEvents();
             renderAdminEvents();
             resetEventForm();
         }
@@ -1093,6 +1163,7 @@
             adminUnlocked = false;
             document.getElementById('adminControls').hidden = true;
             document.getElementById('adminLoginButton').hidden = false;
+            renderPublicEvents();
             resetEventForm();
         }
 
@@ -1134,6 +1205,7 @@
                 id,
                 title: document.getElementById('eventTitle').value.trim(),
                 date: document.getElementById('eventDate').value.trim(),
+                month: document.getElementById('eventMonth').value,
                 description: document.getElementById('eventDescription').value.trim(),
                 status: document.getElementById('eventStatus').value,
                 feedback: existingIndex >= 0 && Array.isArray(events[existingIndex].feedback) ? events[existingIndex].feedback : []
@@ -1154,6 +1226,7 @@
             document.getElementById('eventId').value = event.id;
             document.getElementById('eventTitle').value = event.title;
             document.getElementById('eventDate').value = event.date || '';
+            document.getElementById('eventMonth').value = event.month || getEventMonth(event);
             document.getElementById('eventDescription').value = event.description;
             document.getElementById('eventStatus').value = event.status || 'active';
             renderAdminFeedback(event);
@@ -1166,6 +1239,7 @@
             if (!form) return;
             form.reset();
             document.getElementById('eventId').value = '';
+            document.getElementById('eventMonth').value = '';
             document.getElementById('eventStatus').value = 'active';
             renderAdminFeedback(null);
             resetFeedbackForm();
@@ -1355,7 +1429,7 @@
                     if (!Array.isArray(importedEvents) || importedEvents.some(item => !item.id || !item.title || !item.description)) throw new Error('invalid');
                     const normalizeEvent = item => ({
                         id: String(item.id), title: String(item.title).slice(0, 120), date: String(item.date || '').slice(0, 120),
-                        description: String(item.description).slice(0, 4000),
+                        month: String(item.month || '').slice(0, 7), description: String(item.description).slice(0, 4000),
                         status: item.status === 'ended' ? 'ended' : item.status === 'hidden' ? 'hidden' : 'active',
                         feedback: Array.isArray(item.feedback) ? item.feedback.filter(feedback => feedback && feedback.id && feedback.member).map(feedback => ({
                             id: String(feedback.id), member: String(feedback.member).slice(0, 80), text: String(feedback.text || '').slice(0, 2000), image: safeImageSource(feedback.image)
