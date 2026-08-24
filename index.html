@@ -151,7 +151,25 @@
         }
 
         .events-list { display: grid; gap: 16px; }
-        .event-card { background: #FFFFFF; border: 1px solid #D1E7DD; border-left: 5px solid var(--clover-green); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--card-shadow); }
+        .events-subtitle { margin: 22px 0 10px; color: var(--primary-red); font-size: 1.1rem; }
+        .past-events { display: grid; gap: 14px; }
+        .past-event-card { background: #FFFDF0; border: 1px solid #F3D250; border-left: 5px solid #F3B5B9; border-radius: var(--border-radius); padding: 16px; }
+        .past-event-card h3 { color: var(--primary-red); margin-bottom: 6px; }
+        .feedback-box { margin-top: 13px; padding: 12px; background: #FFFFFF; border-radius: 8px; border-left: 4px solid #F3D250; white-space: pre-line; font-size: 0.9rem; }
+        #eventAdminFab { display: flex; position: fixed; top: 92px; right: 20px; z-index: 998; width: 46px; height: 46px; border: none; border-radius: 50%; align-items: center; justify-content: center; background: var(--clover-green); color: #FFFFFF; font-size: 1.25rem; cursor: pointer; box-shadow: 0 4px 12px rgba(39,167,69,0.3); transition: transform 0.2s, background 0.2s; }
+        #eventAdminFab:hover { background: var(--clover-green-hover); transform: translateY(-2px); }
+        #eventAdminFab:active { transform: scale(0.96); }
+        .event-card { background: #FFFFFF; border: 1px solid #D1E7DD; border-left: 5px solid var(--clover-green); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--card-shadow); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .event-card:hover, .event-card:focus { transform: translateY(-2px); box-shadow: 0 7px 22px rgba(39,167,69,0.12); outline: none; }
+        .event-detail-panel { margin-top: 16px; padding: 18px; background: #F0FDF4; border: 1px solid #B7E4C7; border-radius: var(--border-radius); }
+        .event-detail-panel h3 { color: var(--clover-green); }
+        .feedback-list { display: grid; gap: 12px; margin-top: 10px; }
+        .feedback-item { padding: 0; background: #FFFFFF; border-radius: 8px; border-left: 4px solid #F3D250; overflow: hidden; }
+        .feedback-item summary { padding: 12px; cursor: pointer; font-weight: 600; list-style-position: inside; }
+        .feedback-item summary:hover { background: #FFFDF0; }
+        .feedback-item-body { display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 12px; align-items: start; padding: 0 12px 12px; }
+        .feedback-item img { width: 160px; max-height: 180px; object-fit: cover; border-radius: 7px; border: 1px solid #E9ECEF; }
+        .feedback-manager { margin-top: 16px; padding: 14px; border: 1px solid #D1E7DD; border-radius: 10px; background: #FFFFFF; }
         .event-card.is-hidden { opacity: 0.68; border-left-color: #6C757D; }
         .event-card h3 { color: var(--primary-red); font-size: 1.12rem; margin-bottom: 6px; }
         .event-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; color: var(--text-muted); font-size: 0.88rem; }
@@ -183,6 +201,7 @@
         @media (max-width: 600px) {
             .admin-event-row { flex-direction: column; }
             .admin-event-row .event-actions { margin-top: 0; }
+            #eventAdminFab { top: 84px; right: 12px; width: 42px; height: 42px; }
         }
 
         @media (max-width: 900px) {
@@ -621,6 +640,9 @@
                 <h2>📢 CÁC SỰ KIỆN CỦA CLB ☘️</h2>
                 <p style="margin-bottom: 14px;">Các sự kiện đang diễn ra sẽ được hiển thị tại đây. Sự kiện <strong>“Bạn đồng hành”</strong> hiện vẫn được giữ nguyên cho đến khi Ban Quản trị cập nhật.</p>
                 <div id="eventsPublicList" class="events-list" aria-live="polite"></div>
+                <div id="eventDetailPanel" class="event-detail-panel" hidden aria-live="polite"></div>
+                <h3 class="events-subtitle">🗂️ SỰ KIỆN ĐÃ DIỄN RA</h3>
+                <div id="pastEventsPublicList" class="past-events" aria-live="polite"></div>
 
                 <div class="admin-panel">
                     <div class="admin-toolbar">
@@ -659,7 +681,27 @@
                             <select id="eventStatus">
                                 <option value="active">Đang hiển thị</option>
                                 <option value="hidden">Đang ẩn / đã gỡ khỏi trang công khai</option>
+                                <option value="ended">Đã diễn ra / lưu trữ</option>
                             </select>
+                            <div class="feedback-manager">
+                                <h3 style="color: var(--primary-red); margin-bottom: 4px;">💬 Quản trị cảm nhận của thành viên</h3>
+                                <p style="font-size: 0.84rem; color: var(--text-muted);">Chỉ quản trị viên sau khi nhập mã mới có thể thêm, sửa, thay ảnh hoặc xóa cảm nhận.</p>
+                                <div id="feedbackForm" class="admin-form" style="margin-top: 10px;">
+                                    <input id="feedbackId" type="hidden">
+                                    <label for="feedbackMember">Tên thành viên</label>
+                                    <input id="feedbackMember" type="text" maxlength="80" placeholder="Ví dụ: Nguyễn Văn A">
+                                    <label for="feedbackText">Cảm nhận / góp ý</label>
+                                    <textarea id="feedbackText" maxlength="2000" placeholder="Chia sẻ cảm nhận sau khi tham gia sự kiện..."></textarea>
+                                    <label for="feedbackImage">Ảnh cảm nhận</label>
+                                    <input id="feedbackImage" type="file" accept="image/*">
+                                    <div class="admin-actions">
+                                        <button id="feedbackSaveButton" class="btn btn-success" type="button" onclick="addFeedback(event)">➕ Thêm cảm nhận</button>
+                                        <button class="btn btn-secondary" type="button" onclick="resetFeedbackForm()">↺ Xóa ô nhập</button>
+                                    </div>
+                                    <p id="feedbackMessage" class="admin-message" role="status"></p>
+                                </div>
+                                <div id="adminFeedbackList" class="feedback-list"></div>
+                            </div>
                             <div class="admin-actions">
                                 <button class="btn btn-success" type="submit">💾 Lưu sự kiện</button>
                                 <button class="btn btn-secondary" type="button" onclick="resetEventForm()">↺ Tạo mới / Hủy sửa</button>
@@ -865,6 +907,7 @@
     </div>
 
     <button id="backToTop" onclick="scrollToTop()">↑</button>
+    <button id="eventAdminFab" onclick="openEventManagerFromFab()" title="Chỉnh sửa sự kiện" aria-label="Mở chỉnh sửa sự kiện">✏️</button>
 
     <footer style="text-align: center; padding: 25px 15px; background: white; margin-top: 40px; border-top: 1px solid #EEE; font-size: 0.9rem; color: var(--text-muted);">
         <p>© CLB 5H SÁNG 🌅 – Cùng Nhau Dậy Sớm, Cùng Nhau Tiến Bộ 💚☘️</p>
@@ -918,7 +961,8 @@
                 title: 'Sự kiện “Bạn đồng hành”',
                 date: 'Đang diễn ra',
                 description: '🎯 Nhiệm vụ hàng ngày: Cùng nhắc nhở nhau dậy sớm và vào học đúng giờ, theo dõi việc học của nhau và động viên khi đối phương nản.\n\n🤝 Cơ chế: Thưởng cùng thưởng - Phạt cùng phạt.\n\n📝 Cú pháp điểm danh mới: STT - [Tên đội].\n\n📊 Cách tính điểm đội: (Điểm cá nhân A + Điểm cá nhân B) / 2.\n• Cả hai cùng đi học: Điểm đội + 5 điểm thưởng.\n• Một người đi học, một người vắng không phép: Điểm đội - 10 điểm phạt.\n• Cả hai cùng vắng không phép: Điểm đội - 20 điểm phạt.\n• Có người nghỉ có phép: tính theo quy định của Ban Quản trị.\n\n🏆 Giải thưởng: “Cặp đôi có điểm cao nhất” và “Cặp đôi đột phá”.\n\n❓ Hỗ trợ: Có thắc mắc xin liên hệ trực tiếp cho Lê Yến Nhi để được giải đáp.',
-                status: 'active'
+                status: 'active',
+                feedback: []
             }
         ];
 
@@ -957,21 +1001,61 @@
             localStorage.setItem(TRASH_STORAGE_KEY, JSON.stringify(trashEvents));
         }
 
+        function safeImageSource(source) {
+            const value = String(source || '');
+            return /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(value) || /^https:\/\//i.test(value) ? value : '';
+        }
+
+        function renderFeedbackHtml(feedback) {
+            const items = Array.isArray(feedback) ? feedback : [];
+            if (!items.length) return '<div class="empty-events">Chưa có cảm nhận nào được cập nhật.</div>';
+            return `<div class="feedback-list">${items.map(item => `
+                <details class="feedback-item">
+                    <summary>💬 ${escapeHtml(item.member || 'Thành viên CLB')}</summary>
+                    <div class="feedback-item-body">
+                        <div>${item.text ? `<p style="white-space: pre-line;">${escapeHtml(item.text)}</p>` : '<p style="color: var(--text-muted);">Thành viên chưa để lại nội dung chữ.</p>'}</div>
+                        ${safeImageSource(item.image) ? `<img src="${safeImageSource(item.image)}" alt="Ảnh cảm nhận của ${escapeHtml(item.member || 'thành viên')}" loading="lazy">` : '<p style="color: var(--text-muted);">Chưa có ảnh cảm nhận.</p>'}
+                    </div>
+                </details>
+            `).join('')}</div>`;
+        }
+
         function renderPublicEvents() {
             const target = document.getElementById('eventsPublicList');
-            if (!target) return;
-            const visibleEvents = events.filter(event => event.status !== 'hidden');
-            if (!visibleEvents.length) {
-                target.innerHTML = '<div class="empty-events">Hiện chưa có sự kiện nào đang hiển thị.</div>';
-                return;
-            }
-            target.innerHTML = visibleEvents.map(event => `
-                <article class="event-card">
+            const pastTarget = document.getElementById('pastEventsPublicList');
+            if (!target || !pastTarget) return;
+            const visibleEvents = events.filter(event => event.status === 'active');
+            const pastEvents = events.filter(event => event.status === 'ended');
+            target.innerHTML = visibleEvents.length ? visibleEvents.map(event => `
+                <article class="event-card" role="button" tabindex="0" onclick="openEventDetails('${escapeHtml(event.id)}')" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openEventDetails('${escapeHtml(event.id)}'); }">
                     <h3>📌 ${escapeHtml(event.title)}</h3>
-                    <div class="event-meta"><span class="badge-green">${escapeHtml(event.date || 'Chưa cập nhật thời gian')}</span><span>☘️ CLB 5H Sáng</span></div>
+                    <div class="event-meta"><span class="badge-green">${escapeHtml(event.date || 'Chưa cập nhật thời gian')}</span><span>☘️ Bấm để xem chi tiết và cảm nhận</span></div>
                     <div class="event-content">${escapeHtml(event.description)}</div>
                 </article>
-            `).join('');
+            `).join('') : '<div class="empty-events">Hiện chưa có sự kiện nào đang diễn ra.</div>';
+            pastTarget.innerHTML = pastEvents.length ? pastEvents.map(event => `
+                <details class="past-event-card">
+                    <summary><h3>✅ ${escapeHtml(event.title)}</h3><div class="event-meta"><span class="badge-red">${escapeHtml(event.date || 'Đã kết thúc')}</span><span>☘️ Bấm để mở rộng</span></div></summary>
+                    <div class="event-content">${escapeHtml(event.description)}</div>
+                    <div class="feedback-box"><strong>💬 Cảm nhận của thành viên</strong><p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">Bấm vào tên thành viên để xem nội dung và ảnh cảm nhận.</p>${renderFeedbackHtml(event.feedback)}</div>
+                </details>
+            `).join('') : '<div class="empty-events">Chưa có sự kiện nào được chuyển sang trạng thái đã diễn ra.</div>';
+        }
+
+        function openEventDetails(id) {
+            const event = events.find(item => item.id === id && item.status === 'active');
+            const panel = document.getElementById('eventDetailPanel');
+            if (!event || !panel) return;
+            panel.hidden = false;
+            panel.innerHTML = `<h3>📖 Chi tiết: ${escapeHtml(event.title)}</h3><div class="event-meta"><span class="badge-green">${escapeHtml(event.date || 'Chưa cập nhật thời gian')}</span></div><div class="event-content">${escapeHtml(event.description)}</div><div class="feedback-box"><strong>💬 Cảm nhận của thành viên</strong><p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">Bấm vào tên thành viên để xem nội dung và ảnh cảm nhận.</p>${renderFeedbackHtml(event.feedback)}</div>`;
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function openEventManagerFromFab() {
+            showPage('clb-doc-sach-event');
+            const panel = document.querySelector('.admin-panel');
+            if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            openAdminLogin();
         }
 
         function openAdminLogin() {
@@ -1019,7 +1103,7 @@
             target.innerHTML = events.length
                 ? `<h3 style="color: var(--primary-red); margin-bottom: 4px;">📋 Danh sách sự kiện (${events.length})</h3>` + events.map(event => `
                     <div class="admin-event-row">
-                        <div><strong>${escapeHtml(event.title)}</strong><br><small>${escapeHtml(event.date || 'Chưa cập nhật thời gian')} · ${event.status === 'hidden' ? 'Đang ẩn/gỡ' : 'Đang hiển thị'}</small></div>
+                        <div><strong>${escapeHtml(event.title)}</strong><br><small>${escapeHtml(event.date || 'Chưa cập nhật thời gian')} · ${event.status === 'hidden' ? 'Đang ẩn/gỡ' : event.status === 'ended' ? 'Đã diễn ra/lưu trữ' : 'Đang hiển thị'} · ${(event.feedback || []).length} cảm nhận</small></div>
                         <div class="event-actions">
                             <button class="btn btn-secondary" type="button" onclick="editEvent('${escapeHtml(event.id)}')">✏️ Sửa</button>
                             <button class="btn btn-secondary" type="button" onclick="toggleEvent('${escapeHtml(event.id)}')">${event.status === 'hidden' ? '👁️ Hiện lại' : '🙈 Ẩn/gỡ'}</button>
@@ -1045,14 +1129,15 @@
             event.preventDefault();
             if (!adminUnlocked) return;
             const id = document.getElementById('eventId').value || `event-${Date.now()}`;
+            const existingIndex = events.findIndex(item => item.id === id);
             const eventData = {
                 id,
                 title: document.getElementById('eventTitle').value.trim(),
                 date: document.getElementById('eventDate').value.trim(),
                 description: document.getElementById('eventDescription').value.trim(),
-                status: document.getElementById('eventStatus').value
+                status: document.getElementById('eventStatus').value,
+                feedback: existingIndex >= 0 && Array.isArray(events[existingIndex].feedback) ? events[existingIndex].feedback : []
             };
-            const existingIndex = events.findIndex(item => item.id === id);
             if (existingIndex >= 0) events[existingIndex] = eventData;
             else events.unshift(eventData);
             persistEvents();
@@ -1071,6 +1156,8 @@
             document.getElementById('eventDate').value = event.date || '';
             document.getElementById('eventDescription').value = event.description;
             document.getElementById('eventStatus').value = event.status || 'active';
+            renderAdminFeedback(event);
+            resetFeedbackForm();
             document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -1080,6 +1167,128 @@
             form.reset();
             document.getElementById('eventId').value = '';
             document.getElementById('eventStatus').value = 'active';
+            renderAdminFeedback(null);
+            resetFeedbackForm();
+        }
+
+        function renderAdminFeedback(event) {
+            const target = document.getElementById('adminFeedbackList');
+            if (!target) return;
+            if (!event) {
+                target.innerHTML = '<div class="empty-events">Hãy bấm “Sửa” ở một sự kiện để thêm cảm nhận.</div>';
+                return;
+            }
+            const items = Array.isArray(event.feedback) ? event.feedback : [];
+            target.innerHTML = items.length ? items.map(item => `
+                <div class="feedback-item">
+                    <div><strong>${escapeHtml(item.member || 'Thành viên CLB')}</strong>${item.text ? `<p style="margin-top: 6px; white-space: pre-line;">${escapeHtml(item.text)}</p>` : ''}</div>
+                    ${safeImageSource(item.image) ? `<img src="${safeImageSource(item.image)}" alt="Ảnh cảm nhận" loading="lazy">` : ''}
+                    <div class="event-actions">
+                        <button class="btn btn-secondary" type="button" onclick="editFeedback('${escapeHtml(item.id)}')">✏️ Sửa</button>
+                        <button class="btn btn-primary" type="button" onclick="removeFeedback('${escapeHtml(item.id)}')">🗑️ Xóa</button>
+                    </div>
+                </div>
+            `).join('') : '<div class="empty-events">Sự kiện này chưa có cảm nhận nào.</div>';
+        }
+
+        function resetFeedbackForm() {
+            const member = document.getElementById('feedbackMember');
+            const text = document.getElementById('feedbackText');
+            const image = document.getElementById('feedbackImage');
+            const feedbackId = document.getElementById('feedbackId');
+            const saveButton = document.getElementById('feedbackSaveButton');
+            if (feedbackId) feedbackId.value = '';
+            if (member) member.value = '';
+            if (text) text.value = '';
+            if (image) image.value = '';
+            if (saveButton) saveButton.textContent = '➕ Thêm cảm nhận';
+            const message = document.getElementById('feedbackMessage');
+            if (message) {
+                message.textContent = '';
+                message.classList.remove('error');
+            }
+        }
+
+        function addFeedback(event) {
+            event.preventDefault();
+            if (!adminUnlocked) return;
+            const eventId = document.getElementById('eventId').value;
+            const targetEvent = events.find(item => item.id === eventId);
+            const message = document.getElementById('feedbackMessage');
+            const feedbackId = document.getElementById('feedbackId').value;
+            const member = document.getElementById('feedbackMember').value.trim();
+            const text = document.getElementById('feedbackText').value.trim();
+            const imageFile = document.getElementById('feedbackImage').files[0];
+            if (!targetEvent) {
+                message.textContent = 'Hãy bấm “Sửa” ở sự kiện cần thêm cảm nhận trước.';
+                message.classList.add('error');
+                return;
+            }
+            if (!member || (!text && !imageFile)) {
+                message.textContent = 'Vui lòng nhập tên và cảm nhận hoặc chọn một ảnh.';
+                message.classList.add('error');
+                return;
+            }
+            if (imageFile && imageFile.size > 2 * 1024 * 1024) {
+                message.textContent = 'Ảnh cần có dung lượng không quá 2 MB.';
+                message.classList.add('error');
+                return;
+            }
+            const saveFeedback = image => {
+                targetEvent.feedback = Array.isArray(targetEvent.feedback) ? targetEvent.feedback : [];
+                const existingFeedback = targetEvent.feedback.find(item => item.id === feedbackId);
+                if (existingFeedback) {
+                    existingFeedback.member = member;
+                    existingFeedback.text = text;
+                    if (image) existingFeedback.image = image;
+                } else {
+                    targetEvent.feedback.push({ id: `feedback-${Date.now()}`, member, text, image: image || '' });
+                }
+                persistEvents();
+                renderPublicEvents();
+                renderAdminEvents();
+                renderAdminFeedback(targetEvent);
+                resetFeedbackForm();
+                message.textContent = existingFeedback ? 'Đã cập nhật cảm nhận của thành viên.' : 'Đã thêm cảm nhận của thành viên.';
+            };
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = () => saveFeedback(reader.result);
+                reader.onerror = () => {
+                    message.textContent = 'Không thể đọc ảnh. Vui lòng thử lại.';
+                    message.classList.add('error');
+                };
+                reader.readAsDataURL(imageFile);
+            } else saveFeedback('');
+        }
+
+        function editFeedback(feedbackId) {
+            if (!adminUnlocked) return;
+            const eventId = document.getElementById('eventId').value;
+            const targetEvent = events.find(item => item.id === eventId);
+            const feedback = targetEvent?.feedback?.find(item => item.id === feedbackId);
+            if (!targetEvent || !feedback) return;
+            document.getElementById('feedbackId').value = feedback.id;
+            document.getElementById('feedbackMember').value = feedback.member || '';
+            document.getElementById('feedbackText').value = feedback.text || '';
+            document.getElementById('feedbackImage').value = '';
+            document.getElementById('feedbackSaveButton').textContent = '💾 Cập nhật cảm nhận';
+            const message = document.getElementById('feedbackMessage');
+            message.textContent = 'Đang sửa cảm nhận. Chọn ảnh mới nếu muốn thay ảnh hiện tại.';
+            message.classList.remove('error');
+            document.getElementById('feedbackForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function removeFeedback(feedbackId) {
+            if (!adminUnlocked) return;
+            const eventId = document.getElementById('eventId').value;
+            const targetEvent = events.find(item => item.id === eventId);
+            if (!targetEvent || !confirm('Xóa cảm nhận này khỏi sự kiện?')) return;
+            targetEvent.feedback = (targetEvent.feedback || []).filter(item => item.id !== feedbackId);
+            persistEvents();
+            renderPublicEvents();
+            renderAdminEvents();
+            renderAdminFeedback(targetEvent);
         }
 
         function toggleEvent(id) {
@@ -1146,7 +1355,11 @@
                     if (!Array.isArray(importedEvents) || importedEvents.some(item => !item.id || !item.title || !item.description)) throw new Error('invalid');
                     const normalizeEvent = item => ({
                         id: String(item.id), title: String(item.title).slice(0, 120), date: String(item.date || '').slice(0, 120),
-                        description: String(item.description).slice(0, 4000), status: item.status === 'hidden' ? 'hidden' : 'active'
+                        description: String(item.description).slice(0, 4000),
+                        status: item.status === 'ended' ? 'ended' : item.status === 'hidden' ? 'hidden' : 'active',
+                        feedback: Array.isArray(item.feedback) ? item.feedback.filter(feedback => feedback && feedback.id && feedback.member).map(feedback => ({
+                            id: String(feedback.id), member: String(feedback.member).slice(0, 80), text: String(feedback.text || '').slice(0, 2000), image: safeImageSource(feedback.image)
+                        })) : []
                     });
                     events = importedEvents.map(normalizeEvent);
                     trashEvents = Array.isArray(importedTrash) ? importedTrash.filter(item => item.id && item.title && item.description).map(normalizeEvent) : [];
