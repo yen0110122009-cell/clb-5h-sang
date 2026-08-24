@@ -840,7 +840,7 @@
                     </div>
                 </div>
                 <div id="diaryAdminControls" hidden>
-                    <div class="notice-box" style="margin-top: 0; font-size: 0.86rem;">💡 Ảnh mới nhất sẽ tự động nằm ở trên. Lời dẫn là tùy chọn, có thể để trống.</div>
+                    <div class="notice-box" style="margin-top: 0; font-size: 0.86rem;">💡 Ảnh mới nhất sẽ tự động nằm ở trên. Lời dẫn là tùy chọn. Ảnh nằm trên Cloudinary, còn ngày, lời dẫn, người đăng và public ID được đồng bộ qua Supabase để thiết bị khác cũng xem được.</div>
                     <form id="diaryForm" class="admin-form" onsubmit="saveDiaryEntry(event)" style="margin-top: 14px;">
                         <input id="diaryId" type="hidden">
                         <label for="diaryDate">Ngày đăng ảnh</label>
@@ -1088,6 +1088,9 @@
         const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
         const DIARY_STORAGE_KEY = 'clb5h_sang_diary_v1';
         const DIARY_IMAGE_STORAGE_PREFIX = 'clb5h_sang_diary_image_';
+        const SUPABASE_URL = 'https://cuompgnxcbzufaeodgvx.supabase.co';
+        const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7aYuYqRgExVRMDGoC-WuQg_vDv18v4L';
+        const SUPABASE_DIARY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-diary`;
         const CLOUDINARY_CLOUD_NAME = 'ub55zqyk';
         const CLOUDINARY_UPLOAD_PRESET = 'clb5h_diary_unsigned';
         const CLOUDINARY_UPLOAD_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -1107,7 +1110,10 @@
 
         let events = loadEvents();
         let trashEvents = loadTrashEvents();
-        let diaryEntries = loadDiaryEntries();
+        let diaryEntries = [];
+        let diarySyncPending = true;
+        let diarySyncError = '';
+        let diaryAdminCodeToken = '';
         let adminUnlocked = false;
         let diaryAdminUnlocked = false;
 
@@ -1185,7 +1191,7 @@
             return safeImageSource(localStorage.getItem(entry.imageKey || diaryImageKey(entry.id)));
         }
 
-        function loadDiaryEntries() {
+        function loadLocalDiaryEntries() {
             try {
                 const saved = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY));
                 if (Array.isArray(saved)) {
@@ -1212,6 +1218,67 @@
                 console.warn('Không thể đọc dữ liệu nhật ký đã lưu.', error);
             }
             return [];
+        }
+
+        function diaryRowToEntry(row) {
+            return normalizeDiaryEntry({
+                id: row?.id,
+                date: row?.diary_date,
+                imageUrl: row?.image_path,
+                publicId: row?.public_id,
+                caption: row?.caption,
+                author: row?.author
+            });
+        }
+
+        async function fetchDiaryEntriesFromSupabase() {
+            const params = new URLSearchParams({
+                select: 'id,diary_date,image_path,public_id,caption,author,created_at',
+                order: 'diary_date.desc,created_at.desc'
+            });
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/clb5h_diary_entries?${params}`, {
+                headers: {
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                }
+            });
+            const result = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(result?.message || 'supabase-read-failed');
+            return sortDiaryEntries((Array.isArray(result) ? result : []).map(diaryRowToEntry).filter(Boolean));
+        }
+
+        async function syncDiaryFromSupabase() {
+            diarySyncPending = true;
+            diarySyncError = '';
+            renderDiary();
+            try {
+                diaryEntries = await fetchDiaryEntriesFromSupabase();
+                persistDiarySnapshot(diaryEntries);
+            } catch (error) {
+                console.warn('Không thể tải nhật ký từ Supabase, dùng dữ liệu tạm trên thiết bị.', error);
+                diaryEntries = loadLocalDiaryEntries();
+                diarySyncError = 'Không thể kết nối kho dữ liệu chung. Đang hiển thị bản lưu trên thiết bị này.';
+            } finally {
+                diarySyncPending = false;
+                renderDiary();
+                if (diaryAdminUnlocked) renderDiaryAdmin();
+            }
+        }
+
+        async function adminDiaryRequest(action, item) {
+            if (!diaryAdminCodeToken) throw new Error('admin-session-required');
+            const response = await fetch(SUPABASE_DIARY_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ action, code: diaryAdminCodeToken, item })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result?.error || 'supabase-write-failed');
+            return result;
         }
 
         function persistDiarySnapshot(entries) {
@@ -1272,6 +1339,13 @@
             const target = document.getElementById('diaryTree');
             const summary = document.getElementById('diarySummary');
             if (!target) return;
+            if (diarySyncPending) {
+                if (summary) summary.textContent = 'Đang tải nhật ký từ kho dữ liệu chung...';
+                target.innerHTML = '<div class="empty-events">Đang tải ảnh nhật ký, vui lòng chờ...</div>';
+                const pendingViewer = document.getElementById('diaryViewer');
+                if (pendingViewer) pendingViewer.hidden = true;
+                return;
+            }
             const fromDate = document.getElementById('diaryFromDate')?.value || '';
             const toDate = document.getElementById('diaryToDate')?.value || '';
             const invalidRange = fromDate && toDate && fromDate > toDate;
@@ -1290,7 +1364,9 @@
             if (summary) {
                 summary.textContent = invalidRange
                     ? 'Khoảng ngày chưa hợp lệ. Vui lòng chọn ngày bắt đầu không muộn hơn ngày kết thúc.'
-                    : (fromDate || toDate ? `Đang hiển thị ${filteredEntries.length} ảnh theo khoảng ngày đã chọn.` : `Đang hiển thị ${filteredEntries.length} ảnh nhật ký.`);
+                    : diarySyncError
+                        ? `${diarySyncError} ${filteredEntries.length} ảnh đang có trên thiết bị.`
+                        : (fromDate || toDate ? `Đang hiển thị ${filteredEntries.length} ảnh theo khoảng ngày đã chọn.` : `Đang hiển thị ${filteredEntries.length} ảnh nhật ký.`);
             }
             if (!filteredEntries.length) {
                 target.innerHTML = '<div class="empty-events">Chưa có ảnh nhật ký phù hợp với khoảng ngày đã chọn.</div>';
@@ -1420,11 +1496,14 @@
                     const uploaded = await uploadDiaryImageToCloudinary(file);
                     entry.imageUrl = uploaded.imageUrl;
                     entry.publicId = uploaded.publicId;
+                    const saved = await adminDiaryRequest('create', entry);
+                    const returned = diaryRowToEntry(Array.isArray(saved) ? saved[0] : saved);
+                    if (returned) Object.assign(entry, returned);
                 }
                 persistDiary();
                 renderDiary();
                 renderDiaryAdmin();
-                message.textContent = `Đã chuyển ${diaryEntries.filter(entry => entry.imageUrl).length} ảnh lên Cloudinary.`;
+                message.textContent = `Đã chuyển ${diaryEntries.filter(entry => entry.imageUrl).length} ảnh cũ lên Cloudinary và Supabase.`;
             } catch (error) {
                 message.textContent = 'Không thể chuyển một hoặc nhiều ảnh lên Cloudinary. Vui lòng thử lại.';
                 message.classList.add('error');
@@ -1443,7 +1522,7 @@
         }
 
         function initLazyDiaryImages() {
-            const images = [...document.querySelectorAll('.lazy-diary-image[data-diary-key]')];
+            const images = [...document.querySelectorAll('.lazy-diary-image[data-diary-key], .lazy-diary-image[data-diary-url]')];
             if (!images.length) return;
             if (!('IntersectionObserver' in window)) {
                 images.forEach(loadLazyDiaryImage);
@@ -1481,6 +1560,7 @@
                 return;
             }
             diaryAdminUnlocked = true;
+            diaryAdminCodeToken = codeInput.value.trim();
             message.textContent = '';
             message.classList.remove('error');
             document.getElementById('diaryAdminLoginBox').hidden = true;
@@ -1492,6 +1572,7 @@
 
         function lockDiaryAdmin() {
             diaryAdminUnlocked = false;
+            diaryAdminCodeToken = '';
             document.getElementById('diaryAdminControls').hidden = true;
             document.getElementById('diaryAdminLoginButton').hidden = false;
             closeDiaryAdminLogin();
@@ -1549,7 +1630,7 @@
             document.getElementById('diaryForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function saveDiaryEntry(event) {
+        async function saveDiaryEntry(event) {
             event.preventDefault();
             if (!diaryAdminUnlocked) return;
             const message = document.getElementById('diaryMessage');
@@ -1570,46 +1651,64 @@
                 message.classList.add('error');
                 return;
             }
-            const finish = uploads => {
+            message.classList.remove('error');
+            message.textContent = imageFiles.length ? `Đang nén và tải ${imageFiles.length} ảnh lên Cloudinary...` : 'Đang lưu thay đổi lên Supabase...';
+            try {
+                const uploads = imageFiles.length ? await Promise.all(imageFiles.map(uploadDiaryImageToCloudinary)) : [];
                 if (existing) {
-                    existing.date = date;
-                    existing.caption = caption;
-                    existing.author = author;
+                    const draft = { ...existing, date, caption, author };
                     if (uploads[0]) {
-                        existing.imageUrl = uploads[0].imageUrl;
-                        existing.publicId = uploads[0].publicId;
-                        existing.image = '';
-                        existing.imageKey = '';
+                        draft.imageUrl = uploads[0].imageUrl;
+                        draft.publicId = uploads[0].publicId;
+                        draft.image = '';
+                        draft.imageKey = '';
                     }
+                    const saved = await adminDiaryRequest('update', draft);
+                    const returned = diaryRowToEntry(Array.isArray(saved) ? saved[0] : saved);
+                    diaryEntries = diaryEntries.map(item => item.id === id ? (returned || draft) : item);
                 } else {
-                    uploads.forEach((upload, index) => diaryEntries.push({ id: `diary-${Date.now()}-${index}`, date, caption: individualCaptions[index] || caption, author, image: '', imageUrl: upload.imageUrl, publicId: upload.publicId, imageKey: '' }));
+                    const created = [];
+                    for (const [index, upload] of uploads.entries()) {
+                        const draft = { id: '', date, caption: individualCaptions[index] || caption, author, image: '', imageUrl: upload.imageUrl, publicId: upload.publicId, imageKey: '' };
+                        const saved = await adminDiaryRequest('create', draft);
+                        const returned = diaryRowToEntry(Array.isArray(saved) ? saved[0] : saved);
+                        created.push(returned || { ...draft, id: `diary-${Date.now()}-${index}` });
+                    }
+                    diaryEntries.push(...created);
                 }
                 diaryEntries = sortDiaryEntries(diaryEntries);
                 persistDiary();
                 renderDiary();
                 renderDiaryAdmin();
-                const resultMessage = existing ? 'Đã cập nhật ảnh nhật ký.' : `Đã đăng ${uploads.length} ảnh nhật ký.`;
+                const resultMessage = existing ? 'Đã cập nhật ảnh nhật ký trên Supabase.' : `Đã đăng ${uploads.length} ảnh nhật ký trên Supabase.`;
                 resetDiaryForm();
                 document.getElementById('diaryMessage').textContent = resultMessage;
-            };
-            if (imageFiles.length) {
-                message.textContent = `Đang nén và tải ${imageFiles.length} ảnh lên Cloudinary...`;
-                Promise.all(imageFiles.map(uploadDiaryImageToCloudinary)).then(finish).catch(() => {
-                    message.textContent = 'Không thể tải ảnh lên Cloudinary. Kiểm tra lại Upload preset Unsigned và kết nối mạng.';
-                    message.classList.add('error');
-                });
-            } else finish([]);
+            } catch (error) {
+                console.error('Không thể lưu metadata nhật ký.', error);
+                message.textContent = error.message === 'invalid-admin-code'
+                    ? 'Phiên quản trị không hợp lệ. Vui lòng mở lại bằng mã quản lý.'
+                    : 'Ảnh đã có thể được tải lên nhưng chưa lưu được metadata Supabase. Vui lòng kiểm tra kết nối rồi thử lại.';
+                message.classList.add('error');
+            }
         }
 
-        function deleteDiaryEntry(id) {
+        async function deleteDiaryEntry(id) {
             if (!diaryAdminUnlocked) return;
             const entry = diaryEntries.find(item => item.id === id);
             if (!entry || !confirm(`Xóa ảnh nhật ký ngày ${formatDiaryDate(getDiaryDate(entry))}?`)) return;
-            diaryEntries = diaryEntries.filter(item => item.id !== id);
-            persistDiary();
-            renderDiary();
-            renderDiaryAdmin();
-            resetDiaryForm();
+            const message = document.getElementById('diaryMessage');
+            try {
+                await adminDiaryRequest('delete', entry);
+                diaryEntries = diaryEntries.filter(item => item.id !== id);
+                persistDiary();
+                renderDiary();
+                renderDiaryAdmin();
+                resetDiaryForm();
+                document.getElementById('diaryMessage').textContent = 'Đã xóa metadata nhật ký trên Supabase. Ảnh Cloudinary vẫn được giữ lại để tránh xóa nhầm.';
+            } catch (error) {
+                message.textContent = 'Không thể xóa metadata trên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
         }
 
         function renderPublicEvents() {
@@ -2006,6 +2105,7 @@
             renderPublicEvents();
             renderDiary();
             renderDiaryAdmin();
+            syncDiaryFromSupabase();
         });
 
         function scrollToTop() {
