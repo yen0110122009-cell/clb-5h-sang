@@ -239,6 +239,8 @@
         .content-admin-toolbar strong, .content-admin-toolbar span { display: block; }
         .content-admin-toolbar span { margin-top: 4px; color: var(--text-muted); font-size: 0.84rem; }
         .content-admin-toolbar .admin-actions { margin-top: 10px; }
+        .new-content-block-form { margin-top: 12px; padding: 12px; border: 1px dashed var(--clover-green); border-radius: 10px; background: #F8FFF9; }
+        .new-content-block-form[hidden] { display: none; }
         .content-editable-active { outline: 2px dashed var(--clover-green); outline-offset: 4px; cursor: text; }
         .content-editable-active:focus { outline: 2px solid var(--primary-red); background: rgba(255,253,240,0.75); }
         .form-hint { margin: 5px 0 8px; color: var(--text-muted); font-size: 0.82rem; }
@@ -263,6 +265,7 @@
             .current-image-box img { width: 100%; max-width: 220px; height: auto; aspect-ratio: 4 / 3; }
             .content-admin-toolbar { bottom: 8px; padding: 12px; }
             .content-admin-toolbar .admin-actions { flex-direction: column; }
+            .new-content-block-form .admin-actions { flex-direction: column; }
             .content-admin-toolbar .admin-actions .btn { width: 100%; }
             #eventAdminFab { top: 84px; right: 12px; width: 42px; height: 42px; }
             #contentAdminFab { right: 12px; bottom: 72px; width: 42px; height: 42px; }
@@ -1134,8 +1137,19 @@
         <span>Bấm trực tiếp vào chữ cần sửa, sau đó lưu toàn bộ thay đổi.</span>
         <div class="admin-actions">
             <button class="btn btn-success" type="button" onclick="saveStaticContent()">💾 Lưu nội dung</button>
+            <button class="btn btn-primary" type="button" onclick="openNewContentBlockForm()">➕ Thêm nội dung mới</button>
             <button class="btn btn-secondary" type="button" onclick="cancelStaticContentEditing()">↺ Hủy thay đổi</button>
             <button class="btn btn-secondary" type="button" onclick="lockContentAdmin()">Đóng quản lý</button>
+        </div>
+        <div id="newContentBlockForm" class="new-content-block-form" hidden>
+            <label for="newContentBlockTitle">Tên/tiêu đề đoạn mới</label>
+            <input id="newContentBlockTitle" maxlength="500" placeholder="Ví dụ: Lưu ý mới">
+            <label for="newContentBlockBody">Nội dung mới</label>
+            <textarea id="newContentBlockBody" maxlength="10000" rows="4" placeholder="Nhập nội dung muốn thêm vào mục này"></textarea>
+            <div class="admin-actions">
+                <button class="btn btn-success" type="button" onclick="addNewContentBlock()">💾 Thêm và lưu nội dung</button>
+                <button class="btn btn-secondary" type="button" onclick="closeNewContentBlockForm()">Đóng</button>
+            </div>
         </div>
         <p id="contentAdminMessage" class="admin-message" role="status"></p>
     </div>
@@ -1705,6 +1719,54 @@
             document.getElementById('contentAdminMessage').textContent = `Đang chỉnh sửa ${contentEditTargets.length} khối nội dung trong mục này.`;
         }
 
+        function openNewContentBlockForm() {
+            if (!contentAdminUnlocked) return;
+            const form = document.getElementById('newContentBlockForm');
+            if (form) form.hidden = false;
+            document.getElementById('newContentBlockTitle').focus();
+        }
+
+        function closeNewContentBlockForm() {
+            const form = document.getElementById('newContentBlockForm');
+            if (form) form.hidden = true;
+            const title = document.getElementById('newContentBlockTitle');
+            const body = document.getElementById('newContentBlockBody');
+            if (title) title.value = '';
+            if (body) body.value = '';
+        }
+
+        function addNewContentBlock() {
+            if (!contentAdminUnlocked || !contentAdminSectionId) return;
+            const titleInput = document.getElementById('newContentBlockTitle');
+            const bodyInput = document.getElementById('newContentBlockBody');
+            const title = titleInput.value.trim();
+            const body = bodyInput.value.trim();
+            const message = document.getElementById('contentAdminMessage');
+            if (!title || !body) {
+                message.textContent = 'Vui lòng nhập cả tiêu đề và nội dung mới.';
+                message.classList.add('error');
+                return;
+            }
+            const id = `content-${contentAdminSectionId}-${Date.now()}`;
+            const node = document.createElement('div');
+            node.className = 'content-added-block content-editable-active';
+            node.dataset.contentKey = id;
+            node.dataset.contentSection = contentAdminSectionId;
+            node.dataset.contentLabel = title;
+            node.dataset.newContent = 'true';
+            node.contentEditable = 'true';
+            node.innerHTML = `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(body)}</p>`;
+            const section = document.getElementById(contentAdminSectionId);
+            const cards = [...(section?.querySelectorAll('.card') || [])];
+            (cards[cards.length - 1] || section)?.appendChild(node);
+            contentEditTargets.push(node);
+            contentEditSnapshot.push({ target: node, html: '' });
+            closeNewContentBlockForm();
+            message.classList.remove('error');
+            message.textContent = 'Đã thêm một khối mới trên trang. Bấm “Lưu nội dung” để đồng bộ.';
+            node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         function unlockContentAdmin() {
             const input = document.getElementById('contentAdminCode');
             const message = document.getElementById('contentAdminLoginMessage');
@@ -1723,7 +1785,11 @@
         }
 
         function cancelStaticContentEditing() {
-            contentEditSnapshot.forEach(snapshot => { snapshot.target.innerHTML = snapshot.html; });
+            contentEditSnapshot.forEach(snapshot => {
+                if (snapshot.target.dataset.newContent === 'true' && !snapshot.html && snapshot.target.parentNode) snapshot.target.remove();
+                else snapshot.target.innerHTML = snapshot.html;
+            });
+            closeNewContentBlockForm();
             contentEditTargets.forEach(target => {
                 target.contentEditable = 'false';
                 target.classList.remove('content-editable-active');
