@@ -2387,8 +2387,8 @@
                     <div><strong>${escapeHtml(item.member || 'Thành viên CLB')}</strong>${item.text ? `<p style="margin-top: 6px; white-space: pre-line;">${escapeHtml(item.text)}</p>` : ''}</div>
                     ${safeImageSource(item.image) ? `<img src="${safeImageSource(item.image)}" alt="Ảnh cảm nhận" loading="lazy">` : ''}
                     <div class="event-actions">
-                        <button class="btn btn-secondary" type="button" onclick="editFeedback('${escapeHtml(item.id)}')">✏️ Sửa</button>
-                        <button class="btn btn-primary" type="button" onclick="removeFeedback('${escapeHtml(item.id)}')">🗑️ Xóa</button>
+                        <button class="btn btn-secondary" type="button" onclick="editFeedback('${escapeHtml(item.id)}', '${escapeHtml(event.id)}')">✏️ Sửa</button>
+                        <button class="btn btn-primary" type="button" onclick="removeFeedback('${escapeHtml(item.id)}', '${escapeHtml(event.id)}')">🗑️ Xóa</button>
                     </div>
                 </div>
             `).join('') : '<div class="empty-events">Sự kiện này chưa có cảm nhận nào.</div>';
@@ -2473,9 +2473,9 @@
             }
         }
 
-        function editFeedback(feedbackId) {
+        function editFeedback(feedbackId, eventIdOverride) {
             if (!adminUnlocked) return;
-            const eventId = document.getElementById('eventId').value;
+            const eventId = eventIdOverride || document.getElementById('eventId').value;
             const targetEvent = events.find(item => item.id === eventId);
             const feedback = targetEvent?.feedback?.find(item => item.id === feedbackId);
             if (!targetEvent || !feedback) return;
@@ -2490,9 +2490,9 @@
             document.getElementById('feedbackForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        async function removeFeedback(feedbackId) {
+        async function removeFeedback(feedbackId, eventIdOverride) {
             if (!adminUnlocked) return;
-            const eventId = document.getElementById('eventId').value;
+            const eventId = eventIdOverride || document.getElementById('eventId').value;
             const targetEvent = events.find(item => item.id === eventId);
             const feedback = targetEvent?.feedback?.find(item => item.id === feedbackId);
             if (!targetEvent || !feedback || !confirm('Xóa cảm nhận này khỏi sự kiện?')) return;
