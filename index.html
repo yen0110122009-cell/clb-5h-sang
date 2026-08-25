@@ -224,6 +224,16 @@
         .bqt-form-title { margin: 14px 0 8px; color: var(--primary-red); }
         .current-image-box { display: flex; align-items: center; gap: 12px; margin: 8px 0 12px; padding: 10px; background: #F8F9FA; border: 1px solid #E9ECEF; border-radius: 10px; }
         .current-image-box img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #DEE2E6; }
+        .feedback-image-trigger { cursor: zoom-in; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .feedback-image-trigger:hover { transform: scale(1.02); box-shadow: 0 5px 18px rgba(0,0,0,0.18); }
+        .feedback-image-viewer { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(0,0,0,0.72); }
+        .feedback-image-viewer[hidden] { display: none; }
+        .feedback-image-viewer-card { position: relative; width: min(760px, 100%); max-height: 94vh; overflow: auto; padding: 18px; border-radius: 14px; background: #fff; color: #212529; box-shadow: 0 15px 50px rgba(0,0,0,0.35); }
+        .feedback-image-viewer-card img { display: block; width: 100%; max-height: 68vh; object-fit: contain; border-radius: 10px; background: #F8F9FA; }
+        .feedback-image-viewer-close { position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--primary-red); color: #fff; font-size: 1.35rem; cursor: pointer; }
+        .feedback-image-viewer-title { margin: 0 42px 12px 0; color: var(--primary-red); }
+        .feedback-image-viewer-text { margin-top: 12px; white-space: pre-line; line-height: 1.55; }
+        body.feedback-viewer-open { overflow: hidden; }
         .form-hint { margin: 5px 0 8px; color: var(--text-muted); font-size: 0.82rem; }
         .empty-events { padding: 18px; text-align: center; background: #F8F9FA; border-radius: 8px; color: var(--text-muted); }
         .trash-panel { margin-top: 18px; padding: 14px; background: #FFF5F5; border: 1px dashed #F3B5B9; border-radius: 10px; }
@@ -1080,6 +1090,14 @@
 
     </div>
 
+    <div id="feedbackImageViewer" class="feedback-image-viewer" hidden role="dialog" aria-modal="true" aria-labelledby="feedbackImageViewerTitle" onclick="if (event.target === this) closeFeedbackViewer()">
+        <div class="feedback-image-viewer-card">
+            <button class="feedback-image-viewer-close" type="button" aria-label="Đóng ảnh" onclick="closeFeedbackViewer()">×</button>
+            <h3 id="feedbackImageViewerTitle" class="feedback-image-viewer-title"></h3>
+            <img id="feedbackImageViewerImage" alt="Ảnh cảm nhận phóng to">
+            <p id="feedbackImageViewerText" class="feedback-image-viewer-text"></p>
+        </div>
+    </div>
     <button id="backToTop" onclick="scrollToTop()">↑</button>
     <button id="eventAdminFab" onclick="openEventManagerFromFab()" title="Chỉnh sửa sự kiện" aria-label="Mở chỉnh sửa sự kiện">✏️</button>
 
@@ -1818,6 +1836,35 @@
             return result;
         }
 
+        function openFeedbackViewer(imageElement) {
+            const viewer = document.getElementById('feedbackImageViewer');
+            const viewerImage = document.getElementById('feedbackImageViewerImage');
+            const viewerTitle = document.getElementById('feedbackImageViewerTitle');
+            const viewerText = document.getElementById('feedbackImageViewerText');
+            const item = imageElement?.closest('.feedback-item');
+            const member = item?.querySelector('summary')?.textContent?.replace(/^💬\s*/, '').trim() || 'Thành viên CLB';
+            const text = item?.querySelector('.feedback-copy')?.textContent?.trim() || 'Thành viên chưa để lại nội dung chữ.';
+            if (!viewer || !viewerImage) return;
+            viewerImage.src = imageElement.currentSrc || imageElement.src;
+            viewerImage.alt = `Ảnh cảm nhận của ${member}`;
+            viewerTitle.textContent = `💬 ${member}`;
+            viewerText.textContent = text;
+            viewer.hidden = false;
+            document.body.classList.add('feedback-viewer-open');
+        }
+
+        function closeFeedbackViewer() {
+            const viewer = document.getElementById('feedbackImageViewer');
+            const viewerImage = document.getElementById('feedbackImageViewerImage');
+            if (viewer) viewer.hidden = true;
+            if (viewerImage) viewerImage.removeAttribute('src');
+            document.body.classList.remove('feedback-viewer-open');
+        }
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeFeedbackViewer();
+        });
+
         function renderFeedbackHtml(feedback) {
             const items = Array.isArray(feedback) ? feedback : [];
             const syncNotice = feedbackSyncError ? `<p style="font-size: 0.82rem; color: var(--primary-red);">${escapeHtml(feedbackSyncError)}</p>` : '';
@@ -1826,8 +1873,8 @@
                 <details class="feedback-item">
                     <summary>💬 ${escapeHtml(item.member || 'Thành viên CLB')}</summary>
                     <div class="feedback-item-body">
-                        <div>${item.text ? `<p style="white-space: pre-line;">${escapeHtml(item.text)}</p>` : '<p style="color: var(--text-muted);">Thành viên chưa để lại nội dung chữ.</p>'}</div>
-                        ${getFeedbackImage(item) ? `<img src="${getFeedbackImage(item)}" alt="Ảnh cảm nhận của ${escapeHtml(item.member || 'thành viên')}" loading="lazy">` : '<p style="color: var(--text-muted);">Chưa có ảnh cảm nhận.</p>'}
+                        <div class="feedback-copy">${item.text ? `<p style="white-space: pre-line;">${escapeHtml(item.text)}</p>` : '<p style="color: var(--text-muted);">Thành viên chưa để lại nội dung chữ.</p>'}</div>
+                        ${getFeedbackImage(item) ? `<img class="feedback-image-trigger" src="${getFeedbackImage(item)}" alt="Ảnh cảm nhận của ${escapeHtml(item.member || 'thành viên')}" loading="lazy" onclick="openFeedbackViewer(this)">` : '<p style="color: var(--text-muted);">Chưa có ảnh cảm nhận.</p>'}
                     </div>
                 </details>
             `).join('')}</div>`;
