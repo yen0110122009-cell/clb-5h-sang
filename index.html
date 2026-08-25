@@ -216,6 +216,12 @@
         .admin-message.error { color: var(--primary-red); }
         .admin-event-row { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-top: 1px solid #E9ECEF; }
         .admin-event-row small { color: var(--text-muted); }
+        .bqt-admin-row { align-items: center; }
+        .bqt-admin-select { flex: 1; min-width: 0; border: 0; background: transparent; color: inherit; text-align: left; padding: 10px 8px; border-radius: 10px; cursor: pointer; }
+        .bqt-admin-select:hover, .bqt-admin-select:focus-visible { background: rgba(25, 135, 84, 0.08); outline: 2px solid rgba(25, 135, 84, 0.28); outline-offset: 1px; }
+        .bqt-admin-row .event-actions { flex-shrink: 0; display: flex; gap: 8px; flex-wrap: wrap; }
+        .bqt-admin-toolbar { display: flex; justify-content: flex-start; margin: 12px 0; }
+        .bqt-form-title { margin: 14px 0 8px; color: var(--primary-red); }
         .empty-events { padding: 18px; text-align: center; background: #F8F9FA; border-radius: 8px; color: var(--text-muted); }
         .trash-panel { margin-top: 18px; padding: 14px; background: #FFF5F5; border: 1px dashed #F3B5B9; border-radius: 10px; }
         .trash-panel h3 { color: var(--primary-red); }
@@ -229,7 +235,10 @@
 
         @media (max-width: 600px) {
             .admin-event-row { flex-direction: column; }
-            .admin-event-row .event-actions { margin-top: 0; }
+            .admin-event-row .event-actions { margin-top: 0; width: 100%; }
+            .bqt-admin-select { width: 100%; }
+            .bqt-admin-row .event-actions button { flex: 1; }
+            .bqt-admin-toolbar .btn { width: 100%; }
             #eventAdminFab { top: 84px; right: 12px; width: 42px; height: 42px; }
             .event-filters { grid-template-columns: 1fr; }
             .diary-filters { grid-template-columns: 1fr; }
@@ -993,6 +1002,8 @@
                 <div id="bqtAdminControls" class="admin-panel" hidden>
                     <h3>🛠️ Quản lý Ban Quản Trị</h3>
                     <p class="admin-help">Bạn có thể thêm, sửa hoặc xóa toàn bộ quản trị viên. Dữ liệu được đồng bộ trên các thiết bị.</p>
+                    <div class="bqt-admin-toolbar"><button class="btn btn-success" type="button" onclick="startNewBqtMember()">➕ Thêm quản trị viên mới</button></div>
+                    <h4 id="bqtFormTitle" class="bqt-form-title">Thêm quản trị viên mới</h4>
                     <form id="bqtMemberForm" onsubmit="saveBqtMember(event)">
                         <input id="bqtMemberId" type="hidden">
                         <label for="bqtRoleTitle">Chức danh</label>
@@ -1014,7 +1025,7 @@
                         <label for="bqtDisplayOrder">Thứ tự hiển thị</label>
                         <input id="bqtDisplayOrder" type="number" min="0" max="9999" value="1">
                         <div class="admin-login-actions">
-                            <button id="bqtSaveButton" class="btn btn-success" type="submit">➕ Thêm quản trị viên</button>
+                            <button id="bqtSaveButton" class="btn btn-success" type="submit">💾 Lưu quản trị viên mới</button>
                             <button class="btn btn-secondary" type="button" onclick="resetBqtForm()">Làm mới biểu mẫu</button>
                             <button class="btn btn-secondary" type="button" onclick="lockBqtAdmin()">Đóng quản lý</button>
                         </div>
@@ -1415,12 +1426,18 @@
             }
         }
 
+        function startNewBqtMember() {
+            resetBqtForm();
+            document.getElementById('bqtRoleTitle').focus();
+        }
+
         function resetBqtForm() {
             const form = document.getElementById('bqtMemberForm');
             if (form) form.reset();
             document.getElementById('bqtMemberId').value = '';
             document.getElementById('bqtDisplayOrder').value = Math.max(1, bqtMembers.length + 1);
-            document.getElementById('bqtSaveButton').textContent = '➕ Thêm quản trị viên';
+            document.getElementById('bqtSaveButton').textContent = '💾 Lưu quản trị viên mới';
+            document.getElementById('bqtFormTitle').textContent = 'Thêm quản trị viên mới';
             const message = document.getElementById('bqtAdminMessage');
             if (message) {
                 message.textContent = '';
@@ -1440,7 +1457,8 @@
             document.getElementById('bqtContactLabel').value = item.contactLabel;
             document.getElementById('bqtButtonStyle').value = item.buttonStyle;
             document.getElementById('bqtDisplayOrder').value = item.displayOrder || 0;
-            document.getElementById('bqtSaveButton').textContent = '💾 Cập nhật quản trị viên';
+            document.getElementById('bqtSaveButton').textContent = '💾 Lưu cập nhật quản trị viên này';
+            document.getElementById('bqtFormTitle').textContent = `Đang chỉnh sửa: ${item.memberName}`;
             document.getElementById('bqtSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
