@@ -980,27 +980,44 @@
 
         <!-- 10. CÂU HỎI THƯỜNG GẶP, GÓP Ý & BAN QUẢN TRỊ -->
         <section id="faq-bqt" class="page-section">
-            <div class="card clover-border">
-                <h2>❓ CÂU HỎI THƯỜNG GẶP ☘️</h2>
-                
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">1. CLB có bắt buộc phải học đúng từ 5:00 sáng không? <span>+</span></div>
-                    <div class="faq-answer">Khung điểm danh kéo dài từ 3:00 đến 6:00 sáng. Bạn có thể vào học sớm hơn và nhận điểm thưởng tương ứng theo khung giờ.</div>
+            <div class="card clover-border" id="faqSection">
+                <div class="section-title-row">
+                    <h2>❓ CÂU HỎI THƯỜNG GẶP ☘️</h2>
+                    <button id="faqAdminFab" class="edit-fab" type="button" title="Mở chỉnh sửa Câu hỏi thường gặp" onclick="openFaqAdminLogin()">✏️</button>
+                </div>
+                <div id="faqList"></div>
+
+                <div id="faqAdminLoginBox" class="admin-login-box" hidden>
+                    <label for="faqAdminCode">Mã quản lý</label>
+                    <input id="faqAdminCode" type="password" autocomplete="off" placeholder="Nhập mã được cung cấp">
+                    <div class="admin-login-actions">
+                        <button class="btn btn-primary" type="button" onclick="unlockFaqAdmin()">Mở chỉnh sửa</button>
+                        <button class="btn btn-secondary" type="button" onclick="closeFaqAdminLogin()">Đóng</button>
+                    </div>
+                    <div id="faqAdminLoginMessage" class="form-message"></div>
                 </div>
 
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">2. Tiền đóng góp vắng không phép và phí duy trì dùng làm gì? <span>+</span></div>
-                    <div class="faq-answer">100% tiền thu được dùng để duy trì phòng học trực tuyến không giới hạn, mua phần mềm quản lý và trích quỹ trao thưởng sự kiện cho các thành viên xuất sắc.</div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">3. Tôi chưa có tài khoản ngân hàng hoặc gặp khó khăn tài chính thì sao? <span>+</span></div>
-                    <div class="faq-answer">Hãy chủ động nhắn tin riêng cho Admin. Ban Quản trị sẽ xem xét và hỗ trợ phương án phù hợp nhất, không để ai bị bỏ lại.</div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question" onclick="toggleFaq(this)">4. Nếu bận đột xuất ngay trong buổi sáng thì xử lý thế nào? <span>+</span></div>
-                    <div class="faq-answer">Hãy nhắn tin báo cho Quản lý ngay khi có thể. Sự chủ động trao đổi luôn được Ban Quản trị ghi nhận và hỗ trợ.</div>
+                <div id="faqAdminControls" class="admin-panel" hidden>
+                    <h3>🛠️ Quản lý Câu hỏi thường gặp</h3>
+                    <p class="admin-help">Bấm vào một câu hỏi để sửa riêng câu đó, hoặc thêm câu hỏi mới. Nội dung được đồng bộ trên các thiết bị.</p>
+                    <div class="bqt-admin-toolbar"><button class="btn btn-success" type="button" onclick="startNewFaqItem()">➕ Thêm câu hỏi mới</button></div>
+                    <h4 id="faqFormTitle" class="bqt-form-title">Thêm câu hỏi mới</h4>
+                    <form id="faqItemForm" onsubmit="saveFaqItem(event)">
+                        <input id="faqItemId" type="hidden">
+                        <label for="faqQuestion">Câu hỏi</label>
+                        <input id="faqQuestion" required maxlength="500" placeholder="Nhập câu hỏi thường gặp">
+                        <label for="faqAnswer">Câu trả lời</label>
+                        <textarea id="faqAnswer" required maxlength="10000" rows="5" placeholder="Nhập câu trả lời chi tiết"></textarea>
+                        <label for="faqDisplayOrder">Thứ tự hiển thị</label>
+                        <input id="faqDisplayOrder" type="number" min="0" max="99999" value="1">
+                        <div class="admin-login-actions">
+                            <button id="faqSaveButton" class="btn btn-success" type="submit">💾 Lưu câu hỏi mới</button>
+                            <button class="btn btn-secondary" type="button" onclick="resetFaqForm()">↺ Làm mới biểu mẫu</button>
+                            <button class="btn btn-secondary" type="button" onclick="lockFaqAdmin()">Đóng quản lý</button>
+                        </div>
+                        <div id="faqAdminMessage" class="form-message"></div>
+                    </form>
+                    <div id="faqAdminList" class="admin-list"></div>
                 </div>
             </div>
 
@@ -1126,6 +1143,11 @@
                 renderDiary();
                 renderDiaryAdmin();
             }
+            if (pageId === 'faq-bqt') {
+                renderFaqItems();
+                syncFaqItemsFromSupabase();
+                renderBqtMembers();
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1204,6 +1226,18 @@
         let bqtAdminUnlocked = false;
         let bqtSyncError = '';
         let feedbackImageRemoved = false;
+        const FAQ_STORAGE_KEY = 'clb5h_faq_items_v1';
+        const DEFAULT_FAQ_ITEMS = [
+            { id: 'faq-1', sectionId: 'faq-bqt', itemType: 'faq', title: 'CLB có bắt buộc phải học đúng từ 5:00 sáng không?', body: 'Khung điểm danh kéo dài từ 3:00 đến 6:00 sáng. Bạn có thể vào học sớm hơn và nhận điểm thưởng tương ứng theo khung giờ.', displayOrder: 1, isActive: true },
+            { id: 'faq-2', sectionId: 'faq-bqt', itemType: 'faq', title: 'Tiền đóng góp vắng không phép và phí duy trì dùng làm gì?', body: '100% tiền thu được dùng để duy trì phòng học trực tuyến không giới hạn, mua phần mềm quản lý và trích quỹ trao thưởng sự kiện cho các thành viên xuất sắc.', displayOrder: 2, isActive: true },
+            { id: 'faq-3', sectionId: 'faq-bqt', itemType: 'faq', title: 'Tôi chưa có tài khoản ngân hàng hoặc gặp khó khăn tài chính thì sao?', body: 'Hãy chủ động nhắn tin riêng cho Admin. Ban Quản trị sẽ xem xét và hỗ trợ phương án phù hợp nhất, không để ai bị bỏ lại.', displayOrder: 3, isActive: true },
+            { id: 'faq-4', sectionId: 'faq-bqt', itemType: 'faq', title: 'Nếu bận đột xuất ngay trong buổi sáng thì xử lý thế nào?', body: 'Hãy nhắn tin báo cho Quản lý ngay khi có thể. Sự chủ động trao đổi luôn được Ban Quản trị ghi nhận và hỗ trợ.', displayOrder: 4, isActive: true }
+        ];
+        let faqItems = loadFaqItems();
+        let legacyFaqItemsForMigration = JSON.parse(JSON.stringify(faqItems));
+        let faqAdminCodeToken = '';
+        let faqAdminUnlocked = false;
+        let faqSyncError = '';
 
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -1300,6 +1334,207 @@
             const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result?.error || 'supabase-event-write-failed');
             return result;
+        }
+
+        function loadFaqItems() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(FAQ_STORAGE_KEY));
+                if (Array.isArray(saved) && saved.length) return saved;
+            } catch (error) {
+                console.warn('Không thể đọc FAQ đã lưu.', error);
+            }
+            return DEFAULT_FAQ_ITEMS.map(item => ({ ...item }));
+        }
+
+        function faqRowToItem(row) {
+            return {
+                id: String(row?.id || ''),
+                sectionId: String(row?.section_id || 'faq-bqt'),
+                itemType: String(row?.item_type || 'faq'),
+                title: String(row?.title || '').slice(0, 500),
+                body: String(row?.body || '').slice(0, 10000),
+                displayOrder: Number(row?.display_order) || 0,
+                isActive: row?.is_active !== false
+            };
+        }
+
+        async function fetchFaqItemsFromSupabase() {
+            const params = new URLSearchParams({
+                select: 'id,section_id,item_type,title,body,display_order,is_active,created_at,updated_at',
+                section_id: 'eq.faq-bqt',
+                item_type: 'eq.faq',
+                is_active: 'eq.true',
+                order: 'display_order.asc,updated_at.desc',
+                limit: '200'
+            });
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/clb5h_content_items?${params}`, {
+                headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` }
+            });
+            const result = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(result?.message || 'supabase-faq-read-failed');
+            faqItems = (Array.isArray(result) ? result : []).map(faqRowToItem);
+            faqSyncError = '';
+            localStorage.setItem(FAQ_STORAGE_KEY, JSON.stringify(faqItems));
+        }
+
+        async function syncFaqItemsFromSupabase() {
+            try {
+                await fetchFaqItemsFromSupabase();
+            } catch (error) {
+                console.warn('Không thể tải FAQ từ Supabase, dùng cache trên thiết bị.', error);
+                faqSyncError = 'Chưa kết nối được danh sách FAQ chung.';
+            }
+            renderFaqItems();
+            if (faqAdminUnlocked) renderFaqAdminList();
+        }
+
+        async function adminFaqRequest(action, item) {
+            if (!faqAdminCodeToken) throw new Error('faq-admin-session-required');
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/clb5h-content-items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
+                body: JSON.stringify({ action, code: faqAdminCodeToken, item })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result?.error || 'supabase-faq-write-failed');
+            return result;
+        }
+
+        function renderFaqItems() {
+            const target = document.getElementById('faqList');
+            if (!target) return;
+            const items = faqItems.filter(item => item.isActive !== false).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            const notice = faqSyncError ? `<p class="form-message">${escapeHtml(faqSyncError)}</p>` : '';
+            target.innerHTML = notice + (items.length ? items.map((item, index) => `<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)">${index + 1}. ${escapeHtml(item.title)} <span>+</span></div><div class="faq-answer">${escapeHtml(item.body)}</div></div>`).join('') : '<div class="empty-events">Chưa có câu hỏi thường gặp nào được cập nhật.</div>');
+        }
+
+        function renderFaqAdminList() {
+            const target = document.getElementById('faqAdminList');
+            if (!target) return;
+            const items = [...faqItems].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            target.innerHTML = items.length ? `<h4>Danh sách câu hỏi (${items.length})</h4>` + items.map(item => `<div class="admin-event-row bqt-admin-row"><button class="bqt-admin-select" type="button" onclick="editFaqItem('${escapeHtml(item.id)}')"><strong>${escapeHtml(item.title)}</strong><br><small>Thứ tự ${item.displayOrder || 0} · Bấm để chỉnh sửa câu này</small></button><div class="event-actions"><button class="btn btn-secondary" type="button" onclick="editFaqItem('${escapeHtml(item.id)}')">✏️ Sửa</button><button class="btn btn-primary" type="button" onclick="deleteFaqItem('${escapeHtml(item.id)}')">🗑️ Xóa</button></div></div>`).join('') : '<div class="empty-events">Chưa có câu hỏi nào.</div>';
+        }
+
+        function openFaqAdminLogin() {
+            document.getElementById('faqAdminLoginBox').hidden = false;
+            document.getElementById('faqAdminCode').focus();
+        }
+
+        function closeFaqAdminLogin() {
+            document.getElementById('faqAdminLoginBox').hidden = true;
+            document.getElementById('faqAdminCode').value = '';
+            document.getElementById('faqAdminLoginMessage').textContent = '';
+        }
+
+        function unlockFaqAdmin() {
+            const input = document.getElementById('faqAdminCode');
+            const message = document.getElementById('faqAdminLoginMessage');
+            if (input.value.trim() !== ADMIN_CODE) {
+                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+                message.classList.add('error');
+                input.select();
+                return;
+            }
+            faqAdminCodeToken = input.value.trim();
+            faqAdminUnlocked = true;
+            message.textContent = '';
+            message.classList.remove('error');
+            document.getElementById('faqAdminLoginBox').hidden = true;
+            document.getElementById('faqAdminControls').hidden = false;
+            renderFaqAdminList();
+            migrateLegacyFaqItemsToSupabase().then(() => syncFaqItemsFromSupabase()).catch(error => {
+                console.warn('Không thể chuyển FAQ cũ lên Supabase.', error);
+                const target = document.getElementById('faqAdminMessage');
+                if (target) { target.textContent = 'Một số FAQ cũ chưa được đồng bộ.'; target.classList.add('error'); }
+            });
+        }
+
+        function lockFaqAdmin() {
+            faqAdminUnlocked = false;
+            faqAdminCodeToken = '';
+            document.getElementById('faqAdminControls').hidden = true;
+            renderFaqItems();
+        }
+
+        async function migrateLegacyFaqItemsToSupabase() {
+            if (!faqAdminCodeToken) return;
+            const remoteIds = new Set(faqItems.map(item => item.id));
+            for (const item of legacyFaqItemsForMigration) {
+                if (remoteIds.has(item.id)) continue;
+                await adminFaqRequest('create', item);
+                remoteIds.add(item.id);
+            }
+        }
+
+        function startNewFaqItem() {
+            resetFaqForm();
+            document.getElementById('faqQuestion').focus();
+        }
+
+        function resetFaqForm() {
+            const form = document.getElementById('faqItemForm');
+            if (form) form.reset();
+            document.getElementById('faqItemId').value = '';
+            document.getElementById('faqDisplayOrder').value = Math.max(1, faqItems.length + 1);
+            document.getElementById('faqFormTitle').textContent = 'Thêm câu hỏi mới';
+            document.getElementById('faqSaveButton').textContent = '💾 Lưu câu hỏi mới';
+            const message = document.getElementById('faqAdminMessage');
+            if (message) { message.textContent = ''; message.classList.remove('error'); }
+        }
+
+        function editFaqItem(id) {
+            if (!faqAdminUnlocked) return;
+            const item = faqItems.find(candidate => candidate.id === id);
+            if (!item) return;
+            document.getElementById('faqItemId').value = item.id;
+            document.getElementById('faqQuestion').value = item.title;
+            document.getElementById('faqAnswer').value = item.body;
+            document.getElementById('faqDisplayOrder').value = item.displayOrder || 0;
+            document.getElementById('faqFormTitle').textContent = `Đang chỉnh sửa: ${item.title}`;
+            document.getElementById('faqSaveButton').textContent = '💾 Lưu cập nhật câu hỏi này';
+            document.getElementById('faqSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        async function saveFaqItem(event) {
+            event.preventDefault();
+            if (!faqAdminUnlocked) return;
+            const id = document.getElementById('faqItemId').value || `faq-${Date.now()}`;
+            const existing = faqItems.find(item => item.id === id);
+            const draft = { id, sectionId: 'faq-bqt', itemType: 'faq', title: document.getElementById('faqQuestion').value.trim(), body: document.getElementById('faqAnswer').value.trim(), displayOrder: Number(document.getElementById('faqDisplayOrder').value) || 0, isActive: true, metadata: {} };
+            const message = document.getElementById('faqAdminMessage');
+            try {
+                const saved = await adminFaqRequest(existing ? 'update' : 'create', draft);
+                const remote = faqRowToItem(Array.isArray(saved) ? saved[0] : saved);
+                const next = remote.id ? remote : draft;
+                faqItems = existing ? faqItems.map(item => item.id === id ? next : item) : [...faqItems, next];
+                localStorage.setItem(FAQ_STORAGE_KEY, JSON.stringify(faqItems));
+                renderFaqItems();
+                renderFaqAdminList();
+                resetFaqForm();
+                message.textContent = existing ? 'Đã cập nhật FAQ trên Supabase.' : 'Đã thêm FAQ trên Supabase.';
+            } catch (error) {
+                message.textContent = 'Không thể lưu FAQ lên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
+        async function deleteFaqItem(id) {
+            if (!faqAdminUnlocked) return;
+            const item = faqItems.find(candidate => candidate.id === id);
+            if (!item || !confirm(`Xóa câu hỏi “${item.title}”?`)) return;
+            const message = document.getElementById('faqAdminMessage');
+            try {
+                await adminFaqRequest('delete', item);
+                faqItems = faqItems.filter(candidate => candidate.id !== id);
+                localStorage.setItem(FAQ_STORAGE_KEY, JSON.stringify(faqItems));
+                renderFaqItems();
+                renderFaqAdminList();
+                resetFaqForm();
+                message.textContent = 'Đã xóa FAQ trên Supabase.';
+            } catch (error) {
+                message.textContent = 'Không thể xóa FAQ trên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
         }
 
         function loadBqtMembers() {
@@ -2781,9 +3016,11 @@
             renderDiary();
             renderDiaryAdmin();
             renderBqtMembers();
+            renderFaqItems();
             syncDiaryFromSupabase();
             syncEventsFromSupabase().then(() => syncEventFeedbackFromSupabase());
             syncBqtMembersFromSupabase();
+            syncFaqItemsFromSupabase();
         });
 
         function scrollToTop() {
