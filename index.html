@@ -2289,6 +2289,7 @@
             migrateLegacyEventsToSupabase()
                 .then(() => syncEventsFromSupabase())
                 .then(() => migrateLegacyFeedbackToSupabase())
+                .then(() => syncEventFeedbackFromSupabase())
                 .catch(error => {
                     console.warn('Không thể chuyển dữ liệu cũ lên Supabase.', error);
                     const feedbackMessage = document.getElementById('feedbackMessage');
@@ -2378,6 +2379,12 @@
             document.getElementById('eventStatus').value = event.status || 'active';
             renderAdminFeedback(event);
             resetFeedbackForm();
+            fetchEventFeedbackFromSupabase()
+                .then(() => {
+                    const refreshedEvent = events.find(item => item.id === id);
+                    if (refreshedEvent && document.getElementById('eventId').value === id) renderAdminFeedback(refreshedEvent);
+                })
+                .catch(error => console.warn('Không thể tải lại cảm nhận của sự kiện.', error));
             document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
