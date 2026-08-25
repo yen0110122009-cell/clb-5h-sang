@@ -234,6 +234,13 @@
         .feedback-image-viewer-title { margin: 0 42px 12px 0; color: var(--primary-red); }
         .feedback-image-viewer-text { margin-top: 12px; white-space: pre-line; line-height: 1.55; }
         body.feedback-viewer-open { overflow: hidden; }
+        #contentAdminFab { top: auto; right: 20px; bottom: 24px; }
+        .content-admin-toolbar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 1500; width: min(720px, calc(100% - 24px)); padding: 14px; border: 2px solid var(--clover-green); border-radius: 14px; background: rgba(255,255,255,0.97); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+        .content-admin-toolbar strong, .content-admin-toolbar span { display: block; }
+        .content-admin-toolbar span { margin-top: 4px; color: var(--text-muted); font-size: 0.84rem; }
+        .content-admin-toolbar .admin-actions { margin-top: 10px; }
+        .content-editable-active { outline: 2px dashed var(--clover-green); outline-offset: 4px; cursor: text; }
+        .content-editable-active:focus { outline: 2px solid var(--primary-red); background: rgba(255,253,240,0.75); }
         .form-hint { margin: 5px 0 8px; color: var(--text-muted); font-size: 0.82rem; }
         .empty-events { padding: 18px; text-align: center; background: #F8F9FA; border-radius: 8px; color: var(--text-muted); }
         .trash-panel { margin-top: 18px; padding: 14px; background: #FFF5F5; border: 1px dashed #F3B5B9; border-radius: 10px; }
@@ -254,7 +261,11 @@
             .bqt-admin-toolbar .btn { width: 100%; }
             .current-image-box { align-items: flex-start; flex-direction: column; }
             .current-image-box img { width: 100%; max-width: 220px; height: auto; aspect-ratio: 4 / 3; }
+            .content-admin-toolbar { bottom: 8px; padding: 12px; }
+            .content-admin-toolbar .admin-actions { flex-direction: column; }
+            .content-admin-toolbar .admin-actions .btn { width: 100%; }
             #eventAdminFab { top: 84px; right: 12px; width: 42px; height: 42px; }
+            #contentAdminFab { right: 12px; bottom: 72px; width: 42px; height: 42px; }
             .event-filters { grid-template-columns: 1fr; }
             .diary-filters { grid-template-columns: 1fr; }
             .diary-days { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; padding-left: 7px; padding-right: 7px; }
@@ -1107,6 +1118,27 @@
 
     </div>
 
+    <button id="contentAdminFab" class="edit-fab" type="button" title="Chỉnh sửa nội dung trang hiện tại" aria-label="Mở chỉnh sửa nội dung" onclick="openContentAdminLogin()">✏️</button>
+    <div id="contentAdminLoginBox" class="admin-login-box content-admin-login" hidden>
+        <strong>🛠️ Chỉnh sửa nội dung trang</strong>
+        <label for="contentAdminCode">Mã quản lý</label>
+        <input id="contentAdminCode" type="password" autocomplete="off" placeholder="Nhập mã được cung cấp">
+        <div class="admin-login-actions">
+            <button class="btn btn-primary" type="button" onclick="unlockContentAdmin()">Mở chỉnh sửa</button>
+            <button class="btn btn-secondary" type="button" onclick="closeContentAdminLogin()">Đóng</button>
+        </div>
+        <div id="contentAdminLoginMessage" class="form-message"></div>
+    </div>
+    <div id="contentAdminToolbar" class="content-admin-toolbar" hidden>
+        <strong>✏️ Đang chỉnh sửa nội dung trang này</strong>
+        <span>Bấm trực tiếp vào chữ cần sửa, sau đó lưu toàn bộ thay đổi.</span>
+        <div class="admin-actions">
+            <button class="btn btn-success" type="button" onclick="saveStaticContent()">💾 Lưu nội dung</button>
+            <button class="btn btn-secondary" type="button" onclick="cancelStaticContentEditing()">↺ Hủy thay đổi</button>
+            <button class="btn btn-secondary" type="button" onclick="lockContentAdmin()">Đóng quản lý</button>
+        </div>
+        <p id="contentAdminMessage" class="admin-message" role="status"></p>
+    </div>
     <div id="feedbackImageViewer" class="feedback-image-viewer" hidden role="dialog" aria-modal="true" aria-labelledby="feedbackImageViewerTitle" onclick="if (event.target === this) closeFeedbackViewer()">
         <div class="feedback-image-viewer-card">
             <button class="feedback-image-viewer-close" type="button" aria-label="Đóng ảnh" onclick="closeFeedbackViewer()">×</button>
@@ -1139,6 +1171,8 @@
             });
 
             document.getElementById('navMenu').classList.remove('show');
+            const contentFab = document.getElementById('contentAdminFab');
+            if (contentFab) contentFab.hidden = CONTENT_DYNAMIC_SECTIONS.has(pageId);
             if (pageId === 'clb-diary') {
                 renderDiary();
                 renderDiaryAdmin();
@@ -1535,6 +1569,201 @@
                 message.textContent = 'Không thể xóa FAQ trên Supabase. Vui lòng thử lại.';
                 message.classList.add('error');
             }
+        }
+
+        const CONTENT_STORAGE_KEY = 'clb5h_static_content_v1';
+        const CONTENT_DYNAMIC_SECTIONS = new Set(['clb-doc-sach-event', 'clb-diary', 'faq-bqt']);
+        let staticContentItems = loadStaticContentItems();
+        let contentRemoteMap = new Map();
+        let contentAdminCodeToken = '';
+        let contentAdminUnlocked = false;
+        let contentAdminSectionId = '';
+        let contentEditTargets = [];
+        let contentEditSnapshot = [];
+
+        function loadStaticContentItems() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(CONTENT_STORAGE_KEY));
+                return Array.isArray(saved) ? saved : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function contentRowToItem(row) {
+            return {
+                id: String(row?.id || ''),
+                sectionId: String(row?.section_id || ''),
+                itemType: String(row?.item_type || 'text'),
+                title: String(row?.title || '').slice(0, 500),
+                body: String(row?.body || '').slice(0, 10000),
+                displayOrder: Number(row?.display_order) || 0,
+                isActive: row?.is_active !== false
+            };
+        }
+
+        function sanitizeContentHtml(value) {
+            const template = document.createElement('template');
+            template.innerHTML = String(value || '');
+            template.content.querySelectorAll('script,style,iframe,object,embed,form').forEach(node => node.remove());
+            template.content.querySelectorAll('*').forEach(node => {
+                [...node.attributes].forEach(attribute => {
+                    const name = attribute.name.toLowerCase();
+                    if (!['href', 'target', 'rel'].includes(name)) node.removeAttribute(attribute.name);
+                    if (name === 'href' && !/^https?:\/\//i.test(attribute.value)) node.removeAttribute(attribute.name);
+                });
+            });
+            return template.innerHTML;
+        }
+
+        function getStaticContentTargets(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section || CONTENT_DYNAMIC_SECTIONS.has(sectionId)) return [];
+            const candidates = [...section.querySelectorAll('h1,h2,h3,p,li,.notice-box')].filter(node => !node.closest('#contentAdminToolbar, #contentAdminLoginBox, .admin-panel, .feedback-manager, #bqtSection'));
+            return candidates.filter(node => !candidates.some(parent => parent !== node && parent.contains(node)));
+        }
+
+        function assignStaticContentKeys(sectionId) {
+            const targets = getStaticContentTargets(sectionId);
+            targets.forEach((target, index) => {
+                target.dataset.contentKey = `content-${sectionId}-${index}`;
+                target.dataset.contentSection = sectionId;
+                target.dataset.contentLabel = target.textContent.trim().slice(0, 120);
+            });
+            return targets;
+        }
+
+        function applyStaticContentItems(items) {
+            contentRemoteMap = new Map(items.map(item => [item.id, item]));
+            items.forEach(item => {
+                const target = document.querySelector(`[data-content-key="${CSS.escape(item.id)}"]`);
+                if (target && item.body) target.innerHTML = sanitizeContentHtml(item.body);
+            });
+        }
+
+        async function fetchStaticContentFromSupabase() {
+            const params = new URLSearchParams({
+                select: 'id,section_id,item_type,title,body,display_order,is_active,created_at,updated_at',
+                item_type: 'eq.text',
+                is_active: 'eq.true',
+                order: 'section_id.asc,display_order.asc,updated_at.desc',
+                limit: '500'
+            });
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/clb5h_content_items?${params}`, {
+                headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` }
+            });
+            const result = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(result?.message || 'supabase-static-content-read-failed');
+            staticContentItems = (Array.isArray(result) ? result : []).map(contentRowToItem);
+            localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(staticContentItems));
+            applyStaticContentItems(staticContentItems);
+        }
+
+        async function syncStaticContentFromSupabase() {
+            [...document.querySelectorAll('.page-section')].filter(section => !CONTENT_DYNAMIC_SECTIONS.has(section.id)).forEach(section => assignStaticContentKeys(section.id));
+            try {
+                await fetchStaticContentFromSupabase();
+            } catch (error) {
+                console.warn('Không thể tải nội dung chung từ Supabase, dùng nội dung trên trang.', error);
+                applyStaticContentItems(staticContentItems);
+            }
+        }
+
+        async function adminContentRequest(action, item) {
+            if (!contentAdminCodeToken) throw new Error('content-admin-session-required');
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/clb5h-content-items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
+                body: JSON.stringify({ action, code: contentAdminCodeToken, item })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result?.error || 'supabase-static-content-write-failed');
+            return result;
+        }
+
+        function openContentAdminLogin() {
+            document.getElementById('contentAdminLoginBox').hidden = false;
+            document.getElementById('contentAdminCode').focus();
+        }
+
+        function closeContentAdminLogin() {
+            document.getElementById('contentAdminLoginBox').hidden = true;
+            document.getElementById('contentAdminCode').value = '';
+            document.getElementById('contentAdminLoginMessage').textContent = '';
+        }
+
+        function beginStaticContentEditing() {
+            const active = document.querySelector('.page-section.active');
+            contentAdminSectionId = active?.id || 'trang-chu';
+            contentEditTargets = assignStaticContentKeys(contentAdminSectionId);
+            contentEditSnapshot = contentEditTargets.map(target => ({ target, html: target.innerHTML }));
+            contentEditTargets.forEach(target => {
+                target.contentEditable = 'true';
+                target.classList.add('content-editable-active');
+            });
+            document.getElementById('contentAdminToolbar').hidden = false;
+            document.getElementById('contentAdminMessage').textContent = `Đang chỉnh sửa ${contentEditTargets.length} khối nội dung trong mục này.`;
+        }
+
+        function unlockContentAdmin() {
+            const input = document.getElementById('contentAdminCode');
+            const message = document.getElementById('contentAdminLoginMessage');
+            if (input.value.trim() !== ADMIN_CODE) {
+                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+                message.classList.add('error');
+                input.select();
+                return;
+            }
+            contentAdminCodeToken = input.value.trim();
+            contentAdminUnlocked = true;
+            message.textContent = '';
+            message.classList.remove('error');
+            closeContentAdminLogin();
+            beginStaticContentEditing();
+        }
+
+        function cancelStaticContentEditing() {
+            contentEditSnapshot.forEach(snapshot => { snapshot.target.innerHTML = snapshot.html; });
+            contentEditTargets.forEach(target => {
+                target.contentEditable = 'false';
+                target.classList.remove('content-editable-active');
+            });
+            contentEditTargets = [];
+            contentEditSnapshot = [];
+            document.getElementById('contentAdminToolbar').hidden = true;
+            document.getElementById('contentAdminMessage').textContent = '';
+        }
+
+        async function saveStaticContent() {
+            if (!contentAdminUnlocked || !contentEditTargets.length) return;
+            const message = document.getElementById('contentAdminMessage');
+            message.textContent = 'Đang lưu nội dung lên Supabase...';
+            try {
+                for (let index = 0; index < contentEditTargets.length; index += 1) {
+                    const target = contentEditTargets[index];
+                    const original = contentEditSnapshot[index]?.html || '';
+                    if (target.innerHTML === original) continue;
+                    const id = target.dataset.contentKey;
+                    const existing = contentRemoteMap.get(id);
+                    const draft = { id, sectionId: contentAdminSectionId, itemType: 'text', title: target.dataset.contentLabel || target.textContent.trim().slice(0, 120), body: sanitizeContentHtml(target.innerHTML), displayOrder: index, isActive: true, metadata: {} };
+                    const saved = await adminContentRequest(existing ? 'update' : 'create', draft);
+                    const row = contentRowToItem(Array.isArray(saved) ? saved[0] : saved);
+                    contentRemoteMap.set(row.id || id, row.id ? row : draft);
+                }
+                staticContentItems = [...contentRemoteMap.values()];
+                localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(staticContentItems));
+                contentEditSnapshot = contentEditTargets.map(target => ({ target, html: target.innerHTML }));
+                message.textContent = 'Đã lưu nội dung mục này. Bạn vẫn đang ở trang hiện tại.';
+            } catch (error) {
+                message.textContent = 'Không thể lưu nội dung lên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
+        function lockContentAdmin() {
+            contentAdminUnlocked = false;
+            contentAdminCodeToken = '';
+            cancelStaticContentEditing();
         }
 
         function loadBqtMembers() {
@@ -3021,6 +3250,7 @@
             syncEventsFromSupabase().then(() => syncEventFeedbackFromSupabase());
             syncBqtMembersFromSupabase();
             syncFaqItemsFromSupabase();
+            syncStaticContentFromSupabase();
         });
 
         function scrollToTop() {
