@@ -222,6 +222,9 @@
         .bqt-admin-row .event-actions { flex-shrink: 0; display: flex; gap: 8px; flex-wrap: wrap; }
         .bqt-admin-toolbar { display: flex; justify-content: flex-start; margin: 12px 0; }
         .bqt-form-title { margin: 14px 0 8px; color: var(--primary-red); }
+        .current-image-box { display: flex; align-items: center; gap: 12px; margin: 8px 0 12px; padding: 10px; background: #F8F9FA; border: 1px solid #E9ECEF; border-radius: 10px; }
+        .current-image-box img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #DEE2E6; }
+        .form-hint { margin: 5px 0 8px; color: var(--text-muted); font-size: 0.82rem; }
         .empty-events { padding: 18px; text-align: center; background: #F8F9FA; border-radius: 8px; color: var(--text-muted); }
         .trash-panel { margin-top: 18px; padding: 14px; background: #FFF5F5; border: 1px dashed #F3B5B9; border-radius: 10px; }
         .trash-panel h3 { color: var(--primary-red); }
@@ -239,6 +242,8 @@
             .bqt-admin-select { width: 100%; }
             .bqt-admin-row .event-actions button { flex: 1; }
             .bqt-admin-toolbar .btn { width: 100%; }
+            .current-image-box { align-items: flex-start; flex-direction: column; }
+            .current-image-box img { width: 100%; max-width: 220px; height: auto; aspect-ratio: 4 / 3; }
             #eventAdminFab { top: 84px; right: 12px; width: 42px; height: 42px; }
             .event-filters { grid-template-columns: 1fr; }
             .diary-filters { grid-template-columns: 1fr; }
@@ -762,7 +767,15 @@
                                     <label for="feedbackText">Cảm nhận / góp ý</label>
                                     <textarea id="feedbackText" maxlength="2000" placeholder="Chia sẻ cảm nhận sau khi tham gia sự kiện..."></textarea>
                                     <label for="feedbackImage">Ảnh cảm nhận</label>
-                                    <input id="feedbackImage" type="file" accept="image/*">
+                                    <input id="feedbackImage" type="file" accept="image/*" onchange="handleFeedbackImageSelected()">
+                                    <p class="form-hint">Ảnh lớn sẽ được tự động nén trước khi tải lên; không còn chặn cứng ở 2 MB (tối đa tệp đầu vào 10 MB).</p>
+                                    <div id="feedbackCurrentImage" class="current-image-box" hidden>
+                                        <img id="feedbackCurrentImagePreview" alt="Ảnh cảm nhận hiện tại" loading="lazy">
+                                        <div>
+                                            <p id="feedbackCurrentImageText" class="form-hint"></p>
+                                            <button id="feedbackRemoveImageButton" class="btn btn-primary" type="button" onclick="removeCurrentFeedbackImage()">🗑️ Xóa ảnh hiện tại</button>
+                                        </div>
+                                    </div>
                                     <div class="admin-actions">
                                         <button id="feedbackSaveButton" class="btn btn-success" type="button" onclick="addFeedback(event)">➕ Thêm cảm nhận</button>
                                         <button class="btn btn-secondary" type="button" onclick="resetFeedbackForm()">↺ Xóa ô nhập</button>
@@ -1133,6 +1146,7 @@
         const IMAGE_MAX_SIDE = 1280;
         const IMAGE_TARGET_BYTES = 900 * 1024;
         const IMAGE_START_QUALITY = 0.74;
+        const MAX_INPUT_IMAGE_BYTES = 10 * 1024 * 1024;
         const DIARY_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="12" viewBox="0 0 16 12"%3E%3Crect width="16" height="12" fill="%23f1f3f5"/%3E%3C/svg%3E';
         const DEFAULT_EVENT_MONTH = '2026-08';
         const DEFAULT_EVENTS = [
@@ -1171,6 +1185,7 @@
         let bqtAdminCodeToken = '';
         let bqtAdminUnlocked = false;
         let bqtSyncError = '';
+        let feedbackImageRemoved = false;
 
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -2443,16 +2458,55 @@
             `).join('') : '<div class="empty-events">Sự kiện này chưa có cảm nhận nào.</div>';
         }
 
+        function updateFeedbackImageControls(item) {
+            const box = document.getElementById('feedbackCurrentImage');
+            const preview = document.getElementById('feedbackCurrentImagePreview');
+            const text = document.getElementById('feedbackCurrentImageText');
+            const removeButton = document.getElementById('feedbackRemoveImageButton');
+            if (!box || !preview || !text || !removeButton) return;
+            const image = !feedbackImageRemoved && item ? getFeedbackImage(item) : '';
+            box.hidden = !image;
+            if (image) {
+                preview.src = image;
+                text.textContent = 'Đây là ảnh đang lưu trong cảm nhận này.';
+                removeButton.hidden = false;
+            } else {
+                preview.removeAttribute('src');
+                text.textContent = '';
+                removeButton.hidden = true;
+            }
+        }
+
+        function handleFeedbackImageSelected() {
+            if (document.getElementById('feedbackImage')?.files?.length) {
+                feedbackImageRemoved = false;
+                const message = document.getElementById('feedbackMessage');
+                if (message) message.textContent = 'Ảnh mới sẽ thay ảnh hiện tại sau khi bấm lưu.';
+            }
+        }
+
+        function removeCurrentFeedbackImage() {
+            feedbackImageRemoved = true;
+            updateFeedbackImageControls(null);
+            const message = document.getElementById('feedbackMessage');
+            if (message) {
+                message.textContent = 'Đã chọn xóa ảnh. Bấm “Lưu cập nhật” để xác nhận; nội dung chữ vẫn được giữ nguyên.';
+                message.classList.remove('error');
+            }
+        }
+
         function resetFeedbackForm() {
             const member = document.getElementById('feedbackMember');
             const text = document.getElementById('feedbackText');
             const image = document.getElementById('feedbackImage');
             const feedbackId = document.getElementById('feedbackId');
             const saveButton = document.getElementById('feedbackSaveButton');
+            feedbackImageRemoved = false;
             if (feedbackId) feedbackId.value = '';
             if (member) member.value = '';
             if (text) text.value = '';
             if (image) image.value = '';
+            updateFeedbackImageControls(null);
             if (saveButton) saveButton.textContent = '➕ Thêm cảm nhận';
             const message = document.getElementById('feedbackMessage');
             if (message) {
@@ -2481,8 +2535,8 @@
                 message.classList.add('error');
                 return;
             }
-            if (imageFile && imageFile.size > 2 * 1024 * 1024) {
-                message.textContent = 'Ảnh cần có dung lượng không quá 2 MB.';
+            if (imageFile && imageFile.size > MAX_INPUT_IMAGE_BYTES) {
+                message.textContent = 'Ảnh đầu vào cần có dung lượng không quá 10 MB.';
                 message.classList.add('error');
                 return;
             }
@@ -2490,8 +2544,8 @@
             message.classList.remove('error');
             message.textContent = imageFile ? 'Đang nén và tải ảnh cảm nhận lên Cloudinary...' : 'Đang lưu cảm nhận lên Supabase...';
             try {
-                let imageUrl = getFeedbackImage(existingFeedback);
-                let imagePublicId = existingFeedback?.imagePublicId || '';
+                let imageUrl = feedbackImageRemoved ? '' : (safeImageSource(existingFeedback?.imageUrl) || safeImageSource(existingFeedback?.image));
+                let imagePublicId = feedbackImageRemoved ? '' : (existingFeedback?.imagePublicId || '');
                 if (imageFile) {
                     const uploaded = await uploadDiaryImageToCloudinary(imageFile);
                     imageUrl = uploaded.imageUrl;
@@ -2532,6 +2586,8 @@
             document.getElementById('feedbackMember').value = feedback.member || '';
             document.getElementById('feedbackText').value = feedback.text || '';
             document.getElementById('feedbackImage').value = '';
+            feedbackImageRemoved = false;
+            updateFeedbackImageControls(feedback);
             document.getElementById('feedbackSaveButton').textContent = '💾 Cập nhật cảm nhận';
             const message = document.getElementById('feedbackMessage');
             message.textContent = 'Đang sửa cảm nhận. Chọn ảnh mới nếu muốn thay ảnh hiện tại.';
