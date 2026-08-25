@@ -972,32 +972,55 @@
                 </div>
             </div>
 
-            <div class="card">
-                <h2>👑 BAN QUẢN TRỊ CLB 5H SÁNG ☘️</h2>
+            <div class="card" id="bqtSection">
+                <div class="section-title-row">
+                    <h2>👑 BAN QUẢN TRỊ CLB 5H SÁNG ☘️</h2>
+                    <button id="bqtAdminFab" class="edit-fab" type="button" title="Mở chỉnh sửa Ban Quản Trị" onclick="openBqtAdminLogin()">✏️</button>
+                </div>
                 <p style="margin-bottom: 12px; font-size:0.92rem;">Mọi thắc mắc hoặc cần hỗ trợ, bạn vui lòng liên hệ Ban Quản trị theo thông tin dưới đây:</p>
+                <div id="bqtMembersList"></div>
 
-                <div class="bqt-card">
-                    <div>
-                        <strong>👑 Admin Sáng Lập & Kỹ Thuật Phòng Học:</strong>
-                        <p style="color: var(--text-muted); font-size: 0.88rem;">Anh Trần Như Hiệp (CLB Đọc Sách) - Định hướng & Quản lý phòng học.</p>
+                <div id="bqtAdminLoginBox" class="admin-login-box" hidden>
+                    <label for="bqtAdminCode">Mã quản lý</label>
+                    <input id="bqtAdminCode" type="password" autocomplete="off" placeholder="Nhập mã được cung cấp">
+                    <div class="admin-login-actions">
+                        <button class="btn btn-primary" type="button" onclick="unlockBqtAdmin()">Mở chỉnh sửa</button>
+                        <button class="btn btn-secondary" type="button" onclick="closeBqtAdminLogin()">Đóng</button>
                     </div>
-                    <a href="https://zalo.me/0816333393" target="_blank" class="btn btn-primary">💬 Zalo: 0816333393</a>
+                    <div id="bqtAdminLoginMessage" class="form-message"></div>
                 </div>
 
-                <div class="bqt-card">
-                    <div>
-                        <strong>📋 Quản Lý Điểm Danh:</strong>
-                        <p style="color: var(--text-muted); font-size: 0.88rem;">Bạn Lê Yến Nhi - Hỗ trợ thành viên & điểm danh.</p>
-                    </div>
-                    <span class="btn btn-secondary">Cập nhật Zalo sau</span>
-                </div>
-
-                <div class="bqt-card">
-                    <div>
-                        <strong>📋 Quản Lý Điểm Danh & Tài Chính:</strong>
-                        <p style="color: var(--text-muted); font-size: 0.88rem;">Bạn Bùi Hải Yến - Phụ trách quỹ, hỗ trợ thành viên & điểm danh.</p>
-                    </div>
-                    <a href="https://zalo.me/0983346399" target="_blank" class="btn btn-success">💬 Zalo: 0983346399 ☘️</a>
+                <div id="bqtAdminControls" class="admin-panel" hidden>
+                    <h3>🛠️ Quản lý Ban Quản Trị</h3>
+                    <p class="admin-help">Bạn có thể thêm, sửa hoặc xóa toàn bộ quản trị viên. Dữ liệu được đồng bộ trên các thiết bị.</p>
+                    <form id="bqtMemberForm" onsubmit="saveBqtMember(event)">
+                        <input id="bqtMemberId" type="hidden">
+                        <label for="bqtRoleTitle">Chức danh</label>
+                        <input id="bqtRoleTitle" required maxlength="160" placeholder="Ví dụ: 👑 Admin Sáng Lập & Kỹ Thuật Phòng Học">
+                        <label for="bqtMemberName">Tên người phụ trách</label>
+                        <input id="bqtMemberName" required maxlength="160" placeholder="Nhập tên quản trị viên">
+                        <label for="bqtMemberDescription">Mô tả nhiệm vụ</label>
+                        <textarea id="bqtMemberDescription" maxlength="1000" rows="3" placeholder="Mô tả nhiệm vụ và phạm vi hỗ trợ"></textarea>
+                        <label for="bqtContactUrl">Liên kết liên hệ</label>
+                        <input id="bqtContactUrl" type="url" maxlength="500" placeholder="https://zalo.me/...">
+                        <label for="bqtContactLabel">Chữ trên nút liên hệ</label>
+                        <input id="bqtContactLabel" maxlength="120" placeholder="💬 Zalo: ...">
+                        <label for="bqtButtonStyle">Màu nút liên hệ</label>
+                        <select id="bqtButtonStyle">
+                            <option value="primary">Đỏ / chính</option>
+                            <option value="secondary">Xám / chưa cập nhật</option>
+                            <option value="success">Xanh / thành công</option>
+                        </select>
+                        <label for="bqtDisplayOrder">Thứ tự hiển thị</label>
+                        <input id="bqtDisplayOrder" type="number" min="0" max="9999" value="1">
+                        <div class="admin-login-actions">
+                            <button id="bqtSaveButton" class="btn btn-success" type="submit">➕ Thêm quản trị viên</button>
+                            <button class="btn btn-secondary" type="button" onclick="resetBqtForm()">Làm mới biểu mẫu</button>
+                            <button class="btn btn-secondary" type="button" onclick="lockBqtAdmin()">Đóng quản lý</button>
+                        </div>
+                        <div id="bqtAdminMessage" class="form-message"></div>
+                    </form>
+                    <div id="bqtAdminList" class="admin-list"></div>
                 </div>
             </div>
 
@@ -1123,6 +1146,17 @@
         let feedbackSyncError = '';
         let adminUnlocked = false;
         let diaryAdminUnlocked = false;
+        const BQT_STORAGE_KEY = 'clb5h_bqt_admins_v1';
+        const DEFAULT_BQT_ADMINS = [
+            { id: 'founder-tech', roleTitle: '👑 Admin Sáng Lập & Kỹ Thuật Phòng Học', memberName: 'Anh Trần Như Hiệp (CLB Đọc Sách)', description: 'Định hướng & Quản lý phòng học.', contactUrl: 'https://zalo.me/0816333393', contactLabel: '💬 Zalo: 0816333393', buttonStyle: 'primary', displayOrder: 1, isActive: true },
+            { id: 'attendance', roleTitle: '📋 Quản Lý Điểm Danh', memberName: 'Bạn Lê Yến Nhi', description: 'Hỗ trợ thành viên & điểm danh.', contactUrl: '', contactLabel: 'Cập nhật Zalo sau', buttonStyle: 'secondary', displayOrder: 2, isActive: true },
+            { id: 'attendance-finance', roleTitle: '📋 Quản Lý Điểm Danh & Tài Chính', memberName: 'Bạn Bùi Hải Yến', description: 'Phụ trách quỹ, hỗ trợ thành viên & điểm danh.', contactUrl: 'https://zalo.me/0983346399', contactLabel: '💬 Zalo: 0983346399 ☘️', buttonStyle: 'success', displayOrder: 3, isActive: true }
+        ];
+        let bqtMembers = loadBqtMembers();
+        let legacyBqtMembersForMigration = JSON.parse(JSON.stringify(bqtMembers));
+        let bqtAdminCodeToken = '';
+        let bqtAdminUnlocked = false;
+        let bqtSyncError = '';
 
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -1219,6 +1253,248 @@
             const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result?.error || 'supabase-event-write-failed');
             return result;
+        }
+
+        function loadBqtMembers() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(BQT_STORAGE_KEY));
+                if (Array.isArray(saved) && saved.length) return saved;
+            } catch (error) {
+                console.warn('Không thể đọc danh sách BQT đã lưu.', error);
+            }
+            return DEFAULT_BQT_ADMINS.map(item => ({ ...item }));
+        }
+
+        function bqtRowToMember(row) {
+            return {
+                id: String(row?.id || ''),
+                roleTitle: String(row?.role_title || '').slice(0, 160),
+                memberName: String(row?.member_name || '').slice(0, 160),
+                description: String(row?.description || '').slice(0, 1000),
+                contactUrl: String(row?.contact_url || '').slice(0, 500),
+                contactLabel: String(row?.contact_label || '').slice(0, 120),
+                buttonStyle: row?.button_style === 'success' ? 'success' : row?.button_style === 'secondary' ? 'secondary' : 'primary',
+                displayOrder: Number(row?.display_order) || 0,
+                isActive: row?.is_active !== false
+            };
+        }
+
+        function safeBqtUrl(value) {
+            const url = String(value || '').trim();
+            if (!url) return '';
+            try {
+                const parsed = new URL(url);
+                return /^https?:$/.test(parsed.protocol) ? url : '';
+            } catch (error) {
+                return '';
+            }
+        }
+
+        async function fetchBqtMembersFromSupabase() {
+            const params = new URLSearchParams({
+                select: 'id,role_title,member_name,description,contact_url,contact_label,button_style,display_order,is_active,created_at,updated_at',
+                is_active: 'eq.true',
+                order: 'display_order.asc,updated_at.desc',
+                limit: '200'
+            });
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/clb5h_bqt_admins?${params}`, {
+                headers: {
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                }
+            });
+            const result = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(result?.message || 'supabase-bqt-read-failed');
+            bqtMembers = (Array.isArray(result) ? result : []).map(bqtRowToMember);
+            bqtSyncError = '';
+            localStorage.setItem(BQT_STORAGE_KEY, JSON.stringify(bqtMembers));
+        }
+
+        async function syncBqtMembersFromSupabase() {
+            try {
+                await fetchBqtMembersFromSupabase();
+            } catch (error) {
+                console.warn('Không thể tải danh sách BQT từ Supabase, dùng cache trên thiết bị.', error);
+                bqtSyncError = 'Chưa kết nối được danh sách Ban Quản Trị chung.';
+            }
+            renderBqtMembers();
+            if (bqtAdminUnlocked) renderBqtAdminList();
+        }
+
+        async function adminBqtRequest(action, item) {
+            if (!bqtAdminCodeToken) throw new Error('bqt-admin-session-required');
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/clb5h-bqt-admins`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: SUPABASE_PUBLISHABLE_KEY,
+                    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                },
+                body: JSON.stringify({ action, code: bqtAdminCodeToken, item })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result?.error || 'supabase-bqt-write-failed');
+            return result;
+        }
+
+        function renderBqtMembers() {
+            const target = document.getElementById('bqtMembersList');
+            if (!target) return;
+            const visible = bqtMembers.filter(item => item.isActive !== false).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            target.innerHTML = visible.length ? visible.map(item => {
+                const contactUrl = safeBqtUrl(item.contactUrl);
+                const buttonClass = item.buttonStyle === 'success' ? 'btn-success' : item.buttonStyle === 'secondary' ? 'btn-secondary' : 'btn-primary';
+                const contact = contactUrl
+                    ? `<a href="${escapeHtml(contactUrl)}" target="_blank" rel="noopener noreferrer" class="btn ${buttonClass}">${escapeHtml(item.contactLabel || 'Liên hệ')}</a>`
+                    : `<span class="btn ${buttonClass}">${escapeHtml(item.contactLabel || 'Chưa cập nhật liên hệ')}</span>`;
+                return `<div class="bqt-card"><div><strong>${escapeHtml(item.roleTitle)}</strong><p style="color: var(--text-muted); font-size: 0.88rem;">${escapeHtml(item.memberName)}${item.description ? ` - ${escapeHtml(item.description)}` : ''}</p></div>${contact}</div>`;
+            }).join('') : '<div class="empty-events">Chưa có quản trị viên nào được cập nhật.</div>';
+            if (bqtSyncError) target.insertAdjacentHTML('afterbegin', `<p class="form-message">${escapeHtml(bqtSyncError)}</p>`);
+        }
+
+        function renderBqtAdminList() {
+            const target = document.getElementById('bqtAdminList');
+            if (!target) return;
+            const sorted = [...bqtMembers].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            target.innerHTML = sorted.length ? `<h4>Danh sách quản trị viên (${sorted.length})</h4>` + sorted.map(item => `<div class="admin-event-row"><div><strong>${escapeHtml(item.roleTitle)}</strong><br><small>${escapeHtml(item.memberName)} · Thứ tự ${item.displayOrder || 0}</small></div><div class="event-actions"><button class="btn btn-secondary" type="button" onclick="editBqtMember('${escapeHtml(item.id)}')">✏️ Sửa</button><button class="btn btn-primary" type="button" onclick="deleteBqtMember('${escapeHtml(item.id)}')">🗑️ Xóa</button></div></div>`).join('') : '<div class="empty-events">Chưa có quản trị viên nào.</div>';
+        }
+
+        function openBqtAdminLogin() {
+            document.getElementById('bqtAdminLoginBox').hidden = false;
+            document.getElementById('bqtAdminCode').focus();
+        }
+
+        function closeBqtAdminLogin() {
+            document.getElementById('bqtAdminLoginBox').hidden = true;
+            document.getElementById('bqtAdminCode').value = '';
+            document.getElementById('bqtAdminLoginMessage').textContent = '';
+        }
+
+        function unlockBqtAdmin() {
+            const input = document.getElementById('bqtAdminCode');
+            const message = document.getElementById('bqtAdminLoginMessage');
+            if (input.value.trim() !== ADMIN_CODE) {
+                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+                message.classList.add('error');
+                input.select();
+                return;
+            }
+            bqtAdminCodeToken = input.value.trim();
+            bqtAdminUnlocked = true;
+            message.textContent = '';
+            message.classList.remove('error');
+            document.getElementById('bqtAdminLoginBox').hidden = true;
+            document.getElementById('bqtAdminControls').hidden = false;
+            renderBqtAdminList();
+            migrateLegacyBqtMembersToSupabase()
+                .then(() => syncBqtMembersFromSupabase())
+                .catch(error => {
+                    console.warn('Không thể chuyển danh sách BQT cũ lên Supabase.', error);
+                    const target = document.getElementById('bqtAdminMessage');
+                    if (target) {
+                        target.textContent = 'Một số dữ liệu BQT cũ chưa được đồng bộ.';
+                        target.classList.add('error');
+                    }
+                });
+        }
+
+        function lockBqtAdmin() {
+            bqtAdminUnlocked = false;
+            bqtAdminCodeToken = '';
+            document.getElementById('bqtAdminControls').hidden = true;
+            renderBqtMembers();
+        }
+
+        async function migrateLegacyBqtMembersToSupabase() {
+            if (!bqtAdminCodeToken) return;
+            const remoteIds = new Set(bqtMembers.map(item => item.id));
+            for (const item of legacyBqtMembersForMigration) {
+                if (remoteIds.has(item.id)) continue;
+                await adminBqtRequest('create', item);
+                remoteIds.add(item.id);
+            }
+        }
+
+        function resetBqtForm() {
+            const form = document.getElementById('bqtMemberForm');
+            if (form) form.reset();
+            document.getElementById('bqtMemberId').value = '';
+            document.getElementById('bqtDisplayOrder').value = Math.max(1, bqtMembers.length + 1);
+            document.getElementById('bqtSaveButton').textContent = '➕ Thêm quản trị viên';
+            const message = document.getElementById('bqtAdminMessage');
+            if (message) {
+                message.textContent = '';
+                message.classList.remove('error');
+            }
+        }
+
+        function editBqtMember(id) {
+            if (!bqtAdminUnlocked) return;
+            const item = bqtMembers.find(candidate => candidate.id === id);
+            if (!item) return;
+            document.getElementById('bqtMemberId').value = item.id;
+            document.getElementById('bqtRoleTitle').value = item.roleTitle;
+            document.getElementById('bqtMemberName').value = item.memberName;
+            document.getElementById('bqtMemberDescription').value = item.description;
+            document.getElementById('bqtContactUrl').value = item.contactUrl;
+            document.getElementById('bqtContactLabel').value = item.contactLabel;
+            document.getElementById('bqtButtonStyle').value = item.buttonStyle;
+            document.getElementById('bqtDisplayOrder').value = item.displayOrder || 0;
+            document.getElementById('bqtSaveButton').textContent = '💾 Cập nhật quản trị viên';
+            document.getElementById('bqtSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        async function saveBqtMember(event) {
+            event.preventDefault();
+            if (!bqtAdminUnlocked) return;
+            const id = document.getElementById('bqtMemberId').value || `bqt-${Date.now()}`;
+            const existing = bqtMembers.find(item => item.id === id);
+            const draft = {
+                id,
+                roleTitle: document.getElementById('bqtRoleTitle').value.trim(),
+                memberName: document.getElementById('bqtMemberName').value.trim(),
+                description: document.getElementById('bqtMemberDescription').value.trim(),
+                contactUrl: safeBqtUrl(document.getElementById('bqtContactUrl').value),
+                contactLabel: document.getElementById('bqtContactLabel').value.trim(),
+                buttonStyle: document.getElementById('bqtButtonStyle').value,
+                displayOrder: Number(document.getElementById('bqtDisplayOrder').value) || 0,
+                isActive: true
+            };
+            const message = document.getElementById('bqtAdminMessage');
+            try {
+                const saved = await adminBqtRequest(existing ? 'update' : 'create', draft);
+                const remote = bqtRowToMember(Array.isArray(saved) ? saved[0] : saved);
+                const next = remote.id ? remote : draft;
+                if (existing) bqtMembers = bqtMembers.map(item => item.id === id ? next : item);
+                else bqtMembers.push(next);
+                localStorage.setItem(BQT_STORAGE_KEY, JSON.stringify(bqtMembers));
+                renderBqtMembers();
+                renderBqtAdminList();
+                resetBqtForm();
+                message.textContent = existing ? 'Đã cập nhật quản trị viên trên Supabase.' : 'Đã thêm quản trị viên trên Supabase.';
+            } catch (error) {
+                message.textContent = 'Không thể lưu quản trị viên lên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
+        async function deleteBqtMember(id) {
+            if (!bqtAdminUnlocked) return;
+            const item = bqtMembers.find(candidate => candidate.id === id);
+            if (!item || !confirm(`Xóa quản trị viên “${item.memberName}”?`)) return;
+            const message = document.getElementById('bqtAdminMessage');
+            try {
+                await adminBqtRequest('delete', item);
+                bqtMembers = bqtMembers.filter(candidate => candidate.id !== id);
+                localStorage.setItem(BQT_STORAGE_KEY, JSON.stringify(bqtMembers));
+                renderBqtMembers();
+                renderBqtAdminList();
+                resetBqtForm();
+                message.textContent = 'Đã xóa quản trị viên trên Supabase.';
+            } catch (error) {
+                message.textContent = 'Không thể xóa quản trị viên trên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
         }
 
         async function migrateLegacyEventsToSupabase() {
@@ -2352,8 +2628,10 @@
             renderPublicEvents();
             renderDiary();
             renderDiaryAdmin();
+            renderBqtMembers();
             syncDiaryFromSupabase();
             syncEventsFromSupabase().then(() => syncEventFeedbackFromSupabase());
+            syncBqtMembersFromSupabase();
         });
 
         function scrollToTop() {
