@@ -81,6 +81,11 @@
         .home-custom-card h2 { color: inherit; margin-bottom: 9px; }
         .home-custom-card-icon { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; min-height: 42px; margin-bottom: 8px; font-size: 1.8rem; }
         .home-custom-card-body { white-space: pre-line; line-height: 1.75; }
+        .home-card-internal-parts { display: grid; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(108,117,125,.25); }
+        .home-card-part { min-width: 0; padding: 12px; border: 1px solid rgba(108,117,125,.22); border-radius: 9px; background: rgba(255,255,255,.52); overflow-wrap: anywhere; }
+        .home-card-part h3 { margin: 0 0 5px; color: inherit; font-size: 1rem; }
+        .home-card-part-body { white-space: pre-line; line-height: 1.65; }
+        .home-card-part-edit { margin-top: 9px; padding: 6px 9px; font-size: .78rem; }
         .home-custom-card-admin { display: flex; justify-content: flex-end; margin-top: 14px; }
         .home-custom-card-admin .btn { padding: 7px 10px; font-size: .8rem; }
         .home-card-manager { margin-top: 12px; padding: 14px; border: 1px solid #B7E4C7; border-radius: 10px; background: #F8FFF9; }
@@ -256,7 +261,12 @@
         .feedback-image-viewer-text { margin-top: 12px; white-space: pre-line; line-height: 1.55; }
         body.feedback-viewer-open { overflow: hidden; }
         #contentAdminFab { top: auto; right: 20px; bottom: 24px; }
-        .content-admin-toolbar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 1500; width: min(720px, calc(100% - 24px)); padding: 14px; border: 2px solid var(--clover-green); border-radius: 14px; background: rgba(255,255,255,0.97); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+        .admin-login-box { margin-top: 14px; padding: 14px; border: 1px solid #B7E4C7; border-radius: 12px; background: #FFFFFF; box-shadow: 0 5px 18px rgba(0,0,0,.08); }
+        .admin-login-box label, .admin-login-box input { display: block; width: 100%; }
+        .admin-login-box input { margin-top: 6px; }
+        .content-admin-login { width: min(1000px, calc(100% - 30px)); max-height: min(34vh, 300px); overflow-y: auto; overscroll-behavior: contain; margin: 14px auto; }
+        .content-admin-toolbar { position: relative; left: auto; bottom: auto; transform: none; z-index: 100; width: min(1000px, calc(100% - 30px)); max-height: min(78vh, 900px); overflow-y: auto; overscroll-behavior: contain; margin: 14px auto 22px; padding: 14px; border: 2px solid var(--clover-green); border-radius: 14px; background: rgba(255,255,255,0.98); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+        .content-admin-toolbar:focus-within { outline: 2px solid rgba(39,167,69,.22); outline-offset: 2px; }
         .content-admin-toolbar strong, .content-admin-toolbar span { display: block; }
         .content-admin-toolbar span { margin-top: 4px; color: var(--text-muted); font-size: 0.84rem; }
         .content-admin-toolbar .admin-actions { margin-top: 10px; }
@@ -284,7 +294,7 @@
             .bqt-admin-toolbar .btn { width: 100%; }
             .current-image-box { align-items: flex-start; flex-direction: column; }
             .current-image-box img { width: 100%; max-width: 220px; height: auto; aspect-ratio: 4 / 3; }
-            .content-admin-toolbar { bottom: 8px; padding: 12px; }
+            .content-admin-login, .content-admin-toolbar { width: calc(100% - 20px); max-height: calc(100vh - 96px); margin: 10px auto 16px; padding: 12px; }
             .content-admin-toolbar .admin-actions { flex-direction: column; }
             .new-content-block-form .admin-actions { flex-direction: column; }
             .content-admin-toolbar .admin-actions .btn { width: 100%; }
@@ -1209,6 +1219,32 @@
                 <div id="homeCardAdminMessage" class="admin-message" role="status"></div>
             </form>
             <div id="homeCardAdminList" class="home-card-list"></div>
+            <div id="homeCardPartManager" class="home-card-manager" hidden>
+                <h4>📌 Quản lý từng mục bên trong khung đang chọn</h4>
+                <p class="form-hint">Mỗi mục con được lưu riêng, có thể thêm, sửa, sắp xếp hoặc xóa mà không thay thế các mục khác trong cùng khung.</p>
+                <div class="admin-actions">
+                    <button class="btn btn-success" type="button" onclick="startNewHomeCardPart()">➕ Thêm mục bên trong khung</button>
+                </div>
+                <h4 id="homeCardPartFormTitle" class="bqt-form-title">Thêm mục bên trong khung</h4>
+                <form id="homeCardPartForm" class="admin-form" onsubmit="saveHomeCardPart(event)">
+                    <input id="homeCardPartId" type="hidden">
+                    <label for="homeCardPartIcon">Biểu tượng mục</label>
+                    <input id="homeCardPartIcon" maxlength="12" placeholder="Ví dụ: 📌">
+                    <label for="homeCardPartTitle">Tiêu đề mục</label>
+                    <input id="homeCardPartTitle" required maxlength="500" placeholder="Nhập tiêu đề mục bên trong khung">
+                    <label for="homeCardPartBody">Nội dung mục</label>
+                    <textarea id="homeCardPartBody" required maxlength="10000" rows="4" placeholder="Nhập nội dung mục bên trong khung"></textarea>
+                    <label for="homeCardPartDisplayOrder">Thứ tự mục trong khung</label>
+                    <input id="homeCardPartDisplayOrder" type="number" min="0" max="99999" value="1">
+                    <div class="admin-actions">
+                        <button id="homeCardPartSaveButton" class="btn btn-success" type="submit">💾 Lưu mục mới</button>
+                        <button class="btn btn-secondary" type="button" onclick="resetHomeCardPartForm()">↺ Làm mới</button>
+                        <button id="homeCardPartDeleteButton" class="btn btn-primary" type="button" onclick="deleteSelectedHomeCardPart()" hidden>🗑️ Xóa mục này</button>
+                    </div>
+                    <div id="homeCardPartAdminMessage" class="admin-message" role="status"></div>
+                </form>
+                <div id="homeCardPartList" class="home-card-list"></div>
+            </div>
         </div>
         <p id="contentAdminMessage" class="admin-message" role="status"></p>
     </div>
@@ -1661,6 +1697,9 @@
         let contentEditTargets = [];
         let contentEditSnapshot = [];
         let selectedHomeCardId = '';
+        const HOME_CARD_PARTS_STORAGE_KEY = 'clb5h_home_card_parts_v1';
+        let homeCardParts = loadHomeCardParts();
+        let selectedHomeCardPartId = '';
 
         function loadStaticContentItems() {
             try {
@@ -1687,6 +1726,15 @@
         function loadHomeCardItems() {
             try {
                 const saved = JSON.parse(localStorage.getItem(HOME_CARDS_STORAGE_KEY));
+                return Array.isArray(saved) ? saved : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function loadHomeCardParts() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(HOME_CARD_PARTS_STORAGE_KEY));
                 return Array.isArray(saved) ? saved : [];
             } catch (error) {
                 return [];
@@ -1729,6 +1777,39 @@
             });
         }
 
+        function homeCardPartsFor(cardId) {
+            return homeCardParts.filter(part => part.itemType === 'home_card_part' && part.isActive !== false && part.metadata?.parentCardId === cardId).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+        }
+
+        function renderHomeCardPartsInto(element, cardId) {
+            if (!element) return;
+            element.querySelectorAll(':scope > .home-card-internal-parts').forEach(node => node.remove());
+            const parts = homeCardPartsFor(cardId);
+            if (!parts.length) return;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'home-card-internal-parts';
+            parts.forEach(part => {
+                const partNode = document.createElement('div');
+                partNode.className = 'home-card-part';
+                const heading = document.createElement('h3');
+                heading.textContent = `${part.metadata?.icon || '📌'} ${part.title}`;
+                const body = document.createElement('div');
+                body.className = 'home-card-part-body';
+                body.textContent = part.body;
+                partNode.append(heading, body);
+                if (contentAdminUnlocked && contentAdminSectionId === 'trang-chu') {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-secondary home-card-part-edit';
+                    button.type = 'button';
+                    button.textContent = '✏️ Sửa mục này';
+                    button.addEventListener('click', () => selectHomeCardPart(part.id));
+                    partNode.appendChild(button);
+                }
+                wrapper.appendChild(partNode);
+            });
+            element.appendChild(wrapper);
+        }
+
         function renderHomeCustomCards() {
             const target = document.getElementById('homeCustomCards');
             if (!target) return;
@@ -1749,6 +1830,7 @@
                 body.className = 'home-custom-card-body';
                 body.textContent = item.body;
                 article.append(icon, heading, body);
+                renderHomeCardPartsInto(article, item.id);
                 if (contentAdminUnlocked && contentAdminSectionId === 'trang-chu') {
                     const actions = document.createElement('div');
                     actions.className = 'home-custom-card-admin';
@@ -1763,13 +1845,14 @@
                 target.appendChild(article);
             });
             applyHomeCardStyles();
+            HOME_FIXED_CARDS.forEach(fixedCard => renderHomeCardPartsInto(document.getElementById(fixedCard.elementId), fixedCard.id));
         }
 
         async function fetchHomeCardsFromSupabase() {
             const params = new URLSearchParams({
                 select: 'id,section_id,item_type,title,body,display_order,is_active,metadata,created_at,updated_at',
                 section_id: 'eq.trang-chu',
-                item_type: 'eq.home_card',
+                item_type: 'in.(home_card,home_card_part)',
                 is_active: 'eq.true',
                 order: 'display_order.asc,updated_at.desc',
                 limit: '500'
@@ -1779,8 +1862,11 @@
             });
             const result = await response.json().catch(() => []);
             if (!response.ok) throw new Error(result?.message || 'supabase-home-cards-read-failed');
-            homeCardItems = (Array.isArray(result) ? result : []).map(contentRowToItem);
+            const rows = (Array.isArray(result) ? result : []).map(contentRowToItem);
+            homeCardItems = rows.filter(item => item.itemType === 'home_card');
+            homeCardParts = rows.filter(item => item.itemType === 'home_card_part');
             localStorage.setItem(HOME_CARDS_STORAGE_KEY, JSON.stringify(homeCardItems));
+            localStorage.setItem(HOME_CARD_PARTS_STORAGE_KEY, JSON.stringify(homeCardParts));
         }
 
         async function syncHomeCardsFromSupabase() {
@@ -1793,6 +1879,18 @@
             if (contentAdminUnlocked && contentAdminSectionId === 'trang-chu') renderHomeCardManager();
         }
 
+        function renderHomeCardPartManager() {
+            const manager = document.getElementById('homeCardPartManager');
+            const list = document.getElementById('homeCardPartList');
+            if (!manager || !list || !contentAdminUnlocked || contentAdminSectionId !== 'trang-chu' || !selectedHomeCardId) {
+                if (manager) manager.hidden = true;
+                return;
+            }
+            manager.hidden = false;
+            const parts = homeCardPartsFor(selectedHomeCardId);
+            list.innerHTML = parts.length ? parts.map(part => `<div class="home-card-list-item${selectedHomeCardPartId === part.id ? ' is-selected' : ''}"><button class="home-card-select" type="button" onclick="selectHomeCardPart('${escapeHtml(part.id)}')"><strong>${escapeHtml(`${part.metadata?.icon || '📌'} ${part.title}`)}</strong><br><small>Thứ tự ${part.displayOrder || 0} · Mục con độc lập</small></button><button class="btn btn-primary" type="button" onclick="deleteSelectedHomeCardPart('${escapeHtml(part.id)}')">🗑️</button></div>`).join('') : '<div class="empty-events">Khung này chưa có mục bên trong nào.</div>';
+        }
+
         function renderHomeCardManager() {
             const manager = document.getElementById('homeCardManager');
             const list = document.getElementById('homeCardAdminList');
@@ -1803,6 +1901,7 @@
                 return { id: fixedCard.id, label: fixedCard.label, displayOrder: fixedCard.displayOrder, fixed: true, metadata: homeCardMetadata(item, fixedCard) };
             }), ...homeCardItems.filter(item => item.itemType === 'home_card' && item.isActive !== false && !homeFixedCardById(item.id)).map(item => ({ id: item.id, label: `${item.metadata?.icon || '🌱'} ${item.title}`, displayOrder: item.displayOrder || 0, fixed: false, metadata: homeCardMetadata(item) }))].sort((a, b) => a.displayOrder - b.displayOrder || a.label.localeCompare(b.label, 'vi'));
             list.innerHTML = records.length ? records.map(record => `<div class="home-card-list-item${selectedHomeCardId === record.id ? ' is-selected' : ''}"><button class="home-card-select" type="button" onclick="selectHomeCard('${escapeHtml(record.id)}')"><strong>${escapeHtml(record.label)}</strong><br><small>${record.fixed ? 'Khung gốc · chỉnh màu/viền/chữ' : `Khung riêng · thứ tự ${record.displayOrder}`}</small></button>${record.fixed ? '<span class="home-card-fixed-note">Không xóa</span>' : `<button class="btn btn-primary" type="button" onclick="deleteSelectedHomeCard('${escapeHtml(record.id)}')">🗑️</button>`}</div>`).join('') : '<div class="empty-events">Chưa có khung riêng nào.</div>';
+            renderHomeCardPartManager();
         }
 
         function setHomeCardFormValue(id, value) {
@@ -1812,6 +1911,7 @@
 
         function resetHomeCardForm() {
             selectedHomeCardId = '';
+            selectedHomeCardPartId = '';
             setHomeCardFormValue('homeCardId', '');
             setHomeCardFormValue('homeCardIcon', '🌱');
             setHomeCardFormValue('homeCardTitle', '');
@@ -1834,6 +1934,7 @@
             if (bodyField) bodyField.disabled = false;
             const message = document.getElementById('homeCardAdminMessage');
             if (message) { message.textContent = ''; message.classList.remove('error'); }
+            resetHomeCardPartForm();
             renderHomeCardManager();
         }
 
@@ -1848,6 +1949,7 @@
             const item = homeCardItems.find(candidate => candidate.id === id);
             const metadata = homeCardMetadata(item, fixedCard);
             selectedHomeCardId = id;
+            selectedHomeCardPartId = '';
             setHomeCardFormValue('homeCardId', id);
             setHomeCardFormValue('homeCardIcon', metadata.icon);
             setHomeCardFormValue('homeCardTitle', fixedCard ? fixedCard.label : (item?.title || ''));
@@ -1868,6 +1970,7 @@
             if (del) del.hidden = !!fixedCard;
             if (titleField) titleField.disabled = !!fixedCard;
             if (bodyField) bodyField.disabled = !!fixedCard;
+            resetHomeCardPartForm();
             renderHomeCardManager();
         }
 
@@ -1906,6 +2009,100 @@
             }
         }
 
+        function resetHomeCardPartForm() {
+            selectedHomeCardPartId = '';
+            setHomeCardFormValue('homeCardPartId', '');
+            setHomeCardFormValue('homeCardPartIcon', '📌');
+            setHomeCardFormValue('homeCardPartTitle', '');
+            setHomeCardFormValue('homeCardPartBody', '');
+            setHomeCardFormValue('homeCardPartDisplayOrder', String(homeCardPartsFor(selectedHomeCardId).length + 1));
+            const title = document.getElementById('homeCardPartFormTitle');
+            const save = document.getElementById('homeCardPartSaveButton');
+            const del = document.getElementById('homeCardPartDeleteButton');
+            if (title) title.textContent = 'Thêm mục bên trong khung';
+            if (save) save.textContent = '💾 Lưu mục mới';
+            if (del) del.hidden = true;
+            const message = document.getElementById('homeCardPartAdminMessage');
+            if (message) { message.textContent = ''; message.classList.remove('error'); }
+            renderHomeCardPartManager();
+        }
+
+        function startNewHomeCardPart() {
+            if (!selectedHomeCardId) {
+                const message = document.getElementById('homeCardAdminMessage');
+                if (message) { message.textContent = 'Hãy chọn một khung trước khi thêm mục bên trong.'; message.classList.add('error'); }
+                return;
+            }
+            resetHomeCardPartForm();
+            document.getElementById('homeCardPartTitle')?.focus();
+        }
+
+        function selectHomeCardPart(id) {
+            if (!contentAdminUnlocked) return;
+            const part = homeCardParts.find(candidate => candidate.id === id);
+            if (!part || part.metadata?.parentCardId !== selectedHomeCardId) return;
+            selectedHomeCardPartId = id;
+            setHomeCardFormValue('homeCardPartId', id);
+            setHomeCardFormValue('homeCardPartIcon', String(part.metadata?.icon || '📌'));
+            setHomeCardFormValue('homeCardPartTitle', part.title);
+            setHomeCardFormValue('homeCardPartBody', part.body);
+            setHomeCardFormValue('homeCardPartDisplayOrder', String(part.displayOrder || 0));
+            const title = document.getElementById('homeCardPartFormTitle');
+            const save = document.getElementById('homeCardPartSaveButton');
+            const del = document.getElementById('homeCardPartDeleteButton');
+            if (title) title.textContent = `Đang chỉnh sửa mục: ${part.title}`;
+            if (save) save.textContent = '💾 Lưu cập nhật mục này';
+            if (del) del.hidden = false;
+            renderHomeCardPartManager();
+        }
+
+        async function saveHomeCardPart(event) {
+            event.preventDefault();
+            if (!contentAdminUnlocked || contentAdminSectionId !== 'trang-chu' || !selectedHomeCardId) return;
+            const id = document.getElementById('homeCardPartId').value.trim() || `home-card-part-${Date.now()}`;
+            const existing = homeCardParts.find(part => part.id === id);
+            const title = document.getElementById('homeCardPartTitle').value.trim();
+            const body = document.getElementById('homeCardPartBody').value.trim();
+            const draft = { id, sectionId: 'trang-chu', itemType: 'home_card_part', title, body, displayOrder: Math.max(0, Math.min(99999, Number(document.getElementById('homeCardPartDisplayOrder').value) || 0)), isActive: true, metadata: { parentCardId: selectedHomeCardId, icon: String(document.getElementById('homeCardPartIcon').value.trim() || '📌').slice(0, 12) } };
+            const message = document.getElementById('homeCardPartAdminMessage');
+            if (!title || !body) { message.textContent = 'Vui lòng nhập tiêu đề và nội dung cho mục bên trong.'; message.classList.add('error'); return; }
+            message.classList.remove('error');
+            message.textContent = 'Đang lưu mục bên trong lên Supabase...';
+            try {
+                const saved = await adminContentRequest(existing ? 'update' : 'create', draft);
+                const row = contentRowToItem(Array.isArray(saved) ? saved[0] : saved);
+                const next = row.id ? row : draft;
+                homeCardParts = existing ? homeCardParts.map(part => part.id === id ? next : part) : [...homeCardParts, next];
+                localStorage.setItem(HOME_CARD_PARTS_STORAGE_KEY, JSON.stringify(homeCardParts));
+                renderHomeCustomCards();
+                message.textContent = existing ? 'Đã cập nhật mục bên trong trên Supabase.' : 'Đã thêm mục bên trong trên Supabase.';
+                selectHomeCardPart(id);
+            } catch (error) {
+                message.textContent = 'Không thể lưu mục bên trong lên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
+        async function deleteSelectedHomeCardPart(idOverride = '') {
+            if (!contentAdminUnlocked || contentAdminSectionId !== 'trang-chu') return;
+            const id = idOverride || selectedHomeCardPartId;
+            const part = homeCardParts.find(candidate => candidate.id === id);
+            if (!part || part.metadata?.parentCardId !== selectedHomeCardId) return;
+            if (!confirm(`Xóa mục “${part.title}”?`)) return;
+            const message = document.getElementById('homeCardPartAdminMessage');
+            try {
+                await adminContentRequest('delete', part);
+                homeCardParts = homeCardParts.filter(candidate => candidate.id !== id);
+                localStorage.setItem(HOME_CARD_PARTS_STORAGE_KEY, JSON.stringify(homeCardParts));
+                renderHomeCustomCards();
+                resetHomeCardPartForm();
+                message.textContent = 'Đã xóa mục bên trong trên Supabase.';
+            } catch (error) {
+                message.textContent = 'Không thể xóa mục bên trong trên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
         async function deleteSelectedHomeCard(idOverride = '') {
             if (!contentAdminUnlocked || contentAdminSectionId !== 'trang-chu') return;
             const id = idOverride || selectedHomeCardId;
@@ -1914,9 +2111,12 @@
             if (!confirm(`Xóa khung “${item.title}”?`)) return;
             const message = document.getElementById('homeCardAdminMessage');
             try {
+                for (const part of homeCardPartsFor(id)) await adminContentRequest('delete', part);
                 await adminContentRequest('delete', item);
                 homeCardItems = homeCardItems.filter(candidate => candidate.id !== id);
+                homeCardParts = homeCardParts.filter(part => part.metadata?.parentCardId !== id);
                 localStorage.setItem(HOME_CARDS_STORAGE_KEY, JSON.stringify(homeCardItems));
+                localStorage.setItem(HOME_CARD_PARTS_STORAGE_KEY, JSON.stringify(homeCardParts));
                 renderHomeCustomCards();
                 resetHomeCardForm();
                 message.textContent = 'Đã xóa khung trên Supabase.';
@@ -1943,7 +2143,7 @@
         function getStaticContentTargets(sectionId) {
             const section = document.getElementById(sectionId);
             if (!section || CONTENT_DYNAMIC_SECTIONS.has(sectionId)) return [];
-            const candidates = [...section.querySelectorAll('h1,h2,h3,p,li,.notice-box')].filter(node => !node.closest('#contentAdminToolbar, #contentAdminLoginBox, .admin-panel, .feedback-manager, #bqtSection, #homeCustomCards'));
+            const candidates = [...section.querySelectorAll('h1,h2,h3,p,li,.notice-box')].filter(node => !node.closest('#contentAdminToolbar, #contentAdminLoginBox, .admin-panel, .feedback-manager, #bqtSection, #homeCustomCards, .home-card-internal-parts'));
             return candidates.filter(node => !candidates.some(parent => parent !== node && parent.contains(node)));
         }
 
@@ -2006,7 +2206,9 @@
         }
 
         function openContentAdminLogin() {
-            document.getElementById('contentAdminLoginBox').hidden = false;
+            const loginBox = document.getElementById('contentAdminLoginBox');
+            loginBox.hidden = false;
+            loginBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
             document.getElementById('contentAdminCode').focus();
         }
 
@@ -2027,13 +2229,17 @@
                 renderHomeCardManager();
             } else {
                 const manager = document.getElementById('homeCardManager');
+                const partManager = document.getElementById('homeCardPartManager');
                 if (manager) manager.hidden = true;
+                if (partManager) partManager.hidden = true;
             }
             contentEditTargets.forEach(target => {
                 target.contentEditable = 'true';
                 target.classList.add('content-editable-active');
             });
-            document.getElementById('contentAdminToolbar').hidden = false;
+            const toolbar = document.getElementById('contentAdminToolbar');
+            toolbar.hidden = false;
+            toolbar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             document.getElementById('contentAdminMessage').textContent = `Đang chỉnh sửa ${contentEditTargets.length} khối nội dung trong mục này.`;
         }
 
@@ -2115,8 +2321,11 @@
             contentEditTargets = [];
             contentEditSnapshot = [];
             const homeManager = document.getElementById('homeCardManager');
+            const partManager = document.getElementById('homeCardPartManager');
             if (homeManager) homeManager.hidden = true;
+            if (partManager) partManager.hidden = true;
             selectedHomeCardId = '';
+            selectedHomeCardPartId = '';
             renderHomeCustomCards();
             document.getElementById('contentAdminToolbar').hidden = true;
             document.getElementById('contentAdminMessage').textContent = '';

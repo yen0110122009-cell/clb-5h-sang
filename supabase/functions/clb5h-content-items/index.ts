@@ -41,7 +41,7 @@ async function databaseRequest(path: string, init: RequestInit = {}) {
 }
 
 function cleanItem(item: Record<string, unknown>) {
-  const type = ["text", "faq", "list", "notice", "home_card"].includes(String(item.itemType)) ? String(item.itemType) : "text";
+  const type = ["text", "faq", "list", "notice", "home_card", "home_card_part"].includes(String(item.itemType)) ? String(item.itemType) : "text";
   return {
     id: String(item.id || "").slice(0, 120),
     section_id: String(item.sectionId || "").slice(0, 120),
