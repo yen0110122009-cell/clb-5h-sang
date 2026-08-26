@@ -1,7 +1,7 @@
 create table if not exists public.clb5h_content_items (
   id text primary key,
   section_id text not null,
-  item_type text not null default 'text' check (item_type in ('text', 'faq', 'list', 'notice')),
+  item_type text not null default 'text' check (item_type in ('text', 'faq', 'list', 'notice', 'home_card')),
   title text not null default '',
   body text not null default '',
   display_order integer not null default 0,

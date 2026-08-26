@@ -75,6 +75,27 @@
         .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
         .feature-box { background: #FFFFFF; padding: 16px; border-radius: var(--border-radius); box-shadow: var(--card-shadow); text-align: center; border-top: 3px solid var(--clover-green); }
+        .home-custom-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 0 0 20px; }
+        .home-custom-card { min-width: 0; padding: 20px; border: 3px solid var(--home-border, var(--clover-green)); border-left-width: 6px; border-radius: var(--border-radius); background: var(--home-bg, #FFFFFF); color: var(--home-text, var(--text-dark)); box-shadow: var(--card-shadow); overflow-wrap: anywhere; transition: transform .2s, box-shadow .2s; }
+        .home-custom-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+        .home-custom-card h2 { color: inherit; margin-bottom: 9px; }
+        .home-custom-card-icon { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; min-height: 42px; margin-bottom: 8px; font-size: 1.8rem; }
+        .home-custom-card-body { white-space: pre-line; line-height: 1.75; }
+        .home-custom-card-admin { display: flex; justify-content: flex-end; margin-top: 14px; }
+        .home-custom-card-admin .btn { padding: 7px 10px; font-size: .8rem; }
+        .home-card-manager { margin-top: 12px; padding: 14px; border: 1px solid #B7E4C7; border-radius: 10px; background: #F8FFF9; }
+        .home-card-manager[hidden] { display: none; }
+        .home-card-manager h4 { margin-bottom: 5px; color: var(--clover-green); }
+        .home-card-manager .admin-form { margin-top: 12px; }
+        .home-card-manager textarea { min-height: 105px; }
+        .home-card-manager .form-hint { margin-bottom: 8px; }
+        .home-card-list { display: grid; gap: 8px; margin-top: 14px; }
+        .home-card-list-item { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px; border: 1px solid #D1E7DD; border-radius: 9px; background: #FFFFFF; }
+        .home-card-list-item.is-selected { border-color: var(--primary-red); box-shadow: 0 0 0 2px rgba(230,57,70,.12); }
+        .home-card-list-item button.home-card-select { flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; font: inherit; overflow-wrap: anywhere; }
+        .home-card-list-item small { color: var(--text-muted); }
+        .home-card-list-item .btn { flex: 0 0 auto; padding: 7px 9px; font-size: .78rem; }
+        .home-card-fixed-note { color: var(--text-muted); font-size: .8rem; }
 
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 8px; overflow: hidden; }
@@ -281,6 +302,10 @@
             .feedback-item-body { grid-template-columns: 1fr; }
             .feedback-item img { width: min(100%, 240px); max-width: 100%; }
             .event-card, .past-event-card, .event-detail-panel { min-width: 0; overflow-wrap: anywhere; }
+            .home-custom-cards { grid-template-columns: 1fr; gap: 12px; }
+            .home-custom-card { padding: 16px; }
+            .home-card-list-item { align-items: flex-start; flex-wrap: wrap; }
+            .home-card-list-item .btn { width: 100%; }
         }
 
         @media (max-width: 900px) {
@@ -318,7 +343,7 @@
 
         <!-- 1. TRANG CHỦ -->
         <section id="trang-chu" class="page-section active">
-            <div class="hero">
+            <div class="hero" id="homeHero">
                 <h1>🌅 CLB 5H SÁNG – CÙNG NHAU DẬY SỚM, CÙNG NHAU TIẾN BỘ ☘️</h1>
                 <p style="font-size: 1.05rem; max-width: 800px; margin: 0 auto;">Một môi trường dành cho những người muốn rèn luyện thói quen dậy sớm, duy trì việc học và xây dựng tính kỷ luật mỗi ngày.</p>
                 
@@ -329,7 +354,7 @@
                 </div>
             </div>
 
-            <div class="card clover-border">
+            <div class="card clover-border" id="homeAboutCard">
                 <h2>🌱 CLB 5H SÁNG LÀ GÌ? ☘️</h2>
                 <p>CLB 5H Sáng là một cộng đồng học tập tự giác được xây dựng dành cho những bạn muốn:</p>
                 <div class="grid-3" style="margin-top: 12px;">
@@ -344,7 +369,7 @@
                 </div>
             </div>
 
-            <div class="card clover-border">
+            <div class="card clover-border" id="homeAudienceCard">
                 <h2>👥 AI NÊN THAM GIA CLB?</h2>
                 <div class="grid-2">
                     <div>
@@ -366,6 +391,7 @@
                     </div>
                 </div>
             </div>
+            <div id="homeCustomCards" class="home-custom-cards" aria-live="polite"></div>
         </section>
 
         <!-- 2. THÀNH VIÊN MỚI CHÚ Ý -->
@@ -1151,6 +1177,39 @@
                 <button class="btn btn-secondary" type="button" onclick="closeNewContentBlockForm()">Đóng</button>
             </div>
         </div>
+        <div id="homeCardManager" class="home-card-manager" hidden>
+            <h4>🧩 Quản lý khung riêng Trang Chủ</h4>
+            <p class="form-hint">Mỗi khung được lưu riêng trên Supabase. Khung cũ giữ nguyên nội dung bên trong; tại đây bạn có thể đổi màu nền, màu viền và màu chữ. Khung mới có thêm biểu tượng, tiêu đề và nội dung riêng.</p>
+            <div class="admin-actions">
+                <button class="btn btn-success" type="button" onclick="startNewHomeCard()">➕ Tạo khung mới</button>
+            </div>
+            <h4 id="homeCardFormTitle" class="bqt-form-title">Tạo khung mới</h4>
+            <form id="homeCardForm" class="admin-form" onsubmit="saveHomeCard(event)">
+                <input id="homeCardId" type="hidden">
+                <label for="homeCardIcon">Biểu tượng</label>
+                <input id="homeCardIcon" maxlength="12" placeholder="Ví dụ: 🌱">
+                <label for="homeCardTitle">Tiêu đề</label>
+                <input id="homeCardTitle" required maxlength="500" placeholder="Nhập tiêu đề khung">
+                <label for="homeCardBody">Nội dung</label>
+                <textarea id="homeCardBody" required maxlength="10000" rows="5" placeholder="Nhập nội dung của khung"></textarea>
+                <label for="homeCardBackgroundColor">Màu nền</label>
+                <input id="homeCardBackgroundColor" type="color" value="#FFFFFF" aria-label="Chọn màu nền khung">
+                <label for="homeCardBorderColor">Màu viền</label>
+                <input id="homeCardBorderColor" type="color" value="#27A745" aria-label="Chọn màu viền khung">
+                <label for="homeCardTextColor">Màu chữ</label>
+                <input id="homeCardTextColor" type="color" value="#212529" aria-label="Chọn màu chữ khung">
+                <label for="homeCardDisplayOrder">Thứ tự hiển thị của khung mới</label>
+                <input id="homeCardDisplayOrder" type="number" min="0" max="99999" value="1">
+                <p id="homeCardFixedHint" class="form-hint" hidden>Đây là khung gốc. Nội dung và tiêu đề gốc được bảo toàn; hãy dùng trình chỉnh sửa chữ phía trên nếu muốn sửa phần văn bản.</p>
+                <div class="admin-actions">
+                    <button id="homeCardSaveButton" class="btn btn-success" type="submit">💾 Lưu khung mới</button>
+                    <button class="btn btn-secondary" type="button" onclick="resetHomeCardForm()">↺ Làm mới</button>
+                    <button id="homeCardDeleteButton" class="btn btn-primary" type="button" onclick="deleteSelectedHomeCard()" hidden>🗑️ Xóa khung này</button>
+                </div>
+                <div id="homeCardAdminMessage" class="admin-message" role="status"></div>
+            </form>
+            <div id="homeCardAdminList" class="home-card-list"></div>
+        </div>
         <p id="contentAdminMessage" class="admin-message" role="status"></p>
     </div>
     <div id="feedbackImageViewer" class="feedback-image-viewer" hidden role="dialog" aria-modal="true" aria-labelledby="feedbackImageViewerTitle" onclick="if (event.target === this) closeFeedbackViewer()">
@@ -1586,14 +1645,22 @@
         }
 
         const CONTENT_STORAGE_KEY = 'clb5h_static_content_v1';
+        const HOME_CARDS_STORAGE_KEY = 'clb5h_home_cards_v1';
         const CONTENT_DYNAMIC_SECTIONS = new Set(['clb-doc-sach-event', 'clb-diary', 'faq-bqt']);
+        const HOME_FIXED_CARDS = [
+            { id: 'home-hero', elementId: 'homeHero', label: '🌅 Khung giới thiệu đầu trang', displayOrder: 0, defaultBackgroundColor: '#FFF0F0', defaultBorderColor: '#FFD6D6', defaultTextColor: '#212529' },
+            { id: 'home-about', elementId: 'homeAboutCard', label: '🌱 Khung CLB 5H Sáng là gì?', displayOrder: 1, defaultBackgroundColor: '#FFFFFF', defaultBorderColor: '#27A745', defaultTextColor: '#212529' },
+            { id: 'home-audience', elementId: 'homeAudienceCard', label: '👥 Khung Ai nên tham gia CLB?', displayOrder: 2, defaultBackgroundColor: '#FFFFFF', defaultBorderColor: '#27A745', defaultTextColor: '#212529' }
+        ];
         let staticContentItems = loadStaticContentItems();
+        let homeCardItems = loadHomeCardItems();
         let contentRemoteMap = new Map();
         let contentAdminCodeToken = '';
         let contentAdminUnlocked = false;
         let contentAdminSectionId = '';
         let contentEditTargets = [];
         let contentEditSnapshot = [];
+        let selectedHomeCardId = '';
 
         function loadStaticContentItems() {
             try {
@@ -1612,8 +1679,251 @@
                 title: String(row?.title || '').slice(0, 500),
                 body: String(row?.body || '').slice(0, 10000),
                 displayOrder: Number(row?.display_order) || 0,
-                isActive: row?.is_active !== false
+                isActive: row?.is_active !== false,
+                metadata: row?.metadata && typeof row.metadata === 'object' ? row.metadata : {}
             };
+        }
+
+        function loadHomeCardItems() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(HOME_CARDS_STORAGE_KEY));
+                return Array.isArray(saved) ? saved : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function safeHomeColor(value, fallback) {
+            const color = String(value || '').trim();
+            return /^#[0-9a-f]{6}$/i.test(color) ? color.toUpperCase() : fallback;
+        }
+
+        function homeCardMetadata(item, fixedCard) {
+            const metadata = item?.metadata || {};
+            return {
+                icon: String(metadata.icon || (fixedCard ? fixedCard.label.split(' ')[0] : '🌱')).slice(0, 12),
+                backgroundColor: safeHomeColor(metadata.backgroundColor, fixedCard?.defaultBackgroundColor || '#FFFFFF'),
+                borderColor: safeHomeColor(metadata.borderColor, fixedCard?.defaultBorderColor || '#27A745'),
+                textColor: safeHomeColor(metadata.textColor, fixedCard?.defaultTextColor || '#212529')
+            };
+        }
+
+        function homeFixedCardById(id) {
+            return HOME_FIXED_CARDS.find(card => card.id === id) || null;
+        }
+
+        function applyHomeCardStyle(element, metadata) {
+            if (!element) return;
+            element.style.setProperty('--home-bg', metadata.backgroundColor);
+            element.style.setProperty('--home-border', metadata.borderColor);
+            element.style.setProperty('--home-text', metadata.textColor);
+            element.style.backgroundColor = metadata.backgroundColor;
+            element.style.borderColor = metadata.borderColor;
+            element.style.color = metadata.textColor;
+        }
+
+        function applyHomeCardStyles() {
+            HOME_FIXED_CARDS.forEach(fixedCard => {
+                const item = homeCardItems.find(candidate => candidate.id === fixedCard.id);
+                applyHomeCardStyle(document.getElementById(fixedCard.elementId), homeCardMetadata(item, fixedCard));
+            });
+        }
+
+        function renderHomeCustomCards() {
+            const target = document.getElementById('homeCustomCards');
+            if (!target) return;
+            const customCards = homeCardItems.filter(item => item.itemType === 'home_card' && item.isActive !== false && !homeFixedCardById(item.id)).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            target.innerHTML = '';
+            customCards.forEach(item => {
+                const metadata = homeCardMetadata(item);
+                const article = document.createElement('article');
+                article.className = 'home-custom-card';
+                article.dataset.homeCardId = item.id;
+                applyHomeCardStyle(article, metadata);
+                const icon = document.createElement('div');
+                icon.className = 'home-custom-card-icon';
+                icon.textContent = metadata.icon;
+                const heading = document.createElement('h2');
+                heading.textContent = item.title;
+                const body = document.createElement('div');
+                body.className = 'home-custom-card-body';
+                body.textContent = item.body;
+                article.append(icon, heading, body);
+                if (contentAdminUnlocked && contentAdminSectionId === 'trang-chu') {
+                    const actions = document.createElement('div');
+                    actions.className = 'home-custom-card-admin';
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-secondary';
+                    button.type = 'button';
+                    button.textContent = '✏️ Chỉnh khung này';
+                    button.addEventListener('click', () => selectHomeCard(item.id));
+                    actions.appendChild(button);
+                    article.appendChild(actions);
+                }
+                target.appendChild(article);
+            });
+            applyHomeCardStyles();
+        }
+
+        async function fetchHomeCardsFromSupabase() {
+            const params = new URLSearchParams({
+                select: 'id,section_id,item_type,title,body,display_order,is_active,metadata,created_at,updated_at',
+                section_id: 'eq.trang-chu',
+                item_type: 'eq.home_card',
+                is_active: 'eq.true',
+                order: 'display_order.asc,updated_at.desc',
+                limit: '500'
+            });
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/clb5h_content_items?${params}`, {
+                headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` }
+            });
+            const result = await response.json().catch(() => []);
+            if (!response.ok) throw new Error(result?.message || 'supabase-home-cards-read-failed');
+            homeCardItems = (Array.isArray(result) ? result : []).map(contentRowToItem);
+            localStorage.setItem(HOME_CARDS_STORAGE_KEY, JSON.stringify(homeCardItems));
+        }
+
+        async function syncHomeCardsFromSupabase() {
+            try {
+                await fetchHomeCardsFromSupabase();
+            } catch (error) {
+                console.warn('Không thể tải khung Trang Chủ từ Supabase, dùng cache trên thiết bị.', error);
+            }
+            renderHomeCustomCards();
+            if (contentAdminUnlocked && contentAdminSectionId === 'trang-chu') renderHomeCardManager();
+        }
+
+        function renderHomeCardManager() {
+            const manager = document.getElementById('homeCardManager');
+            const list = document.getElementById('homeCardAdminList');
+            if (!manager || !list || !contentAdminUnlocked || contentAdminSectionId !== 'trang-chu') return;
+            manager.hidden = false;
+            const records = [...HOME_FIXED_CARDS.map(fixedCard => {
+                const item = homeCardItems.find(candidate => candidate.id === fixedCard.id);
+                return { id: fixedCard.id, label: fixedCard.label, displayOrder: fixedCard.displayOrder, fixed: true, metadata: homeCardMetadata(item, fixedCard) };
+            }), ...homeCardItems.filter(item => item.itemType === 'home_card' && item.isActive !== false && !homeFixedCardById(item.id)).map(item => ({ id: item.id, label: `${item.metadata?.icon || '🌱'} ${item.title}`, displayOrder: item.displayOrder || 0, fixed: false, metadata: homeCardMetadata(item) }))].sort((a, b) => a.displayOrder - b.displayOrder || a.label.localeCompare(b.label, 'vi'));
+            list.innerHTML = records.length ? records.map(record => `<div class="home-card-list-item${selectedHomeCardId === record.id ? ' is-selected' : ''}"><button class="home-card-select" type="button" onclick="selectHomeCard('${escapeHtml(record.id)}')"><strong>${escapeHtml(record.label)}</strong><br><small>${record.fixed ? 'Khung gốc · chỉnh màu/viền/chữ' : `Khung riêng · thứ tự ${record.displayOrder}`}</small></button>${record.fixed ? '<span class="home-card-fixed-note">Không xóa</span>' : `<button class="btn btn-primary" type="button" onclick="deleteSelectedHomeCard('${escapeHtml(record.id)}')">🗑️</button>`}</div>`).join('') : '<div class="empty-events">Chưa có khung riêng nào.</div>';
+        }
+
+        function setHomeCardFormValue(id, value) {
+            const field = document.getElementById(id);
+            if (field) field.value = value;
+        }
+
+        function resetHomeCardForm() {
+            selectedHomeCardId = '';
+            setHomeCardFormValue('homeCardId', '');
+            setHomeCardFormValue('homeCardIcon', '🌱');
+            setHomeCardFormValue('homeCardTitle', '');
+            setHomeCardFormValue('homeCardBody', '');
+            setHomeCardFormValue('homeCardBackgroundColor', '#FFFFFF');
+            setHomeCardFormValue('homeCardBorderColor', '#27A745');
+            setHomeCardFormValue('homeCardTextColor', '#212529');
+            setHomeCardFormValue('homeCardDisplayOrder', String(homeCardItems.filter(item => !homeFixedCardById(item.id)).length + 1));
+            const fixedHint = document.getElementById('homeCardFixedHint');
+            const title = document.getElementById('homeCardFormTitle');
+            const save = document.getElementById('homeCardSaveButton');
+            const del = document.getElementById('homeCardDeleteButton');
+            const titleField = document.getElementById('homeCardTitle');
+            const bodyField = document.getElementById('homeCardBody');
+            if (fixedHint) fixedHint.hidden = true;
+            if (title) title.textContent = 'Tạo khung mới';
+            if (save) save.textContent = '💾 Lưu khung mới';
+            if (del) del.hidden = true;
+            if (titleField) titleField.disabled = false;
+            if (bodyField) bodyField.disabled = false;
+            const message = document.getElementById('homeCardAdminMessage');
+            if (message) { message.textContent = ''; message.classList.remove('error'); }
+            renderHomeCardManager();
+        }
+
+        function startNewHomeCard() {
+            resetHomeCardForm();
+            document.getElementById('homeCardTitle')?.focus();
+        }
+
+        function selectHomeCard(id) {
+            if (!contentAdminUnlocked) return;
+            const fixedCard = homeFixedCardById(id);
+            const item = homeCardItems.find(candidate => candidate.id === id);
+            const metadata = homeCardMetadata(item, fixedCard);
+            selectedHomeCardId = id;
+            setHomeCardFormValue('homeCardId', id);
+            setHomeCardFormValue('homeCardIcon', metadata.icon);
+            setHomeCardFormValue('homeCardTitle', fixedCard ? fixedCard.label : (item?.title || ''));
+            setHomeCardFormValue('homeCardBody', fixedCard ? '' : (item?.body || ''));
+            setHomeCardFormValue('homeCardBackgroundColor', metadata.backgroundColor);
+            setHomeCardFormValue('homeCardBorderColor', metadata.borderColor);
+            setHomeCardFormValue('homeCardTextColor', metadata.textColor);
+            setHomeCardFormValue('homeCardDisplayOrder', String(fixedCard ? fixedCard.displayOrder : (item?.displayOrder || 0)));
+            const fixedHint = document.getElementById('homeCardFixedHint');
+            const title = document.getElementById('homeCardFormTitle');
+            const save = document.getElementById('homeCardSaveButton');
+            const del = document.getElementById('homeCardDeleteButton');
+            const titleField = document.getElementById('homeCardTitle');
+            const bodyField = document.getElementById('homeCardBody');
+            if (fixedHint) fixedHint.hidden = !fixedCard;
+            if (title) title.textContent = fixedCard ? `Chỉnh màu khung: ${fixedCard.label}` : `Đang chỉnh sửa: ${item?.title || 'khung riêng'}`;
+            if (save) save.textContent = fixedCard ? '💾 Lưu màu khung gốc' : '💾 Lưu cập nhật khung này';
+            if (del) del.hidden = !!fixedCard;
+            if (titleField) titleField.disabled = !!fixedCard;
+            if (bodyField) bodyField.disabled = !!fixedCard;
+            renderHomeCardManager();
+        }
+
+        async function saveHomeCard(event) {
+            event.preventDefault();
+            if (!contentAdminUnlocked || contentAdminSectionId !== 'trang-chu') return;
+            const id = document.getElementById('homeCardId').value.trim() || `home-card-${Date.now()}`;
+            const fixedCard = homeFixedCardById(id);
+            const existing = homeCardItems.find(item => item.id === id);
+            const title = fixedCard ? fixedCard.label : document.getElementById('homeCardTitle').value.trim();
+            const body = fixedCard ? 'fixed-home-card' : document.getElementById('homeCardBody').value.trim();
+            const metadata = {
+                icon: String(document.getElementById('homeCardIcon').value.trim() || '🌱').slice(0, 12),
+                backgroundColor: safeHomeColor(document.getElementById('homeCardBackgroundColor').value, '#FFFFFF'),
+                borderColor: safeHomeColor(document.getElementById('homeCardBorderColor').value, '#27A745'),
+                textColor: safeHomeColor(document.getElementById('homeCardTextColor').value, '#212529')
+            };
+            const draft = { id, sectionId: 'trang-chu', itemType: 'home_card', title, body, displayOrder: fixedCard ? fixedCard.displayOrder : Math.max(0, Math.min(99999, Number(document.getElementById('homeCardDisplayOrder').value) || 0)), isActive: true, metadata };
+            const message = document.getElementById('homeCardAdminMessage');
+            if (!title || !body) { message.textContent = 'Vui lòng nhập tiêu đề và nội dung cho khung mới.'; message.classList.add('error'); return; }
+            message.classList.remove('error');
+            message.textContent = 'Đang lưu khung lên Supabase...';
+            try {
+                const saved = await adminContentRequest(existing ? 'update' : 'create', draft);
+                const row = contentRowToItem(Array.isArray(saved) ? saved[0] : saved);
+                const next = row.id ? row : draft;
+                homeCardItems = existing ? homeCardItems.map(item => item.id === id ? next : item) : [...homeCardItems, next];
+                localStorage.setItem(HOME_CARDS_STORAGE_KEY, JSON.stringify(homeCardItems));
+                renderHomeCustomCards();
+                applyHomeCardStyles();
+                message.textContent = existing ? 'Đã cập nhật khung trên Supabase.' : 'Đã tạo khung riêng trên Supabase.';
+                if (!fixedCard) selectHomeCard(id); else selectHomeCard(id);
+            } catch (error) {
+                message.textContent = 'Không thể lưu khung lên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
+        async function deleteSelectedHomeCard(idOverride = '') {
+            if (!contentAdminUnlocked || contentAdminSectionId !== 'trang-chu') return;
+            const id = idOverride || selectedHomeCardId;
+            const item = homeCardItems.find(candidate => candidate.id === id);
+            if (!item || homeFixedCardById(id)) return;
+            if (!confirm(`Xóa khung “${item.title}”?`)) return;
+            const message = document.getElementById('homeCardAdminMessage');
+            try {
+                await adminContentRequest('delete', item);
+                homeCardItems = homeCardItems.filter(candidate => candidate.id !== id);
+                localStorage.setItem(HOME_CARDS_STORAGE_KEY, JSON.stringify(homeCardItems));
+                renderHomeCustomCards();
+                resetHomeCardForm();
+                message.textContent = 'Đã xóa khung trên Supabase.';
+            } catch (error) {
+                message.textContent = 'Không thể xóa khung trên Supabase. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
         }
 
         function sanitizeContentHtml(value) {
@@ -1633,7 +1943,7 @@
         function getStaticContentTargets(sectionId) {
             const section = document.getElementById(sectionId);
             if (!section || CONTENT_DYNAMIC_SECTIONS.has(sectionId)) return [];
-            const candidates = [...section.querySelectorAll('h1,h2,h3,p,li,.notice-box')].filter(node => !node.closest('#contentAdminToolbar, #contentAdminLoginBox, .admin-panel, .feedback-manager, #bqtSection'));
+            const candidates = [...section.querySelectorAll('h1,h2,h3,p,li,.notice-box')].filter(node => !node.closest('#contentAdminToolbar, #contentAdminLoginBox, .admin-panel, .feedback-manager, #bqtSection, #homeCustomCards'));
             return candidates.filter(node => !candidates.some(parent => parent !== node && parent.contains(node)));
         }
 
@@ -1657,7 +1967,7 @@
 
         async function fetchStaticContentFromSupabase() {
             const params = new URLSearchParams({
-                select: 'id,section_id,item_type,title,body,display_order,is_active,created_at,updated_at',
+                select: 'id,section_id,item_type,title,body,display_order,is_active,metadata,created_at,updated_at',
                 item_type: 'eq.text',
                 is_active: 'eq.true',
                 order: 'section_id.asc,display_order.asc,updated_at.desc',
@@ -1711,6 +2021,14 @@
             contentAdminSectionId = active?.id || 'trang-chu';
             contentEditTargets = assignStaticContentKeys(contentAdminSectionId);
             contentEditSnapshot = contentEditTargets.map(target => ({ target, html: target.innerHTML }));
+            if (contentAdminSectionId === 'trang-chu') {
+                renderHomeCustomCards();
+                resetHomeCardForm();
+                renderHomeCardManager();
+            } else {
+                const manager = document.getElementById('homeCardManager');
+                if (manager) manager.hidden = true;
+            }
             contentEditTargets.forEach(target => {
                 target.contentEditable = 'true';
                 target.classList.add('content-editable-active');
@@ -1796,6 +2114,10 @@
             });
             contentEditTargets = [];
             contentEditSnapshot = [];
+            const homeManager = document.getElementById('homeCardManager');
+            if (homeManager) homeManager.hidden = true;
+            selectedHomeCardId = '';
+            renderHomeCustomCards();
             document.getElementById('contentAdminToolbar').hidden = true;
             document.getElementById('contentAdminMessage').textContent = '';
         }
@@ -3317,6 +3639,8 @@
             syncBqtMembersFromSupabase();
             syncFaqItemsFromSupabase();
             syncStaticContentFromSupabase();
+            renderHomeCustomCards();
+            syncHomeCardsFromSupabase();
         });
 
         function scrollToTop() {
