@@ -620,22 +620,22 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Khung Giờ Vào Học</th>
-                                <th>Ký Hiệu</th>
-                                <th>Điểm Cộng Chuyên Cần</th>
+                                <th data-static-edit-key="attendance-heading-time">Khung Giờ Vào Học</th>
+                                <th data-static-edit-key="attendance-heading-symbol">Ký Hiệu</th>
+                                <th data-static-edit-key="attendance-heading-score">Điểm Cộng Chuyên Cần</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>🕓 03:00 – 05:00</td><td>🔥 (T)</td><td><span class="badge-green">+30 điểm</span> (Dậy siêu sớm)</td></tr>
-                            <tr><td>🕔 05:01 – 05:30</td><td>🥰 (Y)</td><td><span class="badge-green">+20 điểm</span> (Đúng giờ chuẩn)</td></tr>
-                            <tr><td>🕠 05:31 – 06:00</td><td>⏱️ (H)</td><td><span class="badge-green">+10 điểm</span> (Muộn nhẹ)</td></tr>
-                            <tr><td>😴 Vắng có phép</td><td>😴 (P)</td><td>0 điểm</td></tr>
-                            <tr><td>❌ Vắng không phép</td><td>❌ (N)</td><td><span class="badge-red">-10 điểm & Đóng 10k Quỹ</span></td></tr>
+                            <tr><td data-static-edit-key="attendance-row-early-time">🕓 03:00 – 05:00</td><td data-static-edit-key="attendance-row-early-symbol">🔥 (T)</td><td data-static-edit-key="attendance-row-early-score"><span class="badge-green">+30 điểm</span> (Dậy siêu sớm)</td></tr>
+                            <tr><td data-static-edit-key="attendance-row-on-time-time">🕔 05:01 – 05:30</td><td data-static-edit-key="attendance-row-on-time-symbol">🥰 (Y)</td><td data-static-edit-key="attendance-row-on-time-score"><span class="badge-green">+20 điểm</span> (Đúng giờ chuẩn)</td></tr>
+                            <tr><td data-static-edit-key="attendance-row-near-late-time">🕠 05:31 – 06:00</td><td data-static-edit-key="attendance-row-near-late-symbol">😮‍💨 (H)</td><td data-static-edit-key="attendance-row-near-late-score"><span class="badge-green">+10 điểm</span> (Gần muộn)</td></tr>
+                            <tr><td data-static-edit-key="attendance-row-permitted-time">😴 Vắng có phép</td><td data-static-edit-key="attendance-row-permitted-symbol">😴 (P)</td><td data-static-edit-key="attendance-row-permitted-score">0 điểm</td></tr>
+                            <tr><td data-static-edit-key="attendance-row-absent-time">❌ Vắng không phép</td><td data-static-edit-key="attendance-row-absent-symbol">❌ (N)</td><td data-static-edit-key="attendance-row-absent-score"><span class="badge-red">-10 điểm & Đóng 10k Quỹ</span></td></tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="clover-box" style="margin-top: 14px;">
+                <div class="clover-box" data-static-edit-key="attendance-duplicate-number-note" style="margin-top: 14px;">
                     🔢 <strong>XỬ LÝ KHI TRÙNG SỐ ĐIỂM DANH ☘️:</strong><br>
                     Nếu bạn lỡ nhắn trùng số điểm danh với người phía trước (ví dụ người trước gửi SS15 và bạn cũng gửi SS15), bạn <strong>không cần thu hồi tin nhắn</strong>. Chỉ cần nhắn ngay một tin mới với số tiếp theo (ví dụ: SS16) là được.
                 </div>
@@ -2152,24 +2152,33 @@
             template.content.querySelectorAll('*').forEach(node => {
                 [...node.attributes].forEach(attribute => {
                     const name = attribute.name.toLowerCase();
-                    if (!['href', 'target', 'rel'].includes(name)) node.removeAttribute(attribute.name);
+                    if (name === 'class') {
+                        const allowedClass = /^(badge-green|badge-red)$/.test(attribute.value.trim());
+                        if (!allowedClass) node.removeAttribute(attribute.name);
+                    } else if (!['href', 'target', 'rel'].includes(name)) {
+                        node.removeAttribute(attribute.name);
+                    }
                     if (name === 'href' && !/^https?:\/\//i.test(attribute.value)) node.removeAttribute(attribute.name);
                 });
             });
             return template.innerHTML;
         }
-
         function getStaticContentTargets(sectionId) {
             const section = document.getElementById(sectionId);
             if (!section || CONTENT_DYNAMIC_SECTIONS.has(sectionId)) return [];
-            const candidates = [...section.querySelectorAll('h1,h2,h3,p,li,.notice-box')].filter(node => !node.closest('#contentAdminToolbar, #contentAdminLoginBox, .admin-panel, .feedback-manager, #bqtSection, #homeCustomCards, .home-card-internal-parts'));
-            return candidates.filter(node => !candidates.some(parent => parent !== node && parent.contains(node)));
+            const excluded = '#contentAdminToolbar, #contentAdminLoginBox, .admin-panel, .feedback-manager, #bqtSection, #homeCustomCards, .home-card-internal-parts';
+            const baseCandidates = [...section.querySelectorAll('h1,h2,h3,p,li,.notice-box')].filter(node => !node.closest(excluded));
+            const baseTargets = baseCandidates.filter(node => !baseCandidates.some(parent => parent !== node && parent.contains(node)));
+            if (sectionId !== 'diem-danh-phep') return baseTargets;
+            const attendanceDetails = [...section.querySelectorAll('[data-static-edit-key]')].filter(node => !node.closest(excluded));
+            return [...baseTargets, ...attendanceDetails.filter(node => !baseTargets.includes(node))];
         }
-
         function assignStaticContentKeys(sectionId) {
             const targets = getStaticContentTargets(sectionId);
             targets.forEach((target, index) => {
-                target.dataset.contentKey = `content-${sectionId}-${index}`;
+                const stableKey = target.dataset.staticEditKey;
+                if (stableKey) target.dataset.contentKey = `content-${sectionId}-${stableKey}`;
+                else if (!target.dataset.contentKey) target.dataset.contentKey = `content-${sectionId}-${index}`;
                 target.dataset.contentSection = sectionId;
                 target.dataset.contentLabel = target.textContent.trim().slice(0, 120);
             });
