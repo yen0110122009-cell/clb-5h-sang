@@ -1177,6 +1177,23 @@
             <button class="btn btn-secondary" type="button" onclick="cancelStaticContentEditing()">↺ Hủy thay đổi</button>
             <button class="btn btn-secondary" type="button" onclick="lockContentAdmin()">Đóng quản lý</button>
         </div>
+        <div class="admin-code-manager">
+            <h4>🔐 Đổi mã quản lý</h4>
+            <p class="form-hint">Nhập mã hiện tại, mã mới và nhập lại mã mới. Mã mới áp dụng cho toàn bộ khu vực quản trị.</p>
+            <form id="adminCodeChangeForm" class="admin-form" onsubmit="changeAdminCode(event)">
+                <label for="adminCurrentCode">Mã quản lý hiện tại</label>
+                <input id="adminCurrentCode" type="password" autocomplete="current-password" required placeholder="Nhập mã hiện tại">
+                <label for="adminNewCode">Mã quản lý mới</label>
+                <input id="adminNewCode" type="password" autocomplete="new-password" minlength="3" maxlength="128" required placeholder="Nhập mã mới">
+                <label for="adminConfirmCode">Nhập lại mã quản lý mới</label>
+                <input id="adminConfirmCode" type="password" autocomplete="new-password" minlength="3" maxlength="128" required placeholder="Nhập lại mã mới">
+                <div class="admin-actions">
+                    <button class="btn btn-success" type="submit">💾 Lưu mã mới</button>
+                    <button class="btn btn-secondary" type="button" onclick="resetAdminCodeForm()">↺ Làm mới</button>
+                </div>
+                <div id="adminCodeChangeMessage" class="admin-message" role="status"></div>
+            </form>
+        </div>
         <div id="newContentBlockForm" class="new-content-block-form" hidden>
             <label for="newContentBlockTitle">Tên/tiêu đề đoạn mới</label>
             <input id="newContentBlockTitle" maxlength="500" placeholder="Ví dụ: Lưu ý mới">
@@ -1313,7 +1330,6 @@
             }
         };
 
-        const ADMIN_CODE = String.fromCharCode(49, 49, 49);
         const EVENTS_STORAGE_KEY = 'clb5h_sang_events_v1';
         const TRASH_STORAGE_KEY = 'clb5h_sang_events_trash_v1';
         const DIARY_STORAGE_KEY = 'clb5h_sang_diary_v1';
@@ -1323,6 +1339,7 @@
         const SUPABASE_DIARY_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-diary`;
         const SUPABASE_FEEDBACK_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-feedback`;
         const SUPABASE_EVENTS_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-events`;
+        const SUPABASE_ADMIN_SETTINGS_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/clb5h-admin-settings`;
         const CLOUDINARY_CLOUD_NAME = 'ub55zqyk';
         const CLOUDINARY_UPLOAD_PRESET = 'clb5h_diary_unsigned';
         const CLOUDINARY_UPLOAD_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -1569,11 +1586,13 @@
             document.getElementById('faqAdminLoginMessage').textContent = '';
         }
 
-        function unlockFaqAdmin() {
+        async function unlockFaqAdmin() {
             const input = document.getElementById('faqAdminCode');
             const message = document.getElementById('faqAdminLoginMessage');
-            if (input.value.trim() !== ADMIN_CODE) {
-                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+            try {
+                if (!(await verifyAdminCode(input.value.trim()))) throw new Error('invalid-admin-code');
+            } catch (error) {
+                message.textContent = error.message === 'invalid-admin-code' ? 'Mã chưa đúng. Vui lòng thử lại.' : 'Không thể kiểm tra mã quản lý. Vui lòng thử lại.';
                 message.classList.add('error');
                 input.select();
                 return;
@@ -2205,6 +2224,67 @@
             return result;
         }
 
+        async function verifyAdminCode(code) {
+            const response = await fetch(SUPABASE_ADMIN_SETTINGS_FUNCTION_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
+                body: JSON.stringify({ currentCode: String(code || ''), newCode: '', confirmCode: '', verifyOnly: true })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (response.status === 200 && result.valid === true) return true;
+            if (response.status === 401) return false;
+            throw new Error(result?.error || 'admin-code-verify-failed');
+        }
+
+        async function adminSettingsRequest(currentCode, newCode, confirmCode) {
+            const response = await fetch(SUPABASE_ADMIN_SETTINGS_FUNCTION_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
+                body: JSON.stringify({ currentCode, newCode, confirmCode })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result?.error || 'admin-code-change-failed');
+            return result;
+        }
+
+        function resetAdminCodeForm() {
+            ['adminCurrentCode', 'adminNewCode', 'adminConfirmCode'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) input.value = '';
+            });
+            const message = document.getElementById('adminCodeChangeMessage');
+            if (message) { message.textContent = ''; message.classList.remove('error'); }
+        }
+
+        async function changeAdminCode(event) {
+            event.preventDefault();
+            if (!contentAdminUnlocked || !contentAdminCodeToken) return;
+            const currentCode = document.getElementById('adminCurrentCode').value;
+            const newCode = document.getElementById('adminNewCode').value;
+            const confirmCode = document.getElementById('adminConfirmCode').value;
+            const message = document.getElementById('adminCodeChangeMessage');
+            message.classList.remove('error');
+            message.textContent = 'Đang cập nhật mã quản lý trên Supabase...';
+            try {
+                await adminSettingsRequest(currentCode, newCode, confirmCode);
+                contentAdminCodeToken = newCode;
+                eventAdminCodeToken = newCode;
+                diaryAdminCodeToken = newCode;
+                bqtAdminCodeToken = newCode;
+                resetAdminCodeForm();
+                message.textContent = 'Đã đổi mã quản lý thành công. Mã mới đã áp dụng cho toàn bộ chức năng quản trị.';
+            } catch (error) {
+                const messages = {
+                    'invalid-admin-code': 'Mã hiện tại chưa đúng.',
+                    'invalid-new-code': 'Mã mới phải dài từ 3 đến 128 ký tự.',
+                    'new-code-mismatch': 'Hai ô nhập mã mới chưa khớp nhau.',
+                    'new-code-must-differ': 'Mã mới phải khác mã hiện tại.'
+                };
+                message.textContent = messages[error.message] || 'Không thể đổi mã quản lý. Vui lòng thử lại.';
+                message.classList.add('error');
+            }
+        }
+
         function openContentAdminLogin() {
             const loginBox = document.getElementById('contentAdminLoginBox');
             loginBox.hidden = false;
@@ -2291,11 +2371,13 @@
             node.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function unlockContentAdmin() {
+        async function unlockContentAdmin() {
             const input = document.getElementById('contentAdminCode');
             const message = document.getElementById('contentAdminLoginMessage');
-            if (input.value.trim() !== ADMIN_CODE) {
-                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+            try {
+                if (!(await verifyAdminCode(input.value.trim()))) throw new Error('invalid-admin-code');
+            } catch (error) {
+                message.textContent = error.message === 'invalid-admin-code' ? 'Mã chưa đúng. Vui lòng thử lại.' : 'Không thể kiểm tra mã quản lý. Vui lòng thử lại.';
                 message.classList.add('error');
                 input.select();
                 return;
@@ -2478,11 +2560,13 @@
             document.getElementById('bqtAdminLoginMessage').textContent = '';
         }
 
-        function unlockBqtAdmin() {
+        async function unlockBqtAdmin() {
             const input = document.getElementById('bqtAdminCode');
             const message = document.getElementById('bqtAdminLoginMessage');
-            if (input.value.trim() !== ADMIN_CODE) {
-                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+            try {
+                if (!(await verifyAdminCode(input.value.trim()))) throw new Error('invalid-admin-code');
+            } catch (error) {
+                message.textContent = error.message === 'invalid-admin-code' ? 'Mã chưa đúng. Vui lòng thử lại.' : 'Không thể kiểm tra mã quản lý. Vui lòng thử lại.';
                 message.classList.add('error');
                 input.select();
                 return;
@@ -3179,11 +3263,13 @@
             document.getElementById('diaryAdminLoginMessage').textContent = '';
         }
 
-        function unlockDiaryAdmin() {
+        async function unlockDiaryAdmin() {
             const codeInput = document.getElementById('diaryAdminCode');
             const message = document.getElementById('diaryAdminLoginMessage');
-            if (codeInput.value.trim() !== ADMIN_CODE) {
-                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+            try {
+                if (!(await verifyAdminCode(codeInput.value.trim()))) throw new Error('invalid-admin-code');
+            } catch (error) {
+                message.textContent = error.message === 'invalid-admin-code' ? 'Mã chưa đúng. Vui lòng thử lại.' : 'Không thể kiểm tra mã quản lý. Vui lòng thử lại.';
                 message.classList.add('error');
                 codeInput.select();
                 return;
@@ -3414,11 +3500,13 @@
             document.getElementById('adminLoginMessage').textContent = '';
         }
 
-        function unlockAdmin() {
+        async function unlockAdmin() {
             const codeInput = document.getElementById('adminCode');
             const message = document.getElementById('adminLoginMessage');
-            if (codeInput.value.trim() !== ADMIN_CODE) {
-                message.textContent = 'Mã chưa đúng. Vui lòng thử lại.';
+            try {
+                if (!(await verifyAdminCode(codeInput.value.trim()))) throw new Error('invalid-admin-code');
+            } catch (error) {
+                message.textContent = error.message === 'invalid-admin-code' ? 'Mã chưa đúng. Vui lòng thử lại.' : 'Không thể kiểm tra mã quản lý. Vui lòng thử lại.';
                 message.classList.add('error');
                 codeInput.select();
                 return;

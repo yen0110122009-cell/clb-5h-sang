@@ -8,8 +8,28 @@ const corsHeaders = {
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const adminCode = Deno.env.get("CLB5H_ADMIN_CODE") || "111";
+const legacyAdminCode = Deno.env.get("CLB5H_ADMIN_CODE") || "111";
+const adminSettingsTable = "clb5h_admin_settings";
 const table = "clb5h_content_items";
+
+async function sha256Hex(value: string) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function getCurrentAdminCodeHash() {
+  const response = await fetch(`${supabaseUrl}/rest/v1/${adminSettingsTable}?id=eq.primary&select=code_hash&limit=1`, {
+    headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` },
+  });
+  if (!response.ok) throw new Error("admin-settings-read-failed");
+  const rows = await response.json();
+  return rows?.[0]?.code_hash || await sha256Hex(legacyAdminCode);
+}
+
+async function validAdminCode(candidate: unknown) {
+  return (await sha256Hex(String(candidate || ""))) === await getCurrentAdminCodeHash();
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -64,7 +84,7 @@ Deno.serve(async (request) => {
 
   try {
     const body = await request.json();
-    if (String(body.code || "") !== adminCode) return json({ error: "invalid-admin-code" }, 401);
+    if (!(await validAdminCode(body.code))) return json({ error: "invalid-admin-code" }, 401);
     const action = String(body.action || "");
     const item = (body.item || {}) as Record<string, unknown>;
 
