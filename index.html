@@ -4094,30 +4094,74 @@
         }
 
         function answerMemberQuiz(choice) {
-            const item = MEMBER_QUIZ[memberQuizIndex];
-            const hint = document.getElementById('memberQuizHint');
-            if (choice !== item.answer) {
-                hint.innerHTML = `
-                    <div style="font-weight:700; margin-bottom:6px;">❌ Chưa đúng rồi nè 🌱</div>
-                    <div>Không sao nha! Mình <strong>không đưa đáp án</strong> đâu 😆 Bạn hãy quay lại đọc đúng phần dưới đây trong mục <strong>“Thành viên mới chú ý”</strong> rồi quay lại chọn lại câu này:</div>
-                    <div style="margin-top:10px;padding:10px 12px;background:#FFF8E8;border-radius:10px;border:1px solid #F0D38A;font-weight:700;">${item.hintSection}</div>
-                    <button type="button" class="btn btn-success" style="margin-top:10px;" onclick="openMemberReadingSection()">📖 MỞ PHẦN “THÀNH VIÊN MỚI CHÚ Ý”</button>
-                    <div style="margin-top:8px;"><strong>👉 Đọc lại phần trên rồi quay lại trả lời chính câu này nhé!</strong></div>
-                `;
-                hint.style.display = 'block';
-                return;
-            }
-            memberQuizIndex++;
-            if (memberQuizIndex >= MEMBER_QUIZ.length) {
-                memberQuizCompleted = true;
-                localStorage.setItem('club5h_member_quiz_completed', 'true');
-                document.getElementById('memberQuizBox').style.display = 'none';
-                unlockMemberCodeArea();
-                return;
-            }
-            renderMemberQuiz();
-        }
+    const item = MEMBER_QUIZ[memberQuizIndex];
+    const hint = document.getElementById('memberQuizHint');
 
+    if (choice !== item.answer) {
+        hint.innerHTML = `
+            <div style="
+                font-weight:700;
+                margin-bottom:8px;
+                font-size:1rem;
+            ">
+                ❌ Huhu, chưa đúng mất rồi nè... 💧 (╥﹏╥)
+            </div>
+
+            <div style="
+                margin-bottom:10px;
+                line-height:1.6;
+            ">
+                Đừng buồn nha, lau nước mắt nào... Mình không bật mí đáp án đâu á 🥺
+                (｡•́︿•̀｡) Bạn hãy quay lại đọc kỹ phần dưới đây trong mục
+                <strong>“Thành viên mới chú ý”</strong> rồi quay lại thử sức lại câu này nha! 🍀
+            </div>
+
+            <div style="
+                margin-top:10px;
+                padding:10px 12px;
+                background:#FFF8E8;
+                border-radius:10px;
+                border:1px solid #F0D38A;
+                font-weight:700;
+                line-height:1.5;
+            ">
+                📖 ${item.hintSection} 🌿
+            </div>
+
+            <button
+                type="button"
+                class="btn btn-success"
+                style="margin-top:10px;"
+                onclick="openMemberReadingSection()"
+            >
+                📖 MỞ PHẦN “THÀNH VIÊN MỚI CHÚ Ý” 🍃
+            </button>
+
+            <div style="
+                margin-top:8px;
+                line-height:1.5;
+            ">
+                👉 Cố lên nghen, đọc lại một chút rồi quay lại chinh phục câu này nào
+                (´｡• ᵕ •｡\`) ♡
+            </div>
+        `;
+
+        hint.style.display = 'block';
+        return;
+    }
+
+    memberQuizIndex++;
+
+    if (memberQuizIndex >= MEMBER_QUIZ.length) {
+        memberQuizCompleted = true;
+        localStorage.setItem('club5h_member_quiz_completed', 'true');
+        document.getElementById('memberQuizBox').style.display = 'none';
+        unlockMemberCodeArea();
+        return;
+    }
+
+    renderMemberQuiz();
+}
         function openMemberReadingSection() {
             showPage('thanh-vien-moi-chu-y');
             const target = document.getElementById('thanh-vien-moi-chu-y');
